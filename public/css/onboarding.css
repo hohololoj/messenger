@@ -1,0 +1,146 @@
+body {
+  overflow: hidden;
+}
+
+.section-phone {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 72px 1fr;
+  -ms-grid-columns: 1fr;
+      grid-template: 72px 1fr / 1fr;
+}
+
+.phone-form {
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.phone-form .description {
+  margin-top: 8px;
+}
+
+.phone-form .form {
+  margin-top: 16px;
+}
+
+.phone-form .form .number-inputs {
+  width: 320px;
+  height: 40px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin-top: 16px;
+}
+
+.phone-form .form .number-inputs .input-code {
+  width: 72px;
+  height: 40px;
+  border: none;
+  background: rgba(201, 204, 209, 0.24);
+  border-radius: 8px;
+  outline: none;
+  padding: 8px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+}
+
+.phone-form .form .number-inputs .input-number {
+  width: 232px;
+  height: 40px;
+  border: none;
+  background: rgba(201, 204, 209, 0.24);
+  border-radius: 8px;
+  outline: none;
+  padding: 8px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+}
+
+.phone-form .form .number-inputs .input-number::-webkit-input-placeholder {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  color: #9D9FA3;
+}
+
+.phone-form .form .number-inputs .input-number:-ms-input-placeholder {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  color: #9D9FA3;
+}
+
+.phone-form .form .number-inputs .input-number::-ms-input-placeholder {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  color: #9D9FA3;
+}
+
+.phone-form .form .number-inputs .input-number::placeholder {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  color: #9D9FA3;
+}
+
+.phone-form .form .continue-button-container {
+  margin-top: 40px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 320px;
+  height: auto;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.phone-form .form .continue-button-container .continue-button {
+  width: 86px;
+  height: 40px;
+  background: #248BF2;
+  color: white;
+}
+
+.phone-form .form .input-email {
+  width: 320px;
+  height: 40px;
+  margin-top: 32px;
+  background: rgba(201, 204, 209, 0.24);
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  padding: 8px;
+}
+/*# sourceMappingURL=onboarding.css.map */

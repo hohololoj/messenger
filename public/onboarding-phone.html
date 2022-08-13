@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continue with phone</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/onboarding.css">
+</head>
+<body>
+    <style>
+        @-webkit-keyframes loading {
+          0% {
+            -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+          }
+          100% {
+            -webkit-transform: rotate(359deg);
+                    transform: rotate(359deg);
+          }
+        }
+        
+        @keyframes loading {
+          0% {
+            -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+          }
+          100% {
+            -webkit-transform: rotate(359deg);
+                    transform: rotate(359deg);
+          }
+        }
+        
+        @-webkit-keyframes hide {
+          0% {
+            opacity: 100%;
+          }
+          100% {
+            opacity: 0%;
+          }
+        }
+        
+        @keyframes hide {
+          0% {
+            opacity: 100%;
+          }
+          100% {
+            opacity: 0%;
+          }
+        }
+        
+        .section-loading {
+          display: -webkit-box;
+          display: -ms-flexbox;
+          display: flex;
+          -webkit-box-pack: center;
+              -ms-flex-pack: center;
+                  justify-content: center;
+          -webkit-box-align: center;
+              -ms-flex-align: center;
+                  align-items: center;
+                  background: #F2F3F5;
+            animation-duration: 1s;
+        }
+        
+        .section-loading .loading {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          -webkit-animation-name: loading;
+                  animation-name: loading;
+          -webkit-animation-iteration-count: infinite;
+                  animation-iteration-count: infinite;
+          -webkit-animation-duration: 1s;
+                  animation-duration: 1s;
+          -webkit-animation-play-state: running;
+                  animation-play-state: running;
+          -webkit-animation-timing-function: ease-in-out;
+                  animation-timing-function: ease-in-out;
+        }
+            </style>
+            <div class="section section-loading">
+                <svg class="loading" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_259_59)">
+                        <path
+                            d="M16 1C16 0.447716 15.5518 -0.00325775 15.0006 0.031229C11.8055 0.231134 8.73516 1.386 6.19349 3.35752C3.38777 5.53385 1.38573 8.58168 0.50267 12.021C-0.380386 15.4602 -0.0942841 19.0956 1.31593 22.3544C2.72613 25.6132 5.18031 28.3103 8.29194 30.0209C11.4036 31.7315 14.9958 32.3585 18.5029 31.803C22.0101 31.2475 25.2328 29.5412 27.6635 26.9528C30.0942 24.3643 31.5948 21.0408 31.929 17.5057C32.2317 14.3033 31.5616 11.0921 30.0184 8.2873C29.7521 7.80343 29.1312 7.66667 28.6649 7.9626C28.1986 8.25853 28.064 8.87498 28.3259 9.36122C29.6337 11.7893 30.1988 14.5571 29.9379 17.3175C29.6455 20.4107 28.3324 23.3188 26.2056 25.5837C24.0787 27.8486 21.2588 29.3416 18.1901 29.8276C15.1213 30.3137 11.9781 29.7651 9.25545 28.2683C6.53278 26.7715 4.38537 24.4115 3.15143 21.5601C1.9175 18.7086 1.66716 15.5277 2.43984 12.5183C3.21251 9.50897 4.9643 6.84212 7.4193 4.93783C9.61016 3.23843 12.25 2.23248 15.0008 2.03569C15.5517 1.99628 16 1.55228 16 1Z"
+                            fill="#C8C9CC" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_259_59">
+                            <rect width="32" height="32" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>
+            </div>
+            <script>
+                const loading_section = document.getElementsByClassName('section-loading')[0];
+                window.addEventListener('load', function () {
+                    loading_section.style.animationName = 'hide';
+                    setTimeout(() => {
+                        loading_section.style.display = 'none';
+                    }, 1000);
+                })
+            </script>
+    <div class="section section-phone">
+        <a href="/start"><div class="arrow-back"><img src="./imgs/arrow-left.svg" alt="././"></div></a>
+        <div class="phone-form">
+            <div class="title">What's your phone?</div>
+            <div class="description">We’ll send you a sign-in code</div>
+            <div class="form">
+                <div class="select">
+                    <div class="select-head-info">
+                        <div class="select-text">Select your country</div>
+                        <img src="./imgs/arrow-down.svg">
+                    </div>
+                    <div class="select-head-search">
+                        <div class="select-icon-search">
+                            <img src="./imgs/search-icon.svg">
+                        </div>
+                        <input class="select-text-input" type="text" placeholder="Country">
+                    </div>
+
+                    <div class="select-body">
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">A</div>
+                            <div class="select-body-group-content">
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Afghanistan</div>
+                                    <div class="code">+93</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Albania</div>
+                                    <div class="code">+355</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Algeria</div>
+                                    <div class="code">+21</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">American Samoa</div>
+                                    <div class="code">+684</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Andorra</div>
+                                    <div class="code">+376</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Angola</div>
+                                    <div class="code">+244</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Anguilla</div>
+                                    <div class="code">+1-264</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Antigua and Barbuda</div>
+                                    <div class="code">+1-268</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Armenia</div>
+                                    <div class="code">+374</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Argentina</div>
+                                    <div class="code">+54</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Australia</div>
+                                    <div class="code">+61</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Austria</div>
+                                    <div class="code">+43</div>
+                                </div>
+
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Azerbaijan</div>
+                                    <div class="code">+994</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">B</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bahamas</div>
+                                    <div class="code">+1-242</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bahrain</div>
+                                    <div class="code">+973</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bangladesh</div>
+                                    <div class="code">+880</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Barbados</div>
+                                    <div class="code">+1-246</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Belarus</div>
+                                    <div class="code">+375</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Belgium</div>
+                                    <div class="code">+32</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Belize</div>
+                                    <div class="code">+501</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Benin</div>
+                                    <div class="code">+229</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bermuda</div>
+                                    <div class="code">+1-441</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bolivia</div>
+                                    <div class="code">+591</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bosnia and Herzegovina</div>
+                                    <div class="code">+387</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Botswana</div>
+                                    <div class="code">+267</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Brazil</div>
+                                    <div class="code">+55</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">British Virgin Islands</div>
+                                    <div class="code">+1-284</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Brunei Darusalaam</div>
+                                    <div class="code">+673</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Bulgaria</div>
+                                    <div class="code">+359</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Burkina Faso</div>
+                                    <div class="code">+226</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Burundi</div>
+                                    <div class="code">+257</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Byelorussian</div>
+                                    <div class="code">+7</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">C</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cambodia</div>
+                                    <div class="code">+855</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cameroon</div>
+                                    <div class="code">+237</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Canada </div>
+                                    <div class="code">+1</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cape Verde</div>
+                                    <div class="code">+238</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cayman Islands</div>
+                                    <div class="code">+1-345</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Central African Republic</div>
+                                    <div class="code">+236</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Chad</div>
+                                    <div class="code">+235</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Chile</div>
+                                    <div class="code">+56</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">China</div>
+                                    <div class="code">+86</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Christmas Island</div>
+                                    <div class="code">+672</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cocos Islands</div>
+                                    <div class="code">+672</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Colombia</div>
+                                    <div class="code">+57</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Commonwealth of the Northern Mariana Islands</div>
+                                    <div class="code">+1-670</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Comoros and Mayotte Island</div>
+                                    <div class="code">+269</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Congo</div>
+                                    <div class="code">+242</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cook Islands</div>
+                                    <div class="code">+682</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Costa Rica</div>
+                                    <div class="code">+506</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Croatia</div>
+                                    <div class="code">+385</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cuba</div>
+                                    <div class="code">+53</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Cyprus</div>
+                                    <div class="code">+357</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Czech Republic</div>
+                                    <div class="code">+420</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">D</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Denmark</div>
+                                    <div class="code">+45</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Diego Garcia</div>
+                                    <div class="code">+246</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Djibouti</div>
+                                    <div class="code">+253</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Dominica</div>
+                                    <div class="code">+1-767</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Dominican Republic</div>
+                                    <div class="code">+1-809</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">E</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">East Timor</div>
+                                    <div class="code">+62</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ecuador</div>
+                                    <div class="code">+593</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Egypt</div>
+                                    <div class="code">+20</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">El Salvador</div>
+                                    <div class="code">+503</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Equatorial Guinea</div>
+                                    <div class="code">+240</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Estonia</div>
+                                    <div class="code">+372</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ethiopia</div>
+                                    <div class="code">+251</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">F</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Faeroe Islands</div>
+                                    <div class="code">+298</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Falkland Islands</div>
+                                    <div class="code">+500</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Fiji</div>
+                                    <div class="code">+679</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Finland</div>
+                                    <div class="code">+358</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">France</div>
+                                    <div class="code">+33</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">French Antilles</div>
+                                    <div class="code">+590</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">French Guiana</div>
+                                    <div class="code">+594</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">French Polynesia</div>
+                                    <div class="code">+689</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">G</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Gabon</div>
+                                    <div class="code">+241</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Gambia</div>
+                                    <div class="code">+220</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Georgia</div>
+                                    <div class="code">+995</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Germany</div>
+                                    <div class="code">+49</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ghana</div>
+                                    <div class="code">+233</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Gibraltar</div>
+                                    <div class="code">+350</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Greece</div>
+                                    <div class="code">+30</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Greenland</div>
+                                    <div class="code">+299</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Grenada</div>
+                                    <div class="code">+1-473</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Guam</div>
+                                    <div class="code">+1-671,+671</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Guatemala</div>
+                                    <div class="code">+502</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Guinea</div>
+                                    <div class="code">+224</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Guinea-Bissau</div>
+                                    <div class="code">+245</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Guyana</div>
+                                    <div class="code">+592</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">H</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Haiti</div>
+                                    <div class="code">+509</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Honduras</div>
+                                    <div class="code">+504</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Hong Kong</div>
+                                    <div class="code">+852</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Hungary</div>
+                                    <div class="code">+36</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">I</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Iceland</div>
+                                    <div class="code">+354</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">India</div>
+                                    <div class="code">+91</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Indonesia</div>
+                                    <div class="code">+62</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Iran</div>
+                                    <div class="code">+98</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Iraq</div>
+                                    <div class="code">+964</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Irish Republic</div>
+                                    <div class="code">+353</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Israel</div>
+                                    <div class="code">+972</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Italy</div>
+                                    <div class="code">+39</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ivory Coast</div>
+                                    <div class="code">+225</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">J</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Jamaica</div>
+                                    <div class="code">+1-876</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Japan</div>
+                                    <div class="code">+81</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Jordan</div>
+                                    <div class="code">+962</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">K</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Kazakhstan </div>
+                                    <div class="code">+7</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Kenya</div>
+                                    <div class="code">+254</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Kiribati Republic</div>
+                                    <div class="code">+686</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Kirg(h)izia </div>
+                                    <div class="code">+996</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Kuwait</div>
+                                    <div class="code">+965</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">L</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Laos</div>
+                                    <div class="code">+856</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Latvia</div>
+                                    <div class="code">+371</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Lebanon</div>
+                                    <div class="code">+961</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Lesotho</div>
+                                    <div class="code">+266</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Liberia</div>
+                                    <div class="code">+231</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Libya</div>
+                                    <div class="code">+21</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Liechtenstein</div>
+                                    <div class="code">+41</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Lithuania</div>
+                                    <div class="code">+370</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Luxembourg</div>
+                                    <div class="code">+352</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">M</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Macao</div>
+                                    <div class="code">+853</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Macedonia</div>
+                                    <div class="code">+389</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Madagascar</div>
+                                    <div class="code">+261</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Malawi</div>
+                                    <div class="code">+265</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Malaysia</div>
+                                    <div class="code">+60</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Maldives</div>
+                                    <div class="code">+960</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mali</div>
+                                    <div class="code">+223</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Malta</div>
+                                    <div class="code">+356</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Marshall Islands</div>
+                                    <div class="code">+692</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Martinique</div>
+                                    <div class="code">+596</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mauritania</div>
+                                    <div class="code">+222</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mauritius</div>
+                                    <div class="code">+230</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mexico</div>
+                                    <div class="code">+1-706,+1-905,+52</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Micronesia</div>
+                                    <div class="code">+691</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Monaco</div>
+                                    <div class="code">+377</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mongolia</div>
+                                    <div class="code">+976</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Montserrat</div>
+                                    <div class="code">+1-664</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Morocco</div>
+                                    <div class="code">+212</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Mozambique</div>
+                                    <div class="code">+258</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Myanmar</div>
+                                    <div class="code">+95</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">N</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Namibia</div>
+                                    <div class="code">+264</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Nauru</div>
+                                    <div class="code">+674</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Nepal</div>
+                                    <div class="code">+977</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Netherlands</div>
+                                    <div class="code">+31</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Netherlands Antilles</div>
+                                    <div class="code">+599</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">New Caledonia</div>
+                                    <div class="code">+687</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">New Zealand</div>
+                                    <div class="code">+64</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Nicaragua</div>
+                                    <div class="code">+505</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Niger</div>
+                                    <div class="code">+227</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Nigeria</div>
+                                    <div class="code">+234</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Niue</div>
+                                    <div class="code">+683</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Norfolk Island</div>
+                                    <div class="code">+672</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">North Korea</div>
+                                    <div class="code">+850</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">North Yemen</div>
+                                    <div class="code">+967</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Northern Mariana Islands</div>
+                                    <div class="code">+670</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Norway</div>
+                                    <div class="code">+47</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">O</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Oman</div>
+                                    <div class="code">+968</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">P</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Pakistan</div>
+                                    <div class="code">+92</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Panama</div>
+                                    <div class="code">+507</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Papua New Guinea</div>
+                                    <div class="code">+675</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Paraguay</div>
+                                    <div class="code">+595</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Peru</div>
+                                    <div class="code">+51</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Philippines</div>
+                                    <div class="code">+63</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Poland</div>
+                                    <div class="code">+48</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Portugal</div>
+                                    <div class="code">+351</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Puerto Rico</div>
+                                    <div class="code">+1-787</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">Q</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Qatar</div>
+                                    <div class="code">+974</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">R</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Republic of San Marino</div>
+                                    <div class="code">+378</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Reunion</div>
+                                    <div class="code">+262</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Romania</div>
+                                    <div class="code">+40</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Russia</div>
+                                    <div class="code">+7</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Rwandese Republic</div>
+                                    <div class="code">+250</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">S</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Saint Helena and Ascension Island</div>
+                                    <div class="code">+247</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Saint Pierre et Miquelon</div>
+                                    <div class="code">+508</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">San Marino</div>
+                                    <div class="code">+39</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Sao Tome e Principe</div>
+                                    <div class="code">+239</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Saudi Arabia</div>
+                                    <div class="code">+966</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Senegal</div>
+                                    <div class="code">+221</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Seychelles</div>
+                                    <div class="code">+248</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Sierra Leone</div>
+                                    <div class="code">+232</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Singapore</div>
+                                    <div class="code">+65</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Slovakia</div>
+                                    <div class="code">+421</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Slovenia</div>
+                                    <div class="code">+386</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Solomon Islands</div>
+                                    <div class="code">+677</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Somalia</div>
+                                    <div class="code">+252</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">South Africa</div>
+                                    <div class="code">+27</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">South Korea</div>
+                                    <div class="code">+82</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">South Yemen</div>
+                                    <div class="code">+969</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Spain</div>
+                                    <div class="code">+34</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Sri Lanka</div>
+                                    <div class="code">+94</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">St.Kitts and Nevis</div>
+                                    <div class="code">+1-869</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">St.Lucia</div>
+                                    <div class="code">+1-758</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">St.Vincent and the Grenadines</div>
+                                    <div class="code">+1-784</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Sudan</div>
+                                    <div class="code">+249</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Suriname</div>
+                                    <div class="code">+597</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Svalbard and Jan Mayen Islands</div>
+                                    <div class="code">+47</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Swaziland</div>
+                                    <div class="code">+268</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Sweden</div>
+                                    <div class="code">+46</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Switzerland</div>
+                                    <div class="code">+41</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Syria</div>
+                                    <div class="code">+963</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">T</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ta(d)jikistan </div>
+                                    <div class="code">+992</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Taiwan</div>
+                                    <div class="code">+886</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Tanzania</div>
+                                    <div class="code">+255</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Thailand</div>
+                                    <div class="code">+66</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Togolese Republic</div>
+                                    <div class="code">+228</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Tokelau</div>
+                                    <div class="code">+690</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Tonga</div>
+                                    <div class="code">+676</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Trinidad and Tobago</div>
+                                    <div class="code">+1-868</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Tunisia</div>
+                                    <div class="code">+21</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Turkey</div>
+                                    <div class="code">+90</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Turkmenistan </div>
+                                    <div class="code">+993</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Turks &amp; Caicos Islands</div>
+                                    <div class="code">+1-649</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Tuvalu</div>
+                                    <div class="code">+688</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">U</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">US Virgin Islands</div>
+                                    <div class="code">+1-340</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Uganda</div>
+                                    <div class="code">+256</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Ukraine</div>
+                                    <div class="code">+380</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">United Arab Emirates</div>
+                                    <div class="code">+971</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">United Kingdom</div>
+                                    <div class="code">+44</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Uruguay</div>
+                                    <div class="code">+598</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">USA</div>
+                                    <div class="code">+1</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Uzbekistan </div>
+                                    <div class="code">+998 </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">V</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Vanuatu</div>
+                                    <div class="code">+678</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Vatican City</div>
+                                    <div class="code">+39</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Venezuela</div>
+                                    <div class="code">+58</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Vietnam</div>
+                                    <div class="code">+84</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">W</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Wallis and Futuna Islands</div>
+                                    <div class="code">+681</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Western Sahara</div>
+                                    <div class="code">+21</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Western Samoa</div>
+                                    <div class="code">+685</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">Y</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Yugoslavia</div>
+                                    <div class="code">+381</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="select-body-group">
+                            <div class="select-body-group-title">Z</div>
+                            <div class="select-body-group-content">
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Zaire</div>
+                                    <div class="code">+243</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Zambia</div>
+                                    <div class="code">+260</div>
+                                </div>
+                                <div class="select-body-group-content-item">
+                                    <div class="name">Zimbabwe</div>
+                                    <div class="code">+263</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="number-inputs">
+                    <input type="text" class="input-code" value="+">
+                    <input type="text" class="input-number" placeholder="Phone number">
+                </div>
+                <div class="continue-button-container">
+                    <div class="button continue-button">Next</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="./scripts/input_logic_phone.js"></script>
+</html>

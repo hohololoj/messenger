@@ -1,0 +1,69 @@
+.section-register{
+    display: grid;
+    grid-template: 72px 1fr / 1fr;
+    .register-form{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        .description{
+            margin-top: 8px;
+        }
+        .description:last-child{
+            margin-top: 32px;
+            width: 320px;
+        }
+        .avatar{
+            width: 96px;
+            height: 96px;
+            margin-top: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            animation-duration: 0.05s;
+        }
+        .name-form{
+            width: 320px;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 16px;
+            .input{
+                border: none;
+                outline: none;
+                border-radius: 8px;
+                height: 56px;
+                width: 100%;
+                padding: 16px;
+                background: rgba($color: #C9CCD1, $alpha: 0.24);
+                color: #171A1F;;
+                &::placeholder{
+                    font-size: 15px;
+                    font-weight: 400;
+                    line-height: 24px;
+                    letter-spacing: 0.76px;
+                    color: #9D9FA3;
+                }
+            }
+            .continue-button-container{
+                margin-top: 32px;
+                margin-left: auto;
+                margin-right: auto;
+                display: flex;
+                width: 320px;
+                height: auto;
+                justify-content: center;
+                .continue-button{
+                    width: 86px;
+                    height: 40px;
+                    background: #248BF2;
+                    color: white;
+                }
+            }
+        }
+    }
+}
+.avatar-upload{
+    position: absolute;
+    opacity: 0;
+}

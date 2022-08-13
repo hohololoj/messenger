@@ -1,0 +1,38 @@
+.section-onboard {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.section-onboard .title {
+  width: 320px;
+  margin-top: 15px;
+}
+
+.section-onboard .description {
+  width: 320px;
+  margin-top: 10px;
+}
+
+.section-onboard .button-phone {
+  background: #248BF2;
+  color: white;
+  margin-top: 30px;
+}
+
+.section-onboard .button-email {
+  background: #F2F3F5;
+  color: #71747A;
+  margin-top: 15px;
+}
+/*# sourceMappingURL=start.css.map */

@@ -1,0 +1,126 @@
+.section-register {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 72px 1fr;
+  -ms-grid-columns: 1fr;
+      grid-template: 72px 1fr / 1fr;
+}
+
+.section-register .register-form {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.section-register .register-form .description {
+  margin-top: 8px;
+}
+
+.section-register .register-form .description:last-child {
+  margin-top: 32px;
+  width: 320px;
+}
+
+.section-register .register-form .avatar {
+  width: 96px;
+  height: 96px;
+  margin-top: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-animation-duration: 0.05s;
+          animation-duration: 0.05s;
+}
+
+.section-register .register-form .name-form {
+  width: 320px;
+  height: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.section-register .register-form .name-form .input {
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  height: 56px;
+  width: 100%;
+  padding: 16px;
+  background: rgba(201, 204, 209, 0.24);
+  color: #171A1F;
+}
+
+.section-register .register-form .name-form .input::-webkit-input-placeholder {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.76px;
+  color: #9D9FA3;
+}
+
+.section-register .register-form .name-form .input:-ms-input-placeholder {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.76px;
+  color: #9D9FA3;
+}
+
+.section-register .register-form .name-form .input::-ms-input-placeholder {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.76px;
+  color: #9D9FA3;
+}
+
+.section-register .register-form .name-form .input::placeholder {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.76px;
+  color: #9D9FA3;
+}
+
+.section-register .register-form .name-form .continue-button-container {
+  margin-top: 32px;
+  margin-left: auto;
+  margin-right: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 320px;
+  height: auto;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.section-register .register-form .name-form .continue-button-container .continue-button {
+  width: 86px;
+  height: 40px;
+  background: #248BF2;
+  color: white;
+}
+
+.avatar-upload {
+  position: absolute;
+  opacity: 0;
+}
+/*# sourceMappingURL=register.css.map */

@@ -1,0 +1,22 @@
+.section-error{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .continue-button-container{
+        margin-top: 32px;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        width: 320px;
+        height: auto;
+        justify-content: center;
+        .continue-button{
+            width: auto;
+            height: 40px;
+            padding: 24px;
+            background: #248BF2;
+            color: white;
+        }
+    }
+}

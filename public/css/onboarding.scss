@@ -1,0 +1,87 @@
+body{
+    overflow: hidden;
+}
+.section-phone{
+    display: grid;
+    grid-template: 72px 1fr / 1fr;
+}
+.phone-form{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .description{
+        margin-top: 8px;
+    }
+    .form{
+        margin-top: 16px;
+        .number-inputs{
+            width: 320px;
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            .input-code{
+                width: 72px;
+                height: 40px;
+                border: none;
+                background: rgba($color: #C9CCD1, $alpha: 0.24);
+                border-radius: 8px;
+                outline: none;
+                padding: 8px;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 15px;
+                line-height: 24px;               
+                letter-spacing: -0.24px;                
+            }
+            .input-number{
+                width: 232px;
+                height: 40px;
+                border: none;
+                background: rgba($color: #C9CCD1, $alpha: 0.24);
+                border-radius: 8px;
+                outline: none;
+                padding: 8px;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 15px;
+                line-height: 24px;
+                letter-spacing: -0.24px;
+                &::placeholder{
+                    font-style: normal;
+                    font-weight: normal;
+                    font-size: 15px;
+                    line-height: 24px;
+                    letter-spacing: -0.24px;
+                    color: #9D9FA3;
+                }
+            }
+        }
+        .continue-button-container{
+            margin-top: 40px;
+            display: flex;
+            width: 320px;
+            height: auto;
+            justify-content: center;
+            .continue-button{
+                width: 86px;
+                height: 40px;
+                background: #248BF2;
+                color: white;
+            }
+        }
+        .input-email{
+            width: 320px;
+            height: 40px;
+            margin-top: 32px;
+            background: rgba($color: #C9CCD1, $alpha: 0.24);
+            border: none;
+            outline: none;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    }
+}

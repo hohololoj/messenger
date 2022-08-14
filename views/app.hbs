@@ -290,7 +290,7 @@
                         <img src="./icons/icon-search-magnifier.svg" class="icon-search icon-search_shown">
                         <img src="./icons/icon-loader.svg" class="loading-spinning-icon">
                     </div>
-                    <form class="discover-search-form">
+                    <form class="discover-search-form search-form">
                         <input class="search-input" type="text" placeholder="Groups, people, and more">
                         <img src="./icons/icon-close.svg" class="icon-close-search">
                     </form>
@@ -436,13 +436,17 @@
             <div class="search-container">
                 <div class="search">
                     <div class="search-icon">
-                        <img src="./icons/icon-search-magnifier.svg">
+                        <img src="./icons/icon-search-magnifier.svg" class="icon-search icon-search_shown">
+                        <img src="./icons/icon-loader.svg" class="loading-spinning-icon">
                     </div>
-                    <input class="search-input" type="text" placeholder="Chats, messages and more">
+                    <form class="contacts-search-form search-form">
+                        <input class="search-input" type="text" placeholder="Groups, people, and more">
+                        <img src="./icons/icon-close.svg" class="icon-close-search icon-close-search-contacts">
+                    </form>
                 </div>
             </div>
 
-            <div class="chats-container chats-container_shown">
+            <div class="chats-container chats-container-contacts chats-container_shown">
 
                 <div class="contacts-item">
                     <div class="avatar">
@@ -476,6 +480,9 @@
                     </div>
                 </div>
 
+            </div>
+            <div class="search-results-container search-results-container-contacts">
+                
             </div>
 
         </div>

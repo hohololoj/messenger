@@ -1401,7 +1401,7 @@ button {
   padding-right: 12px;
 }
 
-.section-app .actions-block_active .search-container .search .discover-search-form {
+.section-app .actions-block_active .search-container .search .search-form {
   width: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1409,12 +1409,12 @@ button {
   position: relative;
 }
 
-.section-app .actions-block_active .search-container .search .discover-search-form .icon-close-search {
+.section-app .actions-block_active .search-container .search .search-form .icon-close-search {
   cursor: pointer;
   display: none;
 }
 
-.section-app .actions-block_active .search-container .search .discover-search-form .icon-close-search_shown {
+.section-app .actions-block_active .search-container .search .search-form .icon-close-search_shown {
   display: block;
   position: absolute;
   right: -10px;

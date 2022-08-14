@@ -1074,6 +1074,64 @@ async function search(res, search_object){
             }
             break;
         }
+        case 'contacts':{
+            let mongoClient;
+            let response;
+            try {
+                mongoClient = new MongoClient('mongodb://localhost:27017');
+                await mongoClient.connect();
+                const db = mongoClient.db('users');
+                const users = db.collection('users');
+                response = await users.find({ $or: [{nickname: {$regex: search_regexp, $options:"i"}}, {fullname: {$regex: search_regexp, $options:"i"}}] }).sort({date: '1'}).limit(10).toArray();
+                let response_obj = {};
+                response_obj.groups = [];
+                response_obj.people = [];
+                for (let i = 0; i < response.length; i++) {
+                    let thisUser_onlineStatus;
+                    if (response[i].onlineStatus != 'online') {
+                        let lastSeen = Date.now() - response[i].onlineStatus;
+                        let hours = lastSeen / 1000 / 60 / 60;
+                        if (hours < 24) {
+                            thisUser_onlineStatus = 'today'
+                        }
+                        else {
+                            if (hours < 48) {
+                                thisUser_onlineStatus = 'yesterday';
+                            }
+                            else {
+                                let date = new Date(response[i].onlineStatus);
+                                let day = date.getDay();
+                                if (day.length != 2) {
+                                    day = '0' + day;
+                                }
+                                let month = date.getMonth();
+                                month++;
+                                if (month.length != 2) {
+                                    month = '0' + month;
+                                }
+                                let year = date.getFullYear();
+                                thisUser_onlineStatus = (day + ':' + month + ':' + year)
+                            }
+                        }
+                    }
+                    else {
+                        thisUser_onlineStatus = 'online'
+                    }
+                    response_obj.people.push({
+                        avatar: response[i].avatar_path.slice(39),
+                        fullname: response[i].fullname,
+                        online: thisUser_onlineStatus,
+                        id: response[i].id
+                    })
+                }
+                res.send(response_obj)
+            }
+            catch (error) {
+                console.error('Connection to MongoDB Atlas failed!', error);
+                //process.exit();
+            }
+            break;
+        }
         default:{
             res.send({status: 'error', message:'something went wrong'});
         }

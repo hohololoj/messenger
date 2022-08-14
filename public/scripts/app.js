@@ -391,13 +391,6 @@ async function sendSearchRequest(request, range, thisForm_searchIcon, thisForm_l
                 response.json().then(function (data) {
                     thisForm_loadingIcon.classList.remove('loading-spinning-icon_shown');
                     thisForm_searchIcon.classList.add('icon-search_shown');
-                    //Приходящие данные:
-                    // {"people":
-                    //     [
-                    //         {"avatar":"C:\\Users\\hohol\\Desktop\\messenger/public/avatars/1658564870084.png","fullname":"Grigory Gusev","online":"today"},
-                    //         {"avatar":"C:\\Users\\hohol\\Desktop\\messenger/public/avatars/1658641865843.png","fullname":"Grigory Gusev","online":"online"}
-                    //     ]
-                    // }
                     let html = '';
                     if (data.people.length != 0) {
                         html += `<h1 class="search-result-title">People</h1>`;
@@ -427,7 +420,8 @@ async function sendSearchRequest(request, range, thisForm_searchIcon, thisForm_l
                             `
                         }
                     }
-                    searchResultsContainer_discover.innerHTML = html;
+                    let searchResultContainer = document.getElementsByClassName(`search-results-container-${range}`)[0];
+                    searchResultContainer.innerHTML = html;
                     const searchResults = document.getElementsByClassName('search-result-item');
                     for (let i = 0; i < searchResults.length; i++) {
                         searchResults[i].addEventListener('click', function () {

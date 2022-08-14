@@ -23,7 +23,9 @@ const notificationSettingsCheckboxes_container = document.getElementsByClassName
 const searchInputs = document.getElementsByClassName('search-input');
 const discoverSearchForm = document.getElementsByClassName('discover-search-form')[0];
 const searchResultsContainer_discover = document.getElementsByClassName('search-results-container-discover')[0];
+const searchResultsContainer_contacts = document.getElementsByClassName('search-results-container-contacts')[0];
 const actionsContainer_discover = document.getElementsByClassName('chats-container-discover')[0];
+const actionsContainer_contacts = document.getElementsByClassName('chats-container-contacts')[0];
 const discoverUserInfo = document.getElementsByClassName('modal-user-info')[0];
 const modalUserInfo_closeButton = document.getElementsByClassName('modal-user-info-close')[0];
 const createCommunity_modal = document.getElementsByClassName('modal-create-community')[0];
@@ -41,6 +43,7 @@ const editCommunity_form = document.getElementsByClassName('edit-community-secre
 const modalEditCommunity = document.getElementsByClassName('modal-edit-community')[0];
 const modalEditCommunity_buttonClose = document.getElementsByClassName('edit-community-button-close')[0];
 const modalEditCommunity_buttonSubmit = document.getElementsByClassName('edit-community-button-done')[0];
+const contactsSearchForm = document.getElementsByClassName('contacts-search-form')[0];
 
 let isScrolling = false;
 let isAbleToDrag = false;
@@ -227,10 +230,25 @@ function discoverSearchForm_handler(e){
     sendSearchRequest(input_value, 'discover', thisForm_searchIcon, thisForm_loadingIcon);
 }
 
+function contactSearchForm_handler(e){
+    e.preventDefault();
+    let thisForm_searchIcon = this.parentNode.getElementsByClassName('search-icon')[0].getElementsByClassName('icon-search')[0];
+    let thisForm_loadingIcon = this.parentNode.getElementsByClassName('search-icon')[0].getElementsByClassName('loading-spinning-icon')[0];
+    let thisForm_input = this.getElementsByClassName('search-input')[0];
+    thisForm_searchIcon.classList.remove('icon-search_shown');
+    thisForm_loadingIcon.classList.add('loading-spinning-icon_shown');
+    actionsContainer_contacts.classList.remove('chats-container_shown');
+    searchResultsContainer_contacts.classList.add('search-results-container_shown');
+    let input_value = thisForm_input.value;
+    sendSearchRequest(input_value, 'contacts', thisForm_searchIcon, thisForm_loadingIcon);
+}
+
+contactsSearchForm.addEventListener('submit', contactSearchForm_handler)
 discoverSearchForm.addEventListener('submit', discoverSearchForm_handler)
 
 for(let i = 0; i < searchInputs.length; i++){
     searchInputs[i].addEventListener('click', function(){
+        let thisInput_pageContainer = this.parentNode.parentNode.parentNode.parentNode;
         let thisForm_button_closeSearch = this.parentNode.getElementsByClassName('icon-close-search')[0]
         let thisForm_loadingIcon = this.parentNode.parentNode.getElementsByClassName('search-icon')[0].getElementsByClassName('loading-spinning-icon')[0];
         let thisForm_searchIcon = this.parentNode.parentNode.getElementsByClassName('search-icon')[0].getElementsByClassName('icon-search')[0];
@@ -240,8 +258,12 @@ for(let i = 0; i < searchInputs.length; i++){
             searchInputs[i].value = '';
             thisForm_loadingIcon.classList.remove('loading-spinning-icon_shown');
             thisForm_searchIcon.classList.add('icon-search_shown');
-            document.getElementsByClassName('search-results-container-discover')[0].classList.remove('search-results-container_shown')
-            document.getElementsByClassName('chats-container-discover')[0].classList.add('chats-container_shown')
+            let thisPage_searchResult_container = thisInput_pageContainer.getElementsByClassName('search-results-container')[0];
+            thisPage_searchResult_container.classList.remove('search-results-container_shown');
+            let thisPage_chatsContainer = thisInput_pageContainer.getElementsByClassName('chats-container')[0];
+            thisPage_chatsContainer.classList.add('chats-container_shown');
+            // document.getElementsByClassName('search-results-container-discover')[0].classList.remove('search-results-container_shown')
+            // document.getElementsByClassName('chats-container-discover')[0].classList.add('chats-container_shown')
         })
     })
 }

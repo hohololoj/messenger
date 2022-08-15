@@ -471,6 +471,9 @@ app.get('*', function (req, res) {
             break;
         }
         case '/app': {
+            setTimeout(() => {
+                notification_send('HMLElbN8LsXjUg4RSq9JONjABkmKNxi2', 'error', 'An error occurred', 'This email is already in use', 'auto')
+            }, 2000);
             if(req.query.action == 'logout'){
                 res.clearCookie('token');
                 
@@ -1450,6 +1453,22 @@ async function editCommunity(res, files, fields, token){
         console.error('Connection to MongoDB Atlas failed!', error);
         //process.exit();
     }
+}
+
+function notification_send(token, type, title, message, hide){
+    //type: note, confirm, error, friend
+    //hide: auto, action
+    //action: notification, message
+    let thisNotification = {
+        action: 'notification',
+        type: type,
+        title: title,
+        message: message,
+        hide: hide,
+    }   
+    let thisUser = WSclients[token].ws;
+    
+    thisUser.send(JSON.stringify(thisNotification));
 }
 
 app.post('*', function (req, res) {

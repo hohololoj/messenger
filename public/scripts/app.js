@@ -15,9 +15,46 @@ const privacySettings_options = document.getElementsByClassName('notification-se
 const notificationSettingsCheckboxes = document.getElementsByClassName('notification-setting-switcher');
 const notificationPreviewSettings = document.getElementsByClassName('notification-settings-group-item-input-checkbox');
 const editCommunityButtons = document.getElementsByClassName('edit-community-button-secret');
+const notification_container = document.getElementsByClassName('popup-notfication-block')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
+}
+
+socket.onmessage = function(e){
+    let thisMessage = JSON.parse(e.data);
+    switch(thisMessage.action){
+        case 'notification':{
+            showNotification(thisMessage);
+            break;
+        }
+    }
+}
+
+function showNotification(thisNotification){
+    // action: "notification"
+    // hide: "auto"
+    // message: "This email is already in use"
+    // title: "An error occurred"
+    // type: "error"
+    let html = '';
+    switch(thisNotification.type){
+        case 'error':{
+            html+=`
+            <div class="popup-notification popup-notification-error autohide">
+                <h1 class="notification-title">${thisNotification.title}</h1>
+                <span class="notification-description description-error">${thisNotification.message}</span>
+            </div>`
+            notification_container.innerHTML += html;
+            let thisAutoHide_element = document.getElementsByClassName('autohide')[0];
+            setTimeout(() => {
+                thisAutoHide_element.style.animationName = 'notification-hide';
+                setTimeout(() => {
+                    thisAutoHide_element.parentNode.remove(thisAutoHide_element);
+                }, 500);
+            }, 5000);
+        }
+    }
 }
 
 function sumbitCommunityChanges(form){

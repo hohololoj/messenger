@@ -83,6 +83,42 @@ button {
   }
 }
 
+@-webkit-keyframes notification-show {
+  0% {
+    right: 0%;
+  }
+  100% {
+    right: 300px;
+  }
+}
+
+@keyframes notification-show {
+  0% {
+    right: 0%;
+  }
+  100% {
+    right: 300px;
+  }
+}
+
+@-webkit-keyframes notification-hide {
+  0% {
+    right: 300px;
+  }
+  100% {
+    right: -300px;
+  }
+}
+
+@keyframes notification-hide {
+  0% {
+    right: 300px;
+  }
+  100% {
+    right: -300px;
+  }
+}
+
 .loading-spinning-icon {
   display: none;
 }
@@ -102,6 +138,164 @@ button {
       -ms-user-select: none;
           user-select: none;
   -webkit-user-drag: none;
+}
+
+.popup-notifications-container {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 100%;
+  position: fixed;
+  right: -300px;
+}
+
+.popup-notifications-container .popup-notfication-block {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 100%;
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: flex-start;
+  gap: 16px;
+  z-index: 1;
+}
+
+.popup-notifications-container .popup-notification {
+  width: 300px;
+  height: 150px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  position: absolute;
+  right: 0px;
+  background: white;
+  -webkit-animation-name: notification-show;
+          animation-name: notification-show;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 8px 16px;
+  -webkit-box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08), 0px 0px 48px rgba(0, 0, 0, 0.04);
+          box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08), 0px 0px 48px rgba(0, 0, 0, 0.04);
+  -webkit-transition: right 0.5s ease;
+  transition: right 0.5s ease;
+}
+
+.popup-notifications-container .popup-notification .buttons-container {
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  gap: 32px;
+}
+
+.popup-notifications-container .popup-notification .notification-title {
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 32px;
+  color: #171A1F;
+}
+
+.popup-notifications-container .popup-notification .notification-description {
+  width: 100%;
+  color: #171A1F;
+  font-size: 15px;
+  font-weight: normal;
+  height: auto;
+  display: block;
+  word-break: break-all;
+  text-align: center;
+}
+
+.popup-notifications-container .popup-notification .description-error {
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.popup-notifications-container .popup-notification .notification-button {
+  padding: 8px 24px;
+  color: white;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 24px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.popup-notifications-container .popup-notification .account-notification-link {
+  color: #248BF2;
+  cursor: pointer;
+}
+
+.popup-notifications-container .popup-notification .button-ok {
+  background: #248BF2;
+}
+
+.popup-notifications-container .popup-notification .button-confirm {
+  background: #248BF2;
+}
+
+.popup-notifications-container .popup-notification .button-cancel {
+  background: #F23051;
+}
+
+.popup-notifications-container .popup-notification:nth-child(1) {
+  top: 0;
+}
+
+.popup-notifications-container .popup-notification:nth-child(2) {
+  top: 166px;
+}
+
+.popup-notifications-container .popup-notification:nth-child(3) {
+  top: 332px;
+}
+
+.popup-notifications-container .popup-notification-error {
+  background: #f23051;
+}
+
+.popup-notifications-container .popup-notification-error .notification-title {
+  color: white;
+}
+
+.popup-notifications-container .popup-notification-error .notification-description {
+  color: white;
 }
 
 .modal-edit-community {

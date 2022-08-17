@@ -21,6 +21,24 @@ socket.onopen = function () {
     socket.send('socket connection test')
 }
 
+const notifications_settings = localStorage.getItem('notifications_settings');
+console.log(notifications_settings);
+if(notifications_settings == undefined){
+    console.log('asd');
+    fetch('/app?action=getNotificationsSettings',{
+        method: 'POST'
+    })
+    .then(
+        function (response){
+            response.json().then(function(data){
+                for(key in data){
+                    localStorage.setItem(key, data[key])
+                }
+            })
+        }
+    )
+}
+
 socket.onmessage = function(e){
     let thisMessage = JSON.parse(e.data);
     switch(thisMessage.action){

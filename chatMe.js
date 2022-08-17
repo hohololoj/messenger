@@ -40,27 +40,27 @@ const userSettings = {
         accepts: [true, false]
     },
     'PSGS':{
-        name: 'PlaySecretGroupSound',
+        name: 'playSecretGroupSound',
         accepts: [true, false]
     },
     'SCGN':{
-        name: 'ShowCommunityGroupNotifications',
+        name: 'showCommunityGroupNotifications',
         accepts: [true, false]
     },
     'PCGS':{
-        name: 'PlayCommunityGroupSound',
+        name: 'playCommunityGroupSound',
         accepts: [true, false]
     },
     'SCN':{
-        name: 'ShowCommentNotifications',
+        name: 'showCommentNotifications',
         accepts: [true, false]
     },
     'PCS':{
-        name: 'PlayCommentSound',
+        name: 'playCommentSound',
         accepts: [true, false]
     },
     'NP':{
-        name: 'NotificationPreview',
+        name: 'notificationPreview',
         accepts: [1,2]
 }
 }
@@ -471,12 +471,8 @@ app.get('*', function (req, res) {
             break;
         }
         case '/app': {
-            setTimeout(() => {
-                notification_send('HMLElbN8LsXjUg4RSq9JONjABkmKNxi2', 'error', 'An error occurred', 'This email is already in use', 'auto')
-            }, 2000);
             if(req.query.action == 'logout'){
-                res.clearCookie('token');
-                
+                res.clearCookie('token');  
             }
         }
         default: {
@@ -804,12 +800,12 @@ async function writeLogged(user) {
                 {name:'showDirectMessagesNotifications',showDirectMessagesNotifications: true},
                 {name:'playDirectMessagesSound',playDirectMessagesSound: true},
                 {name:'showSecretGroupNotifications',showSecretGroupNotifications: true},
-                {name:'PlaySecretGroupSound',PlaySecretGroupSound: true},
-                {name:'ShowCommunityGroupNotifications',ShowCommunityGroupNotifications: true},
-                {name:'PlayCommunityGroupSound',PlayCommunityGroupSound: true},
-                {name:'ShowCommentNotifications',ShowCommentNotifications: true},
-                {name:'PlayCommentSound',PlayCommentSound: true},
-                {name:'NotificationPreview',NotificationPreview: 1}
+                {name:'playSecretGroupSound',playSecretGroupSound: true},
+                {name:'showCommunityGroupNotifications',showCommunityGroupNotifications: true},
+                {name:'playCommunityGroupSound',playCommunityGroupSound: true},
+                {name:'showCommentNotifications',showCommentNotifications: true},
+                {name:'playCommentSound',playCommentSound: true},
+                {name:'notificationPreview',notificationPreview: 1}
             ]
             const thisUserSettings = userSettingsdb.collection(collectionName);
             thisUserSettings.insertMany(settings);
@@ -1467,8 +1463,33 @@ function notification_send(token, type, title, message, hide){
         hide: hide,
     }   
     let thisUser = WSclients[token].ws;
-    
     thisUser.send(JSON.stringify(thisNotification));
+}
+
+async function getNotificationsSettings(res, token){
+    let mongoClient;
+    try {
+        mongoClient = new MongoClient('mongodb://localhost:27017');
+        await mongoClient.connect();
+        const loggeddb = mongoClient.db('logged');
+        const tokens = loggeddb.collection('tokens');
+        let response = await tokens.findOne({token: token});
+        let thisUser_id = response.id;
+        let thisUser_settingsCollection = `user-${thisUser_id}`;
+        const settingsdb = mongoClient.db('user-settings');
+        const collection = settingsdb.collection(thisUser_settingsCollection);
+        let thisUser_settings = await collection.find({}).toArray();
+        let response_obj = {}
+        for(let i = 2; i < thisUser_settings.length; i++){
+            let thisSetting_name = thisUser_settings[i].name;
+            let thisSetting_value = thisUser_settings[i][thisSetting_name];
+            response_obj[thisSetting_name] = thisSetting_value;
+        }
+        res.send(response_obj);
+    } catch (error) {
+        console.error('Connection to MongoDB Atlas failed!', error);
+        //process.exit();
+    }
 }
 
 app.post('*', function (req, res) {
@@ -1608,6 +1629,10 @@ app.post('*', function (req, res) {
             form.parse(req, function(err, fields, files){
                 editCommunity(res, files, fields, req.signedCookies.token)
             })
+        }
+        case 'getNotificationsSettings':{
+            getNotificationsSettings(res, req.signedCookies.token);
+            break;
         }
     }
 })

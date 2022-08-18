@@ -655,7 +655,9 @@ async function write_user(token_val, res, fields, files) {
         dataOfBirth_year: '',
         website: '',
         vk: '',
-        fullname: `${thisUser_name} ${thisUser_surname}`
+        fullname: `${thisUser_name} ${thisUser_surname}`,
+        offlineNotifications: '',
+        contacts: ''
     }
     try {
         mongoClient = new MongoClient('mongodb://localhost:27017');
@@ -1461,7 +1463,7 @@ function notification_send(token, type, title, message, hide){
         title: title,
         message: message,
         hide: hide,
-    }   
+    }       
     let thisUser = WSclients[token].ws;
     thisUser.send(JSON.stringify(thisNotification));
 }
@@ -1486,6 +1488,41 @@ async function getNotificationsSettings(res, token){
             response_obj[thisSetting_name] = thisSetting_value;
         }
         res.send(response_obj);
+    } catch (error) {
+        console.error('Connection to MongoDB Atlas failed!', error);
+        //process.exit();
+    }
+}
+
+async function addToFriends(user_toAdd_id, token, res){
+    let mongoClient;
+    try {
+        user_toAdd_id = htmlspecialchars(user_toAdd_id);
+        user_toAdd_id = parseInt(user_toAdd_id);
+        mongoClient = new MongoClient('mongodb://localhost:27017');
+        await mongoClient.connect();
+        const usersdb = mongoClient.db('users');
+        const loggeddb = mongoClient.db('logged');
+        const logged_tokens = loggeddb.collection('tokens');
+        const users = usersdb.collection('users');
+        let response = await logged_tokens.findOne({token: token});
+        let user_sending_id = response.id;
+        let user_sending_fullinfo = await users.findOne({id: user_sending_id});
+        let user_sending_fullname = user_sending_fullinfo.fullname;
+        let user_toAdd = await users.findOne({id: user_toAdd_id});
+        if(user_toAdd == undefined){
+            notification_send(token, 'error', 'User not found', 'Something went wrong', 'auto');
+            res.send({status: 'error'});
+            return false;
+        }
+        if(user_toAdd.onlineStatus != 'online'){
+
+        }
+        else{
+            let user_toAdd_token = await logged_tokens.findOne({id: user_toAdd_id});
+            user_toAdd_token = user_toAdd_token.token;
+            notification_send(user_toAdd_token, 'friends', `<span class="account-notification-link" uid="${user_sending_id}">${user_sending_fullname}</span> wants to add you in friend list`, '', 'click');
+        }
     } catch (error) {
         console.error('Connection to MongoDB Atlas failed!', error);
         //process.exit();
@@ -1632,6 +1669,11 @@ app.post('*', function (req, res) {
         }
         case 'getNotificationsSettings':{
             getNotificationsSettings(res, req.signedCookies.token);
+            break;
+        }
+        case 'addToFriends':{
+            let userAdd_id = req.body.id;
+            addToFriends(userAdd_id, req.signedCookies.token, res)
             break;
         }
     }

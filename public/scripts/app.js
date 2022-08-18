@@ -24,7 +24,6 @@ socket.onopen = function () {
 const notifications_settings = localStorage.getItem('notifications_settings');
 console.log(notifications_settings);
 if(notifications_settings == undefined){
-    console.log('asd');
     fetch('/app?action=getNotificationsSettings',{
         method: 'POST'
     })
@@ -41,8 +40,10 @@ if(notifications_settings == undefined){
 
 socket.onmessage = function(e){
     let thisMessage = JSON.parse(e.data);
+    console.log('notification received', thisMessage);
     switch(thisMessage.action){
         case 'notification':{
+            console.log('notification received');
             showNotification(thisMessage);
             break;
         }
@@ -56,6 +57,7 @@ function showNotification(thisNotification){
     // title: "An error occurred"
     // type: "error"
     let html = '';
+    console.log(`notification received`, thisNotification);
     switch(thisNotification.type){
         case 'error':{
             html+=`
@@ -63,14 +65,30 @@ function showNotification(thisNotification){
                 <h1 class="notification-title">${thisNotification.title}</h1>
                 <span class="notification-description description-error">${thisNotification.message}</span>
             </div>`
+            
             notification_container.innerHTML += html;
             let thisAutoHide_element = document.getElementsByClassName('autohide')[0];
             setTimeout(() => {
                 thisAutoHide_element.style.animationName = 'notification-hide';
                 setTimeout(() => {
-                    thisAutoHide_element.parentNode.remove(thisAutoHide_element);
+                    console.log(thisAutoHide_element);
+                    console.log(thisAutoHide_element.parentNode);
+                    thisAutoHide_element.parentNode.removeChild(thisAutoHide_element);
                 }, 500);
             }, 5000);
+            break;
+        }
+        case 'friends':{
+            html+=`
+            <div class="popup-notification popup-notification-friend">
+                <h1 class="notification-title">${thisNotification.title}</h1>
+                <div class="buttons-container">
+                    <button class="notification-button button-confirm">Accept</button>
+                    <button class="notification-button button-cancel">Reject</button>
+                </div>
+            </div>`
+            notification_container.innerHTML += html;
+            break;
         }
     }
 }
@@ -390,7 +408,7 @@ function fillUserInfoModal(body) {
             <div class="user-actions-block">
                 <div class="user-actions-block-item"><img src="./icons/icon-mute.svg"> Mute notifications</div>
                 <div class="user-actions-block-item"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>
-                <div class="user-actions-block-item"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>
+                <div class="user-actions-block-item button-add-to-friends" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>
                 <div class="user-actions-block-item"><img src="./icons/icon-copy.svg"> Copy nickname</div>
                 <div class="user-actions-block-item"><img src="./icons/icon-report.svg"> Report for spam</div>
             </div>
@@ -410,6 +428,23 @@ function fillUserInfoModal(body) {
                 </div>
             </div>
     `
+    document.getElementsByClassName('button-add-to-friends')[0].addEventListener('click', function(){
+        let thisUser_id = this.getAttribute('uid');
+        let response = fetch('/app?action=addToFriends',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify({id: thisUser_id})
+        })
+        .then(
+            function (response){
+                response.json().then(function(data){
+                    console.log(data);
+                })
+            }
+        )
+    })
 }
 
 //Приходящие данные

@@ -76,6 +76,7 @@ button{
     height: 100%;
     position: fixed;
     right: -300px;
+    z-index: 999;
     .popup-notfication-block{
         width: fit-content;
         height: 100%;
@@ -87,6 +88,7 @@ button{
         z-index: 1;
     }
     .popup-notification{
+        z-index: 999;
         width: 300px;
         height: 150px;
         border-top-left-radius: 8px;
@@ -1545,6 +1547,10 @@ button{
                 }
             }
         }
+    }
+    .actions-block-contacts{
+        width: calc(100% + 1px);
+        border-right: 1px solid rgba($color: #000000, $alpha: 0.08);
     }
     .body{
         overflow-y: scroll;

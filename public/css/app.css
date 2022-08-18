@@ -147,6 +147,7 @@ button {
   height: 100%;
   position: fixed;
   right: -300px;
+  z-index: 999;
 }
 
 .popup-notifications-container .popup-notfication-block {
@@ -170,6 +171,7 @@ button {
 }
 
 .popup-notifications-container .popup-notification {
+  z-index: 999;
   width: 300px;
   height: 150px;
   border-top-left-radius: 8px;
@@ -2182,6 +2184,11 @@ button {
 
 .section-app .actions-block_active .settings-container .settings-group-item .settings-item_active .description {
   color: white;
+}
+
+.section-app .actions-block-contacts {
+  width: calc(100% + 1px);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .section-app .body {

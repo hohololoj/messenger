@@ -165,6 +165,15 @@ function generateRegistrationCode() {
     return code;
 }
 
+function generateCache_id() {
+    let timestamp = Date.now().toString();
+    let code = '';
+    for (let i = 0; i < 10; i++) {
+        code += timestamp[timestamp.length - 1 - i];
+    }
+    return code;
+}
+
 async function writeCode(code, email) {
     let mongoClient;
     try {
@@ -252,6 +261,16 @@ function email_validate(email) {
 }
 
 function generate_token(length) {
+    var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'.split('');
+    var b = [];
+    for (var i = 0; i < length; i++) {
+        var j = (Math.random() * (a.length - 1)).toFixed(0);
+        b[i] = a[j];
+    }
+    return b.join('');
+}
+
+function generate_cache_id(length) {
     var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'.split('');
     var b = [];
     for (var i = 0; i < length; i++) {
@@ -1505,6 +1524,8 @@ async function addToFriends(user_toAdd_id, token, res){
         const loggeddb = mongoClient.db('logged');
         const logged_tokens = loggeddb.collection('tokens');
         const users = usersdb.collection('users');
+        const cachedb = mongoClient.db('localcache');
+        const friends_requests = cachedb.collection('friends_requests');
         let response = await logged_tokens.findOne({token: token});
         let user_sending_id = response.id;
         let user_sending_fullinfo = await users.findOne({id: user_sending_id});
@@ -1514,6 +1535,13 @@ async function addToFriends(user_toAdd_id, token, res){
             notification_send(token, 'error', 'User not found', 'Something went wrong', 'auto');
             res.send({status: 'error'});
             return false;
+        }
+        const friends_request_obj = {
+            from: user_sending_id,
+            to: user_toAdd_id
+        }
+        if(await friends_requests.findOne({from: user_sending_id, to: user_toAdd_id}) == undefined){
+            friends_requests.insertOne({id: generateCache_id(),from: friends_request_obj.from, to: friends_request_obj.to});
         }
         if(user_toAdd.onlineStatus != 'online'){
 
@@ -1526,6 +1554,54 @@ async function addToFriends(user_toAdd_id, token, res){
     } catch (error) {
         console.error('Connection to MongoDB Atlas failed!', error);
         //process.exit();
+    }
+}
+
+async function friendRequestResponse_handler(token, answer, from, res){
+    from = parseInt(from)
+    let mongoClient;
+    mongoClient = new MongoClient('mongodb://localhost:27017');
+    await mongoClient.connect();
+    const cachedb = mongoClient.db('localcache');
+    const friends_requests = cachedb.collection('friends_requests');
+    const usersdb = mongoClient.db('users');
+    const users = usersdb.collection('users');
+    const loggeddb = mongoClient.db('logged');
+    const tokens = loggeddb.collection('tokens');
+    let reciever_id = await tokens.findOne({ token: token });
+    reciever_id = reciever_id.id;
+    switch(answer){
+        case 'accept':{
+            let thisRequest = await friends_requests.findOne({from: from, to: parseInt(reciever_id)});
+            console.log({from: parseInt(from), to: parseInt(reciever_id)});
+            console.log('request found: ', thisRequest);
+            if(thisRequest != undefined){
+                //Запрос найден в бд кэш
+                let sender_info = await users.findOne({id: from});
+                console.log({id: from});
+                //Находится имя-фамилия юзера
+                if(sender_info == undefined){res.send({status: 'error'}); notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');}
+                if(sender_info.onlineStatus == 'online'){//Проверяется онлайн статус для того чтобы определить записать note в бд или отправить сразу
+                    let receiver_info = await users.findOne({id: reciever_id});
+                    let sender_token = await tokens.findOne({id: from});
+                    sender_token = sender_token.token;
+                    notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'accepted your friend request', 'auto');
+                }
+            }
+            else{
+                res.send({status: 'error'})
+                notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');
+            }
+            break;
+        }
+        case 'reject':{
+
+            break;
+        }
+        default:{
+            res.send({status: 'error'});
+            notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');
+        }
     }
 }
 
@@ -1674,6 +1750,12 @@ app.post('*', function (req, res) {
         case 'addToFriends':{
             let userAdd_id = req.body.id;
             addToFriends(userAdd_id, req.signedCookies.token, res)
+            break;
+        }
+        case 'friendRequestResponse':{
+            let answer = req.body.answer;
+            let from = req.body.from;
+            friendRequestResponse_handler(req.signedCookies.token, answer, from, res);
             break;
         }
     }

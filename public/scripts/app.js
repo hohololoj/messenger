@@ -50,6 +50,36 @@ socket.onmessage = function(e){
     }
 }
 
+function hideNotification(el){
+    el.style.animationName = 'notification-hide';
+    setTimeout(() => {
+        el.parentNode.removeChild(el);
+    }, 500);
+}
+
+function send_friendRequestResponse(type, from){
+    let response_obj = {
+        answer: type,
+        from: from
+    }
+    fetch('app/?action=friendRequestResponse',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(response_obj)
+    })
+    .then(
+        function (response){
+            response.json().then(function(data){
+                if(data.toadd_contact){
+                    
+                }
+            })
+        }
+    )
+}
+
 function showNotification(thisNotification){
     // action: "notification"
     // hide: "auto"
@@ -69,12 +99,7 @@ function showNotification(thisNotification){
             notification_container.innerHTML += html;
             let thisAutoHide_element = document.getElementsByClassName('autohide')[0];
             setTimeout(() => {
-                thisAutoHide_element.style.animationName = 'notification-hide';
-                setTimeout(() => {
-                    console.log(thisAutoHide_element);
-                    console.log(thisAutoHide_element.parentNode);
-                    thisAutoHide_element.parentNode.removeChild(thisAutoHide_element);
-                }, 500);
+                hideNotification(thisAutoHide_element);
             }, 5000);
             break;
         }
@@ -83,12 +108,41 @@ function showNotification(thisNotification){
             <div class="popup-notification popup-notification-friend">
                 <h1 class="notification-title">${thisNotification.title}</h1>
                 <div class="buttons-container">
-                    <button class="notification-button button-confirm">Accept</button>
-                    <button class="notification-button button-cancel">Reject</button>
+                    <button class="notification-button button-confirm friend-request-accept">Accept</button>
+                    <button class="notification-button button-cancel friend-request-reject">Reject</button>
                 </div>
             </div>`
             notification_container.innerHTML += html;
+            const thisNotification_buttonAccept = document.getElementsByClassName('friend-request-accept')[0];
+            const thisNotification_buttonReject = document.getElementsByClassName('friend-request-reject')[0];
+            thisNotification_buttonAccept.addEventListener('click', function(){
+                let from = this.parentNode.parentNode.getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
+                send_friendRequestResponse('accept', from);
+                let thisNote = document.getElementsByClassName('popup-notification-friend')[0];
+                hideNotification(thisNote);
+            })
+            thisNotification_buttonReject.addEventListener('click', function(){
+                let from = this.parentNode.parentNode.getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
+                send_friendRequestResponse('reject', from);
+                let thisNote = document.getElementsByClassName('popup-notification-friend')[0];
+                hideNotification(thisNote);
+            })
             break;
+        }
+        case 'alert':{
+            html+= `
+            <div class="popup-notification popup-notification-alert">
+                <h1 class="notification-title">${thisNotification.title}</h1>
+                <span class="notification-description">${thisNotification.message}</span>
+                <button class="notification-button button-ok alert-button-ok">OK</button>
+            </div>
+            `
+            notification_container.innerHTML += html;
+            const buttonOK = document.getElementsByClassName('alert-button-ok')[0];
+            const thisNote = document.getElementsByClassName('popup-notification-alert')[0];
+            buttonOK.addEventListener('click', function() {
+                hideNotification(thisNote);
+            })
         }
     }
 }

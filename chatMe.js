@@ -316,6 +316,52 @@ async function getUserInfo(token) {
         const usersdb = mongoClient.db('users');
         const users = usersdb.collection('users');
         let thisUser = await users.findOne({ id: user_id });
+        let thisUser_contacts = [];
+        for(let i = 0; i < thisUser.contacts.length; i++){
+            let currentUser_id = thisUser.contacts[i];
+            let currentUser_info = await users.findOne({ id: currentUser_id });
+            let onlineStatus_classPart;
+            let onlineStatus_text;
+            if (currentUser_info.onlineStatus == 'online') {
+                onlineStatus_classPart = 'online';
+                onlineStatus_text = 'online'
+            }
+            else {
+                onlineStatus_classPart = 'offline';
+                let lastSeen = Date.now() - currentUser_info.onlineStatus;
+                let hours = lastSeen / 1000 / 60 / 60;
+                if (hours < 24) {
+                    onlineStatus_text = 'today'
+                }
+                else {
+                    if (hours < 48) {
+                        onlineStatus_text = 'yesterday';
+                    }
+                    else {
+                        let date = new Date(onlineStatus_text);
+                        let day = date.getDay();
+                        if (day.length != 2) {
+                            day = '0' + day;
+                        }
+                        let month = date.getMonth();
+                        month++;
+                        if (month.length != 2) {
+                            month = '0' + month;
+                        }
+                        let year = date.getFullYear();
+                        onlineStatus_text = (day + ':' + month + ':' + year)
+                    }
+                }
+            }
+            console.log(onlineStatus_text);
+            thisUser_contacts.push({
+                uid: currentUser_id,
+                fullname: currentUser_info.fullname,
+                avatar_path: currentUser_info.avatar_path.slice(39),
+                onlineStatus_classPart: onlineStatus_classPart,
+                onlineStatus_text: `last seen ${onlineStatus_text}`
+            })
+        }
         const invitationsdb = mongoClient.db('invitations');
         const invitations = invitationsdb.collection('invitations');
         let hasInvitationLink = await invitations.findOne({id: user_id});
@@ -339,7 +385,7 @@ async function getUserInfo(token) {
         let thisUser_groupsAdmin = await list.find({creator_id: user_id}).toArray();
         thisUser_groupsAdmin = {thisUser_groupsAdmin: thisUser_groupsAdmin}
         // let thisUser_groups = ''
-        thisUser = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin);
+        thisUser = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin, {thisUser_contacts: thisUser_contacts});
         return thisUser;
     }
     catch (error) {
@@ -1166,7 +1212,7 @@ function findSettingProperty(settings, name){
     }
 }
 
-async function getFullInfo(type, id, res){
+async function getFullInfo(type, id, res){ //Полная инфа о юзере
     switch(type){
         case 'user':{
             let mongoClient;
@@ -1487,6 +1533,12 @@ function notification_send(token, type, title, message, hide){
     thisUser.send(JSON.stringify(thisNotification));
 }
 
+function send_socket_message(token, message){
+    let thisMessage = JSON.stringify(message);
+    let thisUser = WSclients[token].ws;
+    thisUser.send(thisMessage);
+}
+
 async function getNotificationsSettings(res, token){
     let mongoClient;
     try {
@@ -1569,6 +1621,7 @@ async function friendRequestResponse_handler(token, answer, from, res){
     const loggeddb = mongoClient.db('logged');
     const tokens = loggeddb.collection('tokens');
     let reciever_id = await tokens.findOne({ token: token });
+    // reciever_token = token
     reciever_id = reciever_id.id;
     switch(answer){
         case 'accept':{
@@ -1578,14 +1631,67 @@ async function friendRequestResponse_handler(token, answer, from, res){
             if(thisRequest != undefined){
                 //Запрос найден в бд кэш
                 let sender_info = await users.findOne({id: from});
-                console.log({id: from});
                 //Находится имя-фамилия юзера
                 if(sender_info == undefined){res.send({status: 'error'}); notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');}
                 if(sender_info.onlineStatus == 'online'){//Проверяется онлайн статус для того чтобы определить записать note в бд или отправить сразу
                     let receiver_info = await users.findOne({id: reciever_id});
                     let sender_token = await tokens.findOne({id: from});
                     sender_token = sender_token.token;
+                    let sender_info = await users.findOne({id: from});
                     notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'accepted your friend request', 'auto');
+                    let reciever_contacts = await users.findOne({id: reciever_id});
+                    reciever_contacts = reciever_contacts.contacts;
+                    if(reciever_contacts.length > 0){
+                        if(reciever_contacts.indexOf(from) == -1){
+                            reciever_contacts.push(from);
+                        }
+                    }
+                    else{
+                        reciever_contacts = [];
+                        reciever_contacts[0] = from;
+                    }
+                    await users.updateOne({id: reciever_id}, {
+                        $set: {
+                            contacts: reciever_contacts
+                        }
+                    })
+                    let sender_contacts = sender_info.contacts;
+                    if(sender_contacts.length > 0){
+                        if(sender_contacts.indexOf(reciever_id) == -1){
+                            sender_contacts.push(reciever_id)
+                        }
+                    }
+                    else{
+                        sender_contacts = [];
+                        sender_contacts[0] = reciever_id;
+                    }
+                    await users.updateOne({id: from}, {
+                        $set: {
+                            contacts: sender_contacts
+                        }
+                    })
+                    let message = {
+                        type: 'system',
+                        context: 'contacts',
+                        toadd: {
+                            fullname: sender_info.fullname,
+                            avatar_path: sender_info.avatar_path,
+                            onlineStatus: sender_info.onlineStatus
+                        }
+                    }
+                    send_socket_message(token, message)
+                    message = {
+                        type: 'system',
+                        context: 'contacts',
+                        toadd: {
+                            fullname: receiver_info.fullname,
+                            avatar_path: receiver_info.avatar_path,
+                            onlineStatus: receiver_info.onlineStatus
+                        }
+                    }
+                    send_socket_message(sender_token, message)
+                    notification_send(token, 'alert', `${sender_info.fullname}`, 'added to your contacts list', 'auto');
+                    notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'added to your contacts list', 'auto');
                 }
             }
             else{

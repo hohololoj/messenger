@@ -451,39 +451,25 @@
                 </div>
             </div>
 
-            <div class="chats-container chats-container-contacts chats-container_shown">
-
-                <div class="contacts-item">
+            <div class="chats-container chats-container-contacts chats-container_shown" uid="{{uid}}">
+                {{#each thisUser_contacts}}
+                <div class="contacts-item contacts-item_{{onlineStatus_classPart}}">
                     <div class="avatar">
+                        <img src="{{avatar_path}}" class="contacts-avatar">
                         <div class="online-status"></div>
                     </div>
 
                     <div class="contacts-content">
                         <div class="contacts-title">
-                            <div class="user-name">Jeff Besos</div>
+                            <div class="user-name">{{fullname}}</div>
                             <div class="online-status-text">
-                                <p class="last-online">last seen 3 minutes ago</p>
-                                <!-- <p class="online">online</p> -->
+                                <p class="last-online">{{onlineStatus_text}}</p>
+                                <p class="online">{{onlineStatus_text}}</p>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="contacts-item">
-                    <div class="avatar">
-                        <div class="online-status"></div>
-                    </div>
-
-                    <div class="contacts-content">
-                        <div class="contacts-title">
-                            <div class="user-name">Jeff Besos</div>
-                            <div class="online-status-text">
-                                <!-- <p class="last-online">last seen 3 minutes ago</p> -->
-                                <p class="online">online</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{/each}}
 
             </div>
             <div class="search-results-container search-results-container-contacts">

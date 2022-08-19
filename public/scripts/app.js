@@ -69,15 +69,6 @@ function send_friendRequestResponse(type, from){
         },
         body: JSON.stringify(response_obj)
     })
-    .then(
-        function (response){
-            response.json().then(function(data){
-                if(data.toadd_contact){
-                    
-                }
-            })
-        }
-    )
 }
 
 function showNotification(thisNotification){

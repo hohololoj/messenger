@@ -1864,7 +1864,17 @@ button {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: red;
+  position: relative;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item .avatar .contacts-avatar {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
+  border-radius: 50%;
 }
 
 .section-app .actions-block_active .chats-container .contacts-item .avatar .online-status {
@@ -1873,9 +1883,9 @@ button {
   border-radius: 50%;
   background: #398FE5;
   border: 2px solid #398FE5;
-  position: relative;
-  left: 80%;
+  position: absolute;
   top: 80%;
+  left: 80%;
 }
 
 .section-app .actions-block_active .chats-container .contacts-item .contacts-content {
@@ -1892,9 +1902,9 @@ button {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
 }
 
 .section-app .actions-block_active .chats-container .contacts-item .contacts-content .contacts-title .user-name {
@@ -1922,8 +1932,32 @@ button {
   color: white;
 }
 
+.section-app .actions-block_active .chats-container .contacts-item:hover .online-status {
+  border: 2px solid white;
+}
+
 .section-app .actions-block_active .chats-container .contacts-item:hover .online-status-text p {
   color: white !important;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item_offline .online {
+  display: none;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item_offline .online-status {
+  display: none;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item_offline .last-online {
+  display: block;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item_online .last-online {
+  display: none;
+}
+
+.section-app .actions-block_active .chats-container .contacts-item_online .online-status {
+  display: block;
 }
 
 .section-app .actions-block_active .chats-container .notifications-menu-item {

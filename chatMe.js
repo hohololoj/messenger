@@ -126,6 +126,49 @@ async function writeToken(token, email) {
     }
 }
 
+async function mongoRequest(dbName, collectionName, requestType, range, request){
+    let mongoClient;
+    try {
+        mongoClient = new MongoClient('mongodb://localhost:27017');
+        await mongoClient.connect();
+        const db = mongoClient.db(dbName);
+        const collection = db.collection(collectionName);
+        switch(requestType){
+            case 'get':{
+                if(range == 'one'){
+                    let response = await collection.findOne(request);
+                    return response;
+                }
+                if(range == 'many'){
+                    let response = await collection.find(request).toArray();
+                    return response;
+                }
+                break;
+            }
+            case 'put':{
+                if(range == 'one'){
+                    await collection.insertOne(request);
+                    return true;
+                }
+                if(range == 'many'){
+                    await collection.insertMany(request);
+                    return true;
+                }
+                break;
+            }
+            case 'update':{
+                collection.updateOne(request.condition, {
+                    $set: request.toUpdate
+                })
+                break;
+            }
+        }
+    } catch (error) {
+        console.error('Connection to MongoDB Atlas failed!', error);
+        //process.exit();
+    }
+}
+
 async function checkTokenForExistance(token, email) {
     let mongoClient;
     try {
@@ -353,7 +396,6 @@ async function getUserInfo(token) {
                     }
                 }
             }
-            console.log(onlineStatus_text);
             thisUser_contacts.push({
                 uid: currentUser_id,
                 fullname: currentUser_info.fullname,
@@ -481,10 +523,29 @@ async function handleWSClientCloseConnection(req){
     })
 }
 
+async function findOfflineNotifications(ws, token){
+    let id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+    id = id.id;
+    let offlineNotifications = await mongoRequest('users', 'users', 'get', 'one', {id: id});
+    offlineNotifications = offlineNotifications.offlineNotifications;
+    if(offlineNotifications == '' || offlineNotifications == [] || offlineNotifications == undefined){
+        return false;
+    }
+    else{
+        for(let i = 0; i < offlineNotifications.length; i++){
+            console.log(1);
+            notification_send(token, offlineNotifications[i].type, offlineNotifications[i].title, offlineNotifications[i].message, offlineNotifications[i].hide)
+        }
+        mongoRequest('users', 'users', 'update', '', {condition: {id: id}, toUpdate: {offlineNotifications: ""}})
+    }
+}
+
 app.ws('/app', function(ws, req){
     handleNewWSClient(ws, req)
     ws.on('message', function(message){
-        
+        if(message == 'socket connection test'){
+            findOfflineNotifications(ws, req.signedCookies.token)
+        }
     })
     ws.on('close', function(){
         handleWSClientCloseConnection(req)
@@ -1565,6 +1626,27 @@ async function getNotificationsSettings(res, token){
     }
 }
 
+async function writeOfflineNotification(thisUser, token, type, title, message, hide){
+    if(thisUser.offlineNotifications == [] || thisUser.offlineNotifications == '' || thisUser.offlineNotifications == undefined){
+        thisUser.offlineNotifications = [];
+        thisUser.offlineNotifications.push({
+            type: type,
+            title: title,
+            message: message,
+            hide: hide
+        })
+    }
+    else{
+        thisUser.offlineNotifications.push({
+            type: type,
+            title: title,
+            message: message,
+            hide: hide
+        })
+    }
+    mongoRequest('users', 'users', 'update', '', {condition: {id: thisUser.id}, toUpdate: {offlineNotifications: thisUser.offlineNotifications}});
+}
+
 async function addToFriends(user_toAdd_id, token, res){
     let mongoClient;
     try {
@@ -1596,7 +1678,7 @@ async function addToFriends(user_toAdd_id, token, res){
             friends_requests.insertOne({id: generateCache_id(),from: friends_request_obj.from, to: friends_request_obj.to});
         }
         if(user_toAdd.onlineStatus != 'online'){
-
+            writeOfflineNotification(user_toAdd, null, 'friends', `<span class="account-notification-link" uid="${user_sending_id}">${user_sending_fullname}</span> wants to add you in friend list`, '', 'click')
         }
         else{
             let user_toAdd_token = await logged_tokens.findOne({id: user_toAdd_id});

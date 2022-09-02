@@ -1451,26 +1451,46 @@ button{
                     object-position: center;
                     border-radius: 50%;
                 }
-                .right-part{
-                    display: flex;
-                    flex-direction: column;
-                    .name{
-                        font-weight: 900;
-                        font-size: 15px;
-                        color: #171A1F;
-                        line-height: 24px;
+                .right-part-container{
+                    width: calc(100% - 40px);
+                    display: grid;
+                    grid-template: 1fr / 1fr 32px;
+                    gap: 16px;
+                    .right-part{
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        .name{
+                            font-weight: 900;
+                            font-size: 15px;
+                            color: #171A1F;
+                            line-height: 24px;
+                        }
+                        .online-status-last-seen{
+                            font-weight: 400;
+                            font-size: 14px;
+                            line-height: 20px;
+                            color: #71747A;
+                        }
+                        .online-status-online{
+                            font-weight: 400;
+                            font-size: 14px;
+                            line-height: 20px;
+                            color: #248BF2;
+                        }
                     }
-                    .online-status-last-seen{
-                        font-weight: 400;
-                        font-size: 14px;
-                        line-height: 20px;
-                        color: #71747A;
-                    }
-                    .online-status-online{
-                        font-weight: 400;
-                        font-size: 14px;
-                        line-height: 20px;
-                        color: #248BF2;
+                    .search-result-isFriend{
+                        width: auto;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-end;
+                        img{
+                            height: 60%;
+                            justify-self: end;
+                        }
                     }
                 }
             }

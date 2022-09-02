@@ -2046,7 +2046,19 @@ button {
   border-radius: 50%;
 }
 
-.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part {
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container {
+  width: calc(100% - 40px);
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 1fr;
+  -ms-grid-columns: 1fr 32px;
+      grid-template: 1fr / 1fr 32px;
+  gap: 16px;
+}
+
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .right-part {
+  width: 100%;
+  height: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -2054,27 +2066,50 @@ button {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
-.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part .name {
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .right-part .name {
   font-weight: 900;
   font-size: 15px;
   color: #171A1F;
   line-height: 24px;
 }
 
-.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part .online-status-last-seen {
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .right-part .online-status-last-seen {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
   color: #71747A;
 }
 
-.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part .online-status-online {
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .right-part .online-status-online {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
   color: #248BF2;
+}
+
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .search-result-isFriend {
+  width: auto;
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+}
+
+.section-app .actions-block_active .search-results-container_shown .search-result-item .right-part-container .search-result-isFriend img {
+  height: 60%;
+  -ms-grid-column-align: end;
+      justify-self: end;
 }
 
 .section-app .actions-block_active .settings-container {

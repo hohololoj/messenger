@@ -1127,7 +1127,9 @@ async function changeSettings(res, token, req) {
     }
 }
 
-async function search(res, search_object){
+async function search(res, search_object, token){
+    let idreq = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+    let requestingUser_id = idreq.id;
     let range = search_object.range;
     let request = search_object.search_request;
     let search_regexp = `.*?${request}.*?`;
@@ -1143,7 +1145,13 @@ async function search(res, search_object){
                 response = await users.find({ $or: [{nickname: {$regex: search_regexp, $options:"i"}}, {fullname: {$regex: search_regexp, $options:"i"}}] }).sort({date: '1'}).limit(10).toArray();
                 let response_obj = {};
                 response_obj.people = [];
+                let requestingUser_frindsList = await mongoRequest('users', 'users', 'get', 'one', {id: requestingUser_id});
+                requestingUser_frindsList = requestingUser_frindsList.contacts;
                 for(let i = 0; i < response.length; i++) {
+                    if(response[i].id == requestingUser_id){
+                        continue;
+                    }
+                    let isFriend = (requestingUser_frindsList.includes(response[i].id));
                     let thisUser_onlineStatus;
                     if(response[i].onlineStatus != 'online'){
                         let lastSeen = Date.now() - response[i].onlineStatus;
@@ -1178,7 +1186,8 @@ async function search(res, search_object){
                         avatar: response[i].avatar_path.slice(39),
                         fullname: response[i].fullname,
                         online: thisUser_onlineStatus,
-                        id: response[i].id
+                        id: response[i].id,
+                        isFriend: isFriend
                     })
                 }
                 const groupsdb = mongoClient.db('groups');
@@ -1273,12 +1282,17 @@ function findSettingProperty(settings, name){
     }
 }
 
-async function getFullInfo(type, id, res){ //Полная инфа о юзере
+async function getFullInfo(type, id, res, token){ //Полная инфа о юзере
     switch(type){
         case 'user':{
             let mongoClient;
             let response;
             try {
+                let requestingUser_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+                requestingUser_id = requestingUser_id.id;
+                let requestingUser_frindsList = await mongoRequest('users', 'users', 'get', 'one', {id: requestingUser_id});
+                requestingUser_frindsList = requestingUser_frindsList.contacts;
+                let isFriend = requestingUser_frindsList.includes(id);
                 mongoClient = new MongoClient('mongodb://localhost:27017');
                 await mongoClient.connect();
                 const db = mongoClient.db('users');
@@ -1361,7 +1375,8 @@ async function getFullInfo(type, id, res){ //Полная инфа о юзере
                     dateOfBirth: (birthday+' '+months[birthmonth]+' '+ response.dateOfBirth_year+', '+age+'y.o.'),
                     joined: joined,
                     about: response.about,
-                    vkshort: vkshort[0]
+                    vkshort: vkshort[0],
+                    isFriend: isFriend,
                 }
                 res.send(requset_response);
             }
@@ -1887,13 +1902,13 @@ app.post('*', function (req, res) {
             break;
         }
         case 'search':{
-            search(res, req.body);
+            search(res, req.body, req.signedCookies.token);
             break;
         }
         case 'getFullInfo':{
             let type = req.body.type;
             let id = req.body.id;
-            getFullInfo(type, parseInt(id), res)
+            getFullInfo(type, parseInt(id), res, req.signedCookies.token);
             break;
         }
         case 'createCommunity':{

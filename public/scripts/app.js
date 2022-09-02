@@ -442,6 +442,13 @@ function fillUserInfoModal(body) {
     let emailhref = (body.email != 'hidden') ? `mailto:${body.email}` : '" style="pointer-events: none;';
     let location = (body.location != '') ? `<a href="https://www.google.com/maps/place/${body.location}" target="_blank"><div class="user-quick-info-item"><img src="./icons/icon-location.svg"> ${body.location}</div></a>` : '';
     let vk = (body.vk != '') ? `<a href="https://www.${body.vk}" target="_blank"><div class="user-quick-info-item"><img src="./icons/icon-vk.svg"> ${body.vkshort}</div></a>` : '';
+    let isFriend_toFill_content = ``;
+    if(body.isFriend){
+        isFriend_toFill_content = `<div class="user-actions-block-item button-remove-from-friends" uid="${body.id}"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>`
+    }
+    if(!body.isFriend){
+        isFriend_toFill_content = `<div class="user-actions-block-item button-add-to-friends" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>`
+    }
     modal.innerHTML = `
     <div class="user-info-block-left">
             <img src="${body.avatar}" class="user-info-avatar">
@@ -452,8 +459,7 @@ function fillUserInfoModal(body) {
             <button class="send-message-button" to="${body.id}">Send message</button>
             <div class="user-actions-block">
                 <div class="user-actions-block-item"><img src="./icons/icon-mute.svg"> Mute notifications</div>
-                <div class="user-actions-block-item"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>
-                <div class="user-actions-block-item button-add-to-friends" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>
+                ${isFriend_toFill_content}
                 <div class="user-actions-block-item"><img src="./icons/icon-copy.svg"> Copy nickname</div>
                 <div class="user-actions-block-item"><img src="./icons/icon-report.svg"> Report for spam</div>
             </div>
@@ -530,12 +536,22 @@ async function sendSearchRequest(request, range, thisForm_searchIcon, thisForm_l
                     if (data.people.length != 0) {
                         html += `<h1 class="search-result-title">People</h1>`;
                         for (let i = 0; i < data.people.length; i++) {
+                            let isFriend = ``;
+                            if(data.people[i].isFriend == true){
+                                isFriend = `
+                                    <div class="search-result-isFriend">
+                                        <img src="/icons/menu-icons/icon-friends.svg">
+                                    </div>`;
+                            }
                             html += `
                                 <div class="search-result-item" type="user" uid=${data.people[i].id}>
                                     <img src="${data.people[i].avatar}" class="search-result-avatar">
-                                    <div class="right-part">
-                                        <p class="name">${data.people[i].fullname.toString()}</p>
-                                        ${findOnlineStatus(data.people[i].online)}
+                                    <div class="right-part-container">
+                                        <div class="right-part">
+                                            <p class="name">${data.people[i].fullname.toString()}</p>
+                                            ${findOnlineStatus(data.people[i].online)}
+                                        </div>
+                                        ${isFriend}
                                     </div>
                                 </div>
                             `

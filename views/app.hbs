@@ -455,7 +455,7 @@
                 {{#each thisUser_contacts}}
                 <div class="contacts-item contacts-item_{{onlineStatus_classPart}}">
                     <div class="avatar">
-                        <img src="{{avatar_path}}" class="contacts-avatar">
+                        <img src="{{avatar_path}}" class="contacts-avatar" uid="{{uid}}">
                         <div class="online-status"></div>
                     </div>
 
@@ -839,6 +839,10 @@
                     </div>
                 </div>
                 <!-- Окно с пустым чатом -->
+            </div>
+
+            <div class="contacts-body actions-body ">
+                
             </div>
 
             <!-- Боди discover -->

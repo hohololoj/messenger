@@ -173,7 +173,7 @@ button {
 .popup-notifications-container .popup-notification {
   z-index: 999;
   width: 300px;
-  height: 150px;
+  height: auto;
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
   position: absolute;
@@ -191,6 +191,7 @@ button {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  gap: 8px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
@@ -1902,9 +1903,10 @@ button {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  gap: 8px;
 }
 
 .section-app .actions-block_active .chats-container .contacts-item .contacts-content .contacts-title .user-name {

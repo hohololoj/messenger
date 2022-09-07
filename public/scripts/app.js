@@ -16,6 +16,7 @@ const notificationSettingsCheckboxes = document.getElementsByClassName('notifica
 const notificationPreviewSettings = document.getElementsByClassName('notification-settings-group-item-input-checkbox');
 const editCommunityButtons = document.getElementsByClassName('edit-community-button-secret');
 const notification_container = document.getElementsByClassName('popup-notfication-block')[0];
+const contactsContainer = document.getElementsByClassName('chats-container-contacts')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
@@ -40,21 +41,57 @@ if(notifications_settings == undefined){
 
 socket.onmessage = function(e){
     let thisMessage = JSON.parse(e.data);
-    console.log('notification received', thisMessage);
+    // console.log('notification received', thisMessage);
     switch(thisMessage.action){
         case 'notification':{
-            console.log('notification received');
             showNotification(thisMessage);
             break;
+        }
+        case 'system':{
+            switch(thisMessage.context){
+                case 'contacts':{
+                    console.log(thisMessage);
+                    let html = `
+                        <div class="contacts-item contacts-item_${thisMessage.toadd.onlineStatus_classPart}">
+                            <div class="avatar">
+                                <img src="${thisMessage.toadd.avatar_path}" class="contacts-avatar" uid="${thisMessage.toadd.uid}">
+                                <div class="online-status"></div>
+                            </div>
+                            <div class="contacts-content">
+                                <div class="contacts-title">
+                                    <div class="user-name">${thisMessage.toadd.fullname}</div>
+                                    <div class="online-status-text">
+                                        <p class="last-online">${thisMessage.toadd.onlineStatus}</p>
+                                        <p class="online">${thisMessage.toadd.onlineStatus}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`
+                    contactsContainer.innerHTML += html;
+                    addContactsEvents()
+                    break;
+                }
+            }
         }
     }
 }
 
 function hideNotification(el){
     el.style.animationName = 'notification-hide';
-    setTimeout(() => {
+    setTimeout(() => {       
         el.parentNode.removeChild(el);
     }, 500);
+}
+
+function addContactsEvents(){
+    let contacts_avatars = document.getElementsByClassName('contacts-avatar');
+    for(let i = 0; i < contacts_avatars.length; i++){
+        contacts_avatars[i].addEventListener('click', function(){
+            let thisUser_id = this.getAttribute('uid');
+            console.log('contacts avatar ckick');
+            showSearchFullInfo('user', thisUser_id);
+        })
+    }
 }
 
 function send_friendRequestResponse(type, from){
@@ -78,7 +115,6 @@ function showNotification(thisNotification){
     // title: "An error occurred"
     // type: "error"
     let html = '';
-    console.log(`notification received`, thisNotification);
     switch(thisNotification.type){
         case 'error':{
             html+=`
@@ -104,20 +140,21 @@ function showNotification(thisNotification){
                 </div>
             </div>`
             notification_container.innerHTML += html;
-            const thisNotification_buttonAccept = document.getElementsByClassName('friend-request-accept')[0];
-            const thisNotification_buttonReject = document.getElementsByClassName('friend-request-reject')[0];
-            thisNotification_buttonAccept.addEventListener('click', function(){
-                let from = this.parentNode.parentNode.getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
-                send_friendRequestResponse('accept', from);
-                let thisNote = document.getElementsByClassName('popup-notification-friend')[0];
-                hideNotification(thisNote);
-            })
-            thisNotification_buttonReject.addEventListener('click', function(){
-                let from = this.parentNode.parentNode.getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
-                send_friendRequestResponse('reject', from);
-                let thisNote = document.getElementsByClassName('popup-notification-friend')[0];
-                hideNotification(thisNote);
-            })
+            let thisNotes = document.getElementsByClassName('popup-notification-friend');
+            for(let i = 0; i < thisNotes.length; i++){
+                thisNotes[i].getElementsByClassName('friend-request-accept')[0].addEventListener('click', function(){
+                    let from = thisNotes[i].getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
+                    thisNotes[i].parentNode.removeChild(thisNotes[i]);
+                    send_friendRequestResponse('accept', from);
+                })
+            }
+            for(let i = 0; i < thisNotes.length; i++){
+                thisNotes[i].getElementsByClassName('friend-request-reject')[0].addEventListener('click', function(){
+                    let from = thisNotes[i].getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
+                    thisNotes[i].parentNode.removeChild(thisNotes[i]);
+                    send_friendRequestResponse('reject', from);
+                })
+            }
             break;
         }
         case 'alert':{
@@ -129,11 +166,14 @@ function showNotification(thisNotification){
             </div>
             `
             notification_container.innerHTML += html;
-            const buttonOK = document.getElementsByClassName('alert-button-ok')[0];
-            const thisNote = document.getElementsByClassName('popup-notification-alert')[0];
-            buttonOK.addEventListener('click', function() {
-                hideNotification(thisNote);
-            })
+            const buttonOK = document.getElementsByClassName('alert-button-ok');
+            for(let i = 0; i < buttonOK.length; i++){
+                buttonOK[i].addEventListener('click', function() {
+                    let thisNote = this.parentNode;
+                    console.log('thisNote = ', thisNote);
+                    hideNotification(thisNote);
+                })
+            }
         }
     }
 }
@@ -444,10 +484,10 @@ function fillUserInfoModal(body) {
     let vk = (body.vk != '') ? `<a href="https://www.${body.vk}" target="_blank"><div class="user-quick-info-item"><img src="./icons/icon-vk.svg"> ${body.vkshort}</div></a>` : '';
     let isFriend_toFill_content = ``;
     if(body.isFriend){
-        isFriend_toFill_content = `<div class="user-actions-block-item button-remove-from-friends" uid="${body.id}"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>`
+        isFriend_toFill_content = `<div class="user-actions-block-item button-remove-from-friends contacts-user-action" action="remove" uid="${body.id}"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>`
     }
     if(!body.isFriend){
-        isFriend_toFill_content = `<div class="user-actions-block-item button-add-to-friends" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>`
+        isFriend_toFill_content = `<div class="user-actions-block-item button-add-to-friends contacts-user-action" action="add" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>`
     }
     modal.innerHTML = `
     <div class="user-info-block-left">
@@ -479,22 +519,41 @@ function fillUserInfoModal(body) {
                 </div>
             </div>
     `
-    document.getElementsByClassName('button-add-to-friends')[0].addEventListener('click', function(){
-        let thisUser_id = this.getAttribute('uid');
-        let response = fetch('/app?action=addToFriends',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: JSON.stringify({id: thisUser_id})
-        })
-        .then(
-            function (response){
-                response.json().then(function(data){
-                    console.log(data);
-                })
-            }
-        )
+    document.getElementsByClassName('contacts-user-action')[0].addEventListener('click', function(){
+        if (this.getAttribute('action') == 'add') {
+            let thisUser_id = this.getAttribute('uid');
+            let response = fetch('/app?action=addToFriends', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify({ id: thisUser_id })
+            })
+                .then(
+                    function (response) {
+                        response.json().then(function (data) {
+                            console.log(data);
+                        })
+                    }
+                )
+        }
+        if(this.getAttribute('action') == 'remove'){
+            let thisUser_id = this.getAttribute('uid');
+            fetch('/app?action=removeFromFriends',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify({id: thisUser_id})
+            })
+            .then(
+                function (response){
+                    response.json().then(function(data){
+                        console.log(data);
+                    })
+                }
+            )
+        }
     })
 }
 
@@ -684,3 +743,4 @@ editProfile_button.addEventListener('click', function (e) {
             }
         )
 })
+addContactsEvents()

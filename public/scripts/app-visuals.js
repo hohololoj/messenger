@@ -537,5 +537,6 @@ function makeActive(el){
     for(let i = 0; i < actionsBodies.length; i++){
         actionsBodies[i].classList.remove('actions-body_active');
     }
+    console.log(`${thisBlock}-body`);
     document.getElementsByClassName(`${thisBlock}-body`)[0].classList.add('actions-body_active');
 }

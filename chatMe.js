@@ -396,12 +396,15 @@ async function getUserInfo(token) {
                     }
                 }
             }
+            if(onlineStatus_text != 'online'){
+                onlineStatus_text = `last seen ${onlineStatus_text}`;
+            }
             thisUser_contacts.push({
                 uid: currentUser_id,
                 fullname: currentUser_info.fullname,
                 avatar_path: currentUser_info.avatar_path.slice(39),
                 onlineStatus_classPart: onlineStatus_classPart,
-                onlineStatus_text: `last seen ${onlineStatus_text}`
+                onlineStatus_text: onlineStatus_text
             })
         }
         const invitationsdb = mongoClient.db('invitations');
@@ -1706,6 +1709,35 @@ async function addToFriends(user_toAdd_id, token, res){
     }
 }
 
+function calculateLastOnline(lastOnline){
+    let lastSeen = Date.now() - lastOnline;
+    let hours = lastSeen / 1000 / 60 / 60;
+    let onlineStatus_text;
+    if (hours < 24) {
+        onlineStatus_text = 'today'
+    }
+    else {
+        if (hours < 48) {
+            onlineStatus_text = 'yesterday';
+        }
+        else {
+            let date = new Date(onlineStatus_text);
+            let day = date.getDay();
+            if (day.length != 2) {
+                day = '0' + day;
+            }
+            let month = date.getMonth();
+            month++;
+            if (month.length != 2) {
+                month = '0' + month;
+            }
+            let year = date.getFullYear();
+            onlineStatus_text = (day + ':' + month + ':' + year)
+        }
+    }
+    return ('last seen '+onlineStatus_text);
+}
+
 async function friendRequestResponse_handler(token, answer, from, res){
     from = parseInt(from)
     let mongoClient;
@@ -1730,11 +1762,10 @@ async function friendRequestResponse_handler(token, answer, from, res){
                 let sender_info = await users.findOne({id: from});
                 //Находится имя-фамилия юзера
                 if(sender_info == undefined){res.send({status: 'error'}); notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');}
-                if(sender_info.onlineStatus == 'online'){//Проверяется онлайн статус для того чтобы определить записать note в бд или отправить сразу
                     let receiver_info = await users.findOne({id: reciever_id});
                     let sender_token = await tokens.findOne({id: from});
                     sender_token = sender_token.token;
-                    let sender_info = await users.findOne({id: from});
+                    sender_info = await users.findOne({id: from});
                     notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'accepted your friend request', 'auto');
                     let reciever_contacts = await users.findOne({id: reciever_id});
                     reciever_contacts = reciever_contacts.contacts;
@@ -1766,30 +1797,56 @@ async function friendRequestResponse_handler(token, answer, from, res){
                         $set: {
                             contacts: sender_contacts
                         }
-                    })
+                    }) 
+                    let onlineStatus_classPart;
+                    let onlineStatus_value;
+                    if(sender_info.onlineStatus == 'online'){
+                        onlineStatus_classPart = 'online';
+                        onlineStatus_value = 'online';
+                    }
+                    else{
+                        onlineStatus_classPart = 'offline'
+                        onlineStatus_value = calculateLastOnline(sender_info.onlineStatus);
+                    }
                     let message = {
-                        type: 'system',
+                        action: 'system',
                         context: 'contacts',
                         toadd: {
+                            uid: sender_info.id,
                             fullname: sender_info.fullname,
-                            avatar_path: sender_info.avatar_path,
-                            onlineStatus: sender_info.onlineStatus
+                            avatar_path: sender_info.avatar_path.slice(39),
+                            onlineStatus: onlineStatus_value,
+                            onlineStatus_classPart: onlineStatus_classPart
                         }
                     }
                     send_socket_message(token, message)
+                    if(receiver_info.onlineStatus == 'online'){
+                        onlineStatus_classPart = 'online';
+                        onlineStatus_value = 'online';
+                    }
+                    else{
+                        onlineStatus_classPart = 'offline'
+                        onlineStatus_value = calculateLastOnline(receiver_info.onlineStatus);
+                    }
                     message = {
-                        type: 'system',
+                        action: 'system',
                         context: 'contacts',
                         toadd: {
+                            uid: receiver_info.id,
                             fullname: receiver_info.fullname,
-                            avatar_path: receiver_info.avatar_path,
-                            onlineStatus: receiver_info.onlineStatus
+                            avatar_path: receiver_info.avatar_path.slice(39),
+                            onlineStatus: onlineStatus_value,
+                            onlineStatus_classPart: onlineStatus_classPart
                         }
                     }
                     send_socket_message(sender_token, message)
                     notification_send(token, 'alert', `${sender_info.fullname}`, 'added to your contacts list', 'auto');
-                    notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'added to your contacts list', 'auto');
-                }
+                    if(sender_info.onlineStatus == 'online'){
+                        notification_send(sender_token, 'alert', `${receiver_info.fullname}`, 'added to your contacts list', 'auto');
+                    }
+                    else{
+                        writeOfflineNotification(receiver_info, null, 'note', `${receiver_info.fullname}`, 'added to your contacts list', 'auto')
+                    }
             }
             else{
                 res.send({status: 'error'})
@@ -1804,6 +1861,80 @@ async function friendRequestResponse_handler(token, answer, from, res){
         default:{
             res.send({status: 'error'});
             notification_send(token, 'error', 'Action failed', 'Something went wrong', 'auto');
+        }
+    }
+}
+
+async function checkFriendshipForExistance(user_sending_id, user_toDelete_id){
+    let user_sending_contactsList = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
+    user_sending_contactsList = user_sending_contactsList.contacts;
+    let user_toDelete_contactsList = await mongoRequest('users', 'users', 'get', 'one', {id: user_toDelete_id});
+    user_toDelete_contactsList = user_toDelete_contactsList.contacts;
+    if(user_sending_contactsList.includes(user_toDelete_id) && user_toDelete_contactsList.includes(user_sending_id)){
+        return true;
+    }
+    else{return false;}
+}
+
+async function removeFromFriends(user_sending_token, user_toDelete_id, res){
+
+    user_toDelete_id = parseInt(user_toDelete_id);
+    let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: user_sending_token});
+    user_sending_id = user_sending_id.id; // Айди отправляющего
+    let user_toDelete_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toDelete_id});
+    let user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
+    let user_toDelete_onlineStatus = user_toDelete_info.onlineStatus
+
+    if(user_toDelete_onlineStatus != 'online'){
+        if(checkFriendshipForExistance(user_sending_id, user_toDelete_id)){
+            //Принимающий не онлайн
+
+            let user_sending_contactsList = user_sending_info.contacts;
+            let user_toDelete_contactsList = user_toDelete_info.contacts;
+
+            let index = user_sending_contactsList.indexOf(user_toDelete_id);
+            user_sending_contactsList.splice(index, 1);
+
+            index = user_toDelete_contactsList.indexOf(user_sending_id);
+            user_toDelete_contactsList.splice(index, 1);
+
+            await mongoRequest('users', 'users', 'update', '', {condition: {id: user_sending_id}, toUpdate: {contacts: user_sending_contactsList}})
+            await mongoRequest('users', 'users', 'update', '', {condition: {id: user_toDelete_id}, toUpdate: {contacts: user_toDelete_contactsList}})
+
+            notification_send(user_sending_token, 'alert', 'User deleted from friends successfully', `<strong>${user_toDelete_info.fullname}</strong> has been successfully deleted from your frinds list`, 'auto');
+            writeOfflineNotification(user_toDelete_info, null, 'alert', 'You have been removed from friends list', `<strong>${user_sending_info.fullname}</strong> has deleted you from friends list`, 'auto')
+        }
+        else{
+            res.send({status: 'error', message: 'Something went wrong'})
+            notification_send(user_sending_token, 'error', 'User wasnt deleted from friends', 'Someting went wrong', 'auto')
+        }
+    }
+    else{
+        if(checkFriendshipForExistance(user_sending_id, user_toDelete_id)){
+            //Принимающий онлайн
+
+            let user_sending_contactsList = user_sending_info.contacts;
+            let user_toDelete_contactsList = user_toDelete_info.contacts;
+
+            let index = user_sending_contactsList.indexOf(user_toDelete_id);
+            user_sending_contactsList.splice(index, 1);
+
+            index = user_toDelete_contactsList.indexOf(user_sending_id);
+            user_toDelete_contactsList.splice(index, 1);
+
+            await mongoRequest('users', 'users', 'update', '', {condition: {id: user_sending_id}, toUpdate: {contacts: user_sending_contactsList}})
+            await mongoRequest('users', 'users', 'update', '', {condition: {id: user_toDelete_id}, toUpdate: {contacts: user_toDelete_contactsList}})
+
+            let user_toDelete_token = await mongoRequest('logged', 'tokens', 'get', 'one', {id: user_toDelete_id});
+            user_toDelete_token = user_toDelete_token.token;
+
+            notification_send(user_sending_token, 'alert', 'User deleted from friends successfully', `<strong>${user_toDelete_info.fullname}</strong> has been successfully deleted from your frinds list`, 'auto');
+            notification_send(user_toDelete_token, 'alert', 'You have been removed from friends list', `<strong>${user_sending_info.fullname}</strong> has deleted you from friends list`, 'auto');
+
+        }
+        else{
+            res.send({status: 'error', message: 'Something went wrong'})
+            notification_send(user_sending_token, 'error', 'User wasnt deleted from friends', 'Someting went wrong', 'auto')
         }
     }
 }
@@ -1959,6 +2090,12 @@ app.post('*', function (req, res) {
             let answer = req.body.answer;
             let from = req.body.from;
             friendRequestResponse_handler(req.signedCookies.token, answer, from, res);
+            break;
+        }
+        case 'removeFromFriends':{
+            let user_sending_token = req.signedCookies.token;
+            let user_toDelete_id = req.body.id
+            removeFromFriends(user_sending_token, user_toDelete_id, res)
             break;
         }
     }

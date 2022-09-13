@@ -217,7 +217,7 @@
                 <img class="icon-img icon-hover" src="./icons/menu-icons/icon-friends-hover.svg" alt="">
             </div>
 
-            <div class="menu-item menu-item-active" action="chats">
+            <div class="menu-item menu-item-active menu-item-chats" action="chats">
                 <img class="icon-img icon-default" src="./icons/menu-icons/icon-message.svg" alt="">
                 <img class="icon-img icon-hover" src="./icons/menu-icons/icon-message-hover.svg" alt="">
             </div>
@@ -791,9 +791,6 @@
 
                     </div>
                 </div>
-                <div class="chats-body-user chats-body-item" uid="uid here">
-
-                </div>
                 <!-- Окно с пустым чатом -->
                 <div class="chats-body-user-empty chats-body-item" uid="uid here">
                     <div class="chats-user-bar">
@@ -818,10 +815,132 @@
                         </div>
                     </div>
                     <div class="chats-user-body">
-                        <div class="empty-chat-info-container">
-                            <img src="./imgs/empty-chat.jpg" class="empty-chat-img">
-                            <h1 class="empty-chat-title">No messages yet</h1>
-                            <p class="empty-chat-text">Start a conversation with Grigory</p>
+                        <div class="loading-spin-container chats-user-body-item">
+                            <img src="./icons/icon-loader.svg" class="loading-spinning-icon loading-spinning-icon_shown">
+                        </div>
+                        <div class="empty-chat-info-container chats-user-body-item chats-user-body-item_active">
+                            {{!-- <div class="chat-is-empty-banner">
+                                <img src="./imgs/empty-chat.jpg" class="empty-chat-img">
+                                <h1 class="empty-chat-title">No messages yet</h1>
+                                <p class="empty-chat-text">Start a conversation with Grigory</p>
+                            </div> --}}
+                            <div class="chat-messages-container">
+                                <div class="chat-message">
+                                    <div class="chat-message-avatar-container">
+                                        <img src="./avatars/1652424721771.png">
+                                    </div>
+                                    <div class="chat-message-body">
+                                        <div class="chat-message-header">
+                                            <p class="user-name">Grigory Gusev</p>
+                                            <p class="sent-date">22:22</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <p class="message-element">asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="chat-message-avatar-container">
+                                        <img src="./avatars/1652424721771.png">
+                                    </div>
+                                    <div class="chat-message-body">
+                                        <div class="chat-message-header">
+                                            <p class="user-name">Grigory Gusev</p>
+                                            <p class="sent-date">22:22</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <p class="message-element">asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="chat-message-avatar-container">
+                                        <img src="./avatars/1652424721771.png">
+                                    </div>
+                                    <div class="chat-message-body">
+                                        <div class="chat-message-header">
+                                            <p class="user-name">Grigory Gusev</p>
+                                            <p class="sent-date">22:22</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <p class="message-element">asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="chat-message-avatar-container">
+                                        <img src="./avatars/1652424721771.png">
+                                    </div>
+                                    <div class="chat-message-body">
+                                        <div class="chat-message-header">
+                                            <p class="user-name">Grigory Gusev</p>
+                                            <p class="sent-date">22:22</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <p class="message-element">asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="chat-message-avatar-container">
+                                        <img src="./avatars/1652424721771.png">
+                                    </div>
+                                    <div class="chat-message-body">
+                                        <div class="chat-message-header">
+                                            <p class="user-name">Grigory Gusev</p>
+                                            <p class="sent-date">22:22</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <p class="message-element">asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                                asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="chats-user-input">

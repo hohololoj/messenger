@@ -530,6 +530,7 @@ function makeActive(el){
     }
     el.classList.add('menu-item-active');
     let thisBlock = el.getAttribute('action');
+    console.log(thisBlock);
     for(let i = 0; i<actionsBlocks.length; i++){
         actionsBlocks[i].classList.remove('actions-block_active');
     }

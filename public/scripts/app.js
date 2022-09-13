@@ -17,13 +17,51 @@ const notificationPreviewSettings = document.getElementsByClassName('notificatio
 const editCommunityButtons = document.getElementsByClassName('edit-community-button-secret');
 const notification_container = document.getElementsByClassName('popup-notfication-block')[0];
 const contactsContainer = document.getElementsByClassName('chats-container-contacts')[0];
+const chatContainer = document.getElementsByClassName('chats-body-user-empty')[0];
+const chat_unselected_contentBody = document.getElementsByClassName('chats-body-unselected')[0];
+const chatLoadingSpinner = document.getElementsByClassName('loading-spinning-icon')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
 }
 
+function getChat_history(id){
+    let response = fetch('url',{
+        method: '',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(
+        function (response){
+            response.json().then(function(data){
+                console.log(data);
+            })
+        }
+    )
+}
+
+function addChatEvents(){
+    const sendMessageButtons = document.getElementsByClassName('send-message-button');
+    console.log(sendMessageButtons);
+    for(let i = 0; i < sendMessageButtons.length; i++){
+        sendMessageButtons[i].addEventListener('click', function(){
+            let user_toChat_id = this.getAttribute('to');
+            chat_unselected_contentBody.classList.remove('chat_active');
+            chatContainer.classList.add('chat_active');
+            document.getElementsByClassName('actions-body_active')[0].classList.remove('actions-body_active');
+            document.getElementsByClassName('chats-body')[0].classList.add('actions-body_active');
+            document.getElementsByClassName('menu-item-active')[0].classList.remove('menu-item-active');
+            document.getElementsByClassName('menu-item-chats')[0].classList.add('menu-item-active');
+            document.getElementsByClassName('modal-user-info_active')[0].classList.remove('modal-user-info_active');
+            chatLoadingSpinner.classList.add('chats-user-body-item_active');
+            getChat_history(user_toChat_id);
+        })
+    }
+}
+
 const notifications_settings = localStorage.getItem('notifications_settings');
-console.log(notifications_settings);
 if(notifications_settings == undefined){
     fetch('/app?action=getNotificationsSettings',{
         method: 'POST'
@@ -519,6 +557,7 @@ function fillUserInfoModal(body) {
                 </div>
             </div>
     `
+    addChatEvents();
     document.getElementsByClassName('contacts-user-action')[0].addEventListener('click', function(){
         if (this.getAttribute('action') == 'add') {
             let thisUser_id = this.getAttribute('uid');

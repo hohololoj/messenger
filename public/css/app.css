@@ -2347,6 +2347,13 @@ button {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-bar .user-bar-left .user-info-text .onlineStatus_online {
+  color: #398FE5;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-bar .user-bar-left .user-info-text .onlineStatus_offline {
   color: #71747A;
 }
 
@@ -4501,5 +4508,9 @@ button {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+}
+
+.sendChatMessage_superSecretForm {
+  display: none;
 }
 /*# sourceMappingURL=app.css.map */

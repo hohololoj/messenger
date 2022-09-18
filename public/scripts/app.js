@@ -20,23 +20,69 @@ const contactsContainer = document.getElementsByClassName('chats-container-conta
 const chatContainer = document.getElementsByClassName('chats-body-user-empty')[0];
 const chat_unselected_contentBody = document.getElementsByClassName('chats-body-unselected')[0];
 const chatLoadingSpinner = document.getElementsByClassName('loading-spinning-icon')[0];
+const sendChatMessage_superSecretForm = document.getElementsByClassName('sendChatMessage_superSecretForm')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
 }
 
-function getChat_history(id){
-    let response = fetch('url',{
-        method: '',
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify(data)
+function sendChatMessage(message, files, user_toSend_id){
+    if(message != ''){
+        sendChatMessage_superSecretForm.getElementsByClassName('input-message')[0].value = message;
+        sendChatMessage_superSecretForm.getElementsByClassName('input-message')[0].setAttribute('name', 'message');
+    }
+    if(files != undefined || files.length != 0){
+        sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].files = files;
+        sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].setAttribute('name', 'files');
+    }
+    sendChatMessage_superSecretForm.getElementsByClassName('input-uid')[0].value = user_toSend_id;
+    sendChatMessage_superSecretForm.getElementsByClassName('input-uid')[0].setAttribute('name', 'id');
+
+    let thisFormObject = new FormData(sendChatMessage_superSecretForm);
+    
+    fetch('/app?action=writeMessage',{
+        method: 'POST',
+        body: thisFormObject
     })
     .then(
         function (response){
             response.json().then(function(data){
                 console.log(data);
+            })
+        }
+    )
+}
+
+function getChat_history(id){
+    console.log(id);
+    fetch('/app?action=getChatHistory',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({uid: id})
+    })
+    .then(
+        function (response){
+            response.json().then(function(data){
+                
+                let userInfo = data.userInfo;
+
+                chatContainer.getElementsByClassName('user-info-name')[0].innerHTML = userInfo.fullname;
+
+                let lastOnline_container = chatContainer.getElementsByClassName('user-info-last-online')[0];
+                if(userInfo.onlineStatus == 'online'){
+                    lastOnline_container.classList.add('onlineStatus_online');
+                    lastOnline_container.innerHTML = userInfo.onlineStatus;
+                }
+                else{
+                    lastOnline_container.classList.add('onlineStatus_offline');
+                    lastOnline_container.innerHTML = `last seen ${userInfo.onlineStatus}`;
+                }
+                
+                chatContainer.getElementsByClassName('user-avatar')[0].src = userInfo.avatar;
+
+                chatContainer.setAttribute('uid', userInfo.id);
             })
         }
     )
@@ -52,8 +98,8 @@ function addChatEvents(){
             chatContainer.classList.add('chat_active');
             document.getElementsByClassName('actions-body_active')[0].classList.remove('actions-body_active');
             document.getElementsByClassName('chats-body')[0].classList.add('actions-body_active');
-            document.getElementsByClassName('menu-item-active')[0].classList.remove('menu-item-active');
-            document.getElementsByClassName('menu-item-chats')[0].classList.add('menu-item-active');
+            // document.getElementsByClassName('menu-item-active')[0].classList.remove('menu-item-active');
+            // document.getElementsByClassName('menu-item-chats')[0].classList.add('menu-item-active');
             document.getElementsByClassName('modal-user-info_active')[0].classList.remove('modal-user-info_active');
             chatLoadingSpinner.classList.add('chats-user-body-item_active');
             getChat_history(user_toChat_id);

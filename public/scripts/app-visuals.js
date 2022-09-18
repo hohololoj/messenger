@@ -39,14 +39,42 @@ const communitySelectCategory = document.getElementsByClassName('select-category
 const communitySelectPrivacy = document.getElementsByClassName('select-privacy')[0];
 const communityCreate_button_close = document.getElementsByClassName('create-community-button-close')[0];
 const communityCreate_button_submit = document.getElementsByClassName('submit-community-creation-button ')[0];
-const editCommunity_form = document.getElementsByClassName('edit-community-secret-form ')[0];
+const editCommunity_form = document.getElementsByClassName('edit-community-secret-form')[0];
 const modalEditCommunity = document.getElementsByClassName('modal-edit-community')[0];
 const modalEditCommunity_buttonClose = document.getElementsByClassName('edit-community-button-close')[0];
 const modalEditCommunity_buttonSubmit = document.getElementsByClassName('edit-community-button-done')[0];
 const contactsSearchForm = document.getElementsByClassName('contacts-search-form')[0];
+const messageContainer = document.getElementsByClassName('message-input')[0];
+const attachFile_button = document.getElementsByClassName('attachment-button-file')[0];
+const chatFileInput_element = document.getElementsByClassName('file-input-chat')[0];
 
 let isScrolling = false;
 let isAbleToDrag = false;
+
+attachFile_button.addEventListener('click', function(){
+    chatFileInput_element.click();
+})
+
+messageContainer.addEventListener('keydown', function(e){
+    if(e.key == 'Enter' && e.shiftKey){
+        // messageContainer.innerHTML  += '<div><br></div>';
+        messageInput[i].textContent += '\n';
+        messageInput[i].focus();
+        const range = document.createRange();
+        range.selectNodeContents(messageInput[i]);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+    if(e.key == 'Enter'){
+        e.preventDefault();
+        let message = this.textContent;
+        let user_toSend_id = document.getElementsByClassName('chat_active')[0].getAttribute('uid');
+        let files = chatFileInput_element.files;
+        sendChatMessage(message, files, user_toSend_id);
+    }
+})
 
 modalEditCommunity_buttonClose.addEventListener('click', function(){
     modalEditCommunity.classList.remove('modal-edit-community_shown');

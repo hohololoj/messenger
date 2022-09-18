@@ -1649,6 +1649,11 @@ button{
                                 font-weight: 400;
                                 font-size: 14px;
                                 line-height: 20px;
+                            }
+                            .onlineStatus_online{
+                                color: #398FE5;;
+                            }
+                            .onlineStatus_offline{
                                 color: #71747A;
                             }
                         }
@@ -3123,4 +3128,7 @@ button{
             display: flex;
         }
     }
+}
+.sendChatMessage_superSecretForm{
+    display: none;
 }

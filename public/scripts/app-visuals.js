@@ -53,7 +53,7 @@ const fullScreen_slider = document.getElementsByClassName('fullscreen-slider')[0
 const fullScreen_sliderLine = document.getElementsByClassName('fullscreen-slider-line')[0];
 const fullScreen_slider_slideLeft_button = document.getElementsByClassName('fullscreen-slider-arrow-left')[0];
 const fullScreen_slider_slideRight_button = document.getElementsByClassName('fullscreen-slider-arrow-right')[0];
-const videoControls_layer = document.getElementsByClassName('video-controls');
+
 
 let fullScreenSlider_videoObjects = [];
 
@@ -63,12 +63,6 @@ let isAbleToDrag = false;
 attachFile_button.addEventListener('click', function(){
     chatFileInput_element.click();
 })
-
-for(let i = 0; i < videoControls_layer.length; i++){
-    videoControls_layer[i].addEventListener('click', function(e){
-        this.previousElementSibling.click();
-    })
-}
 
 fullScreen_slider_slideLeft_button.addEventListener('click', function(){
     fullScreenSlider_scroll('left');
@@ -80,21 +74,26 @@ fullScreen_slider_slideRight_button.addEventListener('click', function(){
 function fullScreen_modalWindow_close(){
     window.removeEventListener('keyup', handleSliderEvents, false);
     fullScreen_modalWindow.classList.remove('modal-window-fullscreen-content-view_shown');
+    for(let i = 0; i < fullScreenSlider_videoObjects.length; i++){
+        fullScreenSlider_videoObjects.shift();
+    }
 }
 
 fullScreen_modalWindow_closeButton.addEventListener('click', fullScreen_modalWindow_close, false);
 
 function fullScreenSlider_scroll(direction){
     if(direction == 'right'){
+        console.log('scrolling');
         let hperc = window.innerWidth;
         let sliderLine_width = fullScreen_sliderLine.clientWidth;
         let maxScroll = sliderLine_width/hperc*(-100) + 100;
         let left = fullScreen_sliderLine.style.left;
         left = left.split('%')[0];
         left = parseInt(left);
+        if(fullScreenSlider_videoObjects.length != 0){
+            fullScreenSlider_videoObjects.shift();
+        }
         if(left != maxScroll){
-            console.log('left: ', left);
-            console.log('maxScroll: ', maxScroll);
             left -= 100;
             left += '%';
             fullScreen_sliderLine.style.left = left;   
@@ -108,6 +107,9 @@ function fullScreenSlider_scroll(direction){
         let left = fullScreen_sliderLine.style.left;
         left = left.split('%')[0];
         left = parseInt(left);
+        if(fullScreenSlider_videoObjects.length != 0){
+            fullScreenSlider_videoObjects.shift();
+        }
         if(left != minScroll){
             left += 100;
             left += '%';
@@ -120,7 +122,6 @@ function fullScreenSlider_scroll(direction){
 }
 
 function handleSliderEvents(e){
-    console.log(e.key);
     if(e.key == 'ArrowRight'){
         fullScreenSlider_scroll('right');
     }
@@ -133,29 +134,34 @@ function addFullScreenSliderEvents(){
     window.addEventListener('keyup', handleSliderEvents, false);
     fullScreen_sliderLine.style.left = '0%';
     let thisSlider_items = fullScreen_sliderLine.getElementsByClassName('fullscreen-slider-item');
-    for(let i = 0; i < thisSlider_items.length; i++){
-        if(thisSlider_items[i].getElementsByClassName('video-play-button')[0] != undefined){
-            thisSlider_items[i].getElementsByClassName('video-play-button')[0].addEventListener('click', function(){
-                let video_element = this.parentNode.parentNode.getElementsByTagName('video')[0];
-                let videoPlayer = new video(video_element);
-                fullScreenSlider_videoObjects.push(videoPlayer);
-                videoPlayer.initialize();
-            })
-        }
+    let slider_videoItems = fullScreen_sliderLine.getElementsByTagName('video');
+    for(let i = 0; i < slider_videoItems.length; i++){
+        let videoplayer = new video(slider_videoItems[i]);
+        fullScreenSlider_videoObjects.push(videoplayer);
+        slider_videoItems[i].addEventListener('loadedmetadata', function(){
+            videoplayer.initialize();
+        })
     }
 }
 
-function showFullScreenSlider(thisMessage_viewableFiles){
+function showFullScreenSlider(thisMessage_viewableFiles, context){
     fullScreen_sliderLine.innerHTML = '';
+    let context_toScroll;
     for(let i = 0; i < thisMessage_viewableFiles.length; i++){
         let innerHTML = thisMessage_viewableFiles[i].parentNode.parentNode.innerHTML;
-        console.log(innerHTML);
+        if(context == thisMessage_viewableFiles[i]){
+            context_toScroll = (i);
+        }
         fullScreen_sliderLine.innerHTML += 
         `<div class="fullscreen-slider-item">
             ${innerHTML}  
         </div>`;
     }
-    addFullScreenSliderEvents()
+    addFullScreenSliderEvents();
+    for(let i = 0; i < context_toScroll; i++){
+        console.log(1);
+        fullScreenSlider_scroll('right');
+    }
 }
 
 function updateChatEvents(thisMessage_body){
@@ -163,7 +169,7 @@ function updateChatEvents(thisMessage_body){
     fullScreen_sliderLine.innerHTML = '';
     for(let i = 0; i < thisMessage_viewableFiles.length; i++){
         thisMessage_viewableFiles[i].addEventListener('click', function(){
-            showFullScreenSlider(thisMessage_viewableFiles);
+            showFullScreenSlider(thisMessage_viewableFiles, thisMessage_viewableFiles[i]);
             fullScreen_modalWindow.classList.add('modal-window-fullscreen-content-view_shown');
         })
     }
@@ -194,7 +200,6 @@ modalEditCommunity_buttonClose.addEventListener('click', function(){
 })
 
 avatarInputGroup.addEventListener('click', function(){
-    console.log('click-1');
     this.getElementsByClassName('avatar-input-element')[0].click();
 })
 
@@ -231,7 +236,6 @@ communityCreate_button_submit.addEventListener('click', function(e){
     else{
         pricing = 0;
     }
-    console.log(thisForm.getElementsByClassName('avatar-input-element')[0].files);
     let thisFormObj = {
         avatar: thisForm.getElementsByClassName('avatar-input-element')[0].files,
         name: thisForm.getElementsByClassName('input-group-name')[0].value,
@@ -268,13 +272,11 @@ communityCreate_button_submit.addEventListener('click', function(e){
         superSecretForm.getElementsByClassName('create-community-super-secret-form-pricing')[0].value = thisFormObj.pricing;
         superSecretForm.getElementsByClassName('create-community-super-secret-form-visibility')[0].value = thisFormObj.visibility;
         superSecretForm.getElementsByClassName('create-community-super-secret-form-category')[0].value = thisFormObj.category;
-        console.log(superSecretForm.getElementsByClassName('create-community-super-secret-form-avatar')[0].files);
         createNewCommunity_sendRequest(superSecretForm)
     }
 })
 
 communitySelectCategory.addEventListener('click', function(e){
-    console.log('клик по селекту');
     e.stopPropagation();
     this.classList.add('select-category_opened');
     let options = this.getElementsByClassName('select-option');
@@ -283,20 +285,16 @@ communitySelectCategory.addEventListener('click', function(e){
         let inputs = thisFormSearch.value;
         let regexp = new RegExp(`.*?${inputs}\.*?`, "gi");
         for(let i = 0; i < options.length; i++){
-            console.log(`${regexp}.test(${options[i].innerHTML}): ${(regexp.test(options[i].innerHTML))}`);
             if(regexp.test(options[i].innerHTML) == false){
-                console.log(`${options[i].innerHTML}: style.display = 'none`);
                 options[i].style.display = 'none';
             }
             if(regexp.test(options[i].innerHTML) == true){
-                console.log(`${options[i].innerHTML}: style.display = 'flex`);
                 options[i].style.display = 'flex';
             }
         }
     });
     for(let i = 0; i < options.length; i++){
         options[i].addEventListener('click', function(e){
-            console.log('клик по опшну');
             e.stopPropagation();
             let selected = this.getAttribute('value')
             communitySelectCategory.classList.remove('input_empty-container');
@@ -411,12 +409,10 @@ for(let i = 0; i < searchInputs.length; i++){
 
 const checkboxes_container_classList = notificationSettingsCheckboxes_container.classList;
 if(checkboxes_container_classList[2] == 'state-1'){
-    console.log('state-1');
     document.getElementsByClassName('NameAndText')[0].classList.remove('checkbox-off');
     document.getElementsByClassName('NameAndText')[0].classList.add('checkbox-on');
 }
 else{
-    console.log('state-2');
     document.getElementsByClassName('NameOnly')[0].classList.remove('checkbox-off');
     document.getElementsByClassName('NameOnly')[0].classList.add('checkbox-on');
 }
@@ -431,7 +427,6 @@ function showLoadingSection(){
 }
 
 function hideLoadingSection(){
-    console.log('hidesection');
     section_loading.style.animationName = 'show';
     setTimeout(() => {
         section_loading.style.display = 'none';
@@ -671,7 +666,6 @@ function makeActive(el){
     }
     el.classList.add('menu-item-active');
     let thisBlock = el.getAttribute('action');
-    console.log(thisBlock);
     for(let i = 0; i<actionsBlocks.length; i++){
         actionsBlocks[i].classList.remove('actions-block_active');
     }
@@ -679,6 +673,5 @@ function makeActive(el){
     for(let i = 0; i < actionsBodies.length; i++){
         actionsBodies[i].classList.remove('actions-body_active');
     }
-    console.log(`${thisBlock}-body`);
     document.getElementsByClassName(`${thisBlock}-body`)[0].classList.add('actions-body_active');
 }

@@ -155,6 +155,50 @@ button {
   }
 }
 
+@-webkit-keyframes width-in {
+  0% {
+    width: 0px;
+    display: none;
+  }
+  100% {
+    width: 100px;
+    display: block;
+  }
+}
+
+@keyframes width-in {
+  0% {
+    width: 0px;
+    display: none;
+  }
+  100% {
+    width: 100px;
+    display: block;
+  }
+}
+
+@-webkit-keyframes width-out {
+  0% {
+    width: 100px;
+    display: block;
+  }
+  100% {
+    width: 0px;
+    display: none;
+  }
+}
+
+@keyframes width-out {
+  0% {
+    width: 100px;
+    display: block;
+  }
+  100% {
+    width: 0px;
+    display: none;
+  }
+}
+
 .loading-spinning-icon {
   display: none;
 }
@@ -354,6 +398,13 @@ button {
           align-items: center;
 }
 
+.modal-window-fullscreen-content-view img {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
 .modal-window-fullscreen-content-view .modal-window-fullscreen-content {
   max-width: 100%;
   max-height: 90%;
@@ -401,7 +452,7 @@ button {
 }
 
 .modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container {
-  width: 100%;
+  width: 80%;
   height: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -419,38 +470,187 @@ button {
 
 .modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container video {
   height: 100% !important;
-  width: auto;
+  width: 100% !important;
+  max-height: 100% !important;
 }
 
-.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls {
-  height: 100%;
-  width: 100%;
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-play-button {
+  width: 32px;
+  height: 32px;
   position: absolute;
-  top: 0;
-  left: 0;
-  -webkit-animation-duration: 0.5s;
-          animation-duration: 0.5s;
-  -webkit-animation-fill-mode: forwards;
-          animation-fill-mode: forwards;
-  -webkit-animation-timing-function: ease;
-          animation-timing-function: ease;
-}
-
-.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls .video-play-button {
-  position: absolute;
-  width: 48px;
-  height: 48px !important;
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-  cursor: pointer;
   -webkit-animation-duration: 0.5s;
           animation-duration: 0.5s;
   -webkit-animation-fill-mode: forwards;
           animation-fill-mode: forwards;
   -webkit-animation-timing-function: ease;
           animation-timing-function: ease;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -webkit-user-drag: none;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .controls-container {
+  width: 90%;
+  height: 40px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-progress-bar {
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .controls-container-buttons {
+  width: 100%;
+  height: 30px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 16px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls-options {
+  width: 100%;
+  height: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  gap: 16px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-volume-controller {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 8px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls-volume {
+  height: 20px !important;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-unmuted {
+  margin-left: 1.96px;
+  margin-right: 1.96px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-volume-input {
+  width: 0px;
+  height: 10px;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls-volume_hidden {
+  display: none;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer-current {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  font-size: 16px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer-separator {
+  font-size: 18px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer-total {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  font-size: 16px;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer-total-hours_hidden, .modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-timer-current-hours_hidden, .modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .colon-hours_hidden {
+  display: none;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .video-controls-fullscreen-enter {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container .icon_hidden {
+  display: none;
+}
+
+.modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-line .fullscreen-slider-item .video-container_fullscreen {
+  width: 100vw;
+  height: 100vh;
 }
 
 .modal-window-fullscreen-content-view .fullscreen-slider .fullscreen-slider-arrow {
@@ -2863,38 +3063,188 @@ button {
 }
 
 .section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container video {
+  height: 100%;
   width: 100%;
-  height: auto;
-  cursor: pointer;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-play-button {
+  width: 32px;
+  height: 32px;
   position: absolute;
-  z-index: 1;
-  left: 0;
-  top: 0;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -webkit-user-drag: none;
 }
 
 .section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls {
   width: 100%;
   height: 100%;
   position: absolute;
-  left: 0;
   top: 0;
-  z-index: 2;
+  left: 0;
   cursor: pointer;
 }
 
-.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls .video-play-button {
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .controls-container {
+  width: 90%;
+  height: 40px;
   position: absolute;
-  width: 48px;
-  height: 48px;
-  top: 50%;
+  bottom: 0;
   left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
-  -webkit-user-drag: none;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-progress-bar {
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .controls-container-buttons {
+  width: 100%;
+  height: 30px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 16px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls-options {
+  width: 100%;
+  height: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  gap: 16px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-volume-controller {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 8px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls-volume {
+  height: 20px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-unmuted {
+  margin-left: 1.96px;
+  margin-right: 1.96px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-volume-input {
+  width: 0px;
+  height: 10px;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls-volume_hidden {
+  display: none;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer-current {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  font-size: 16px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer-separator {
+  font-size: 18px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer-total {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 1px;
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  font-size: 16px;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer-total-hours_hidden, .section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-timer-current-hours_hidden, .section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .colon-hours_hidden {
+  display: none;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .video-controls-fullscreen-enter {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container .icon_hidden {
+  display: none;
+}
+
+.section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .video-container_fullscreen {
+  width: 100vw;
+  height: 100vh;
 }
 
 .section-app .body .chats-body .chats-body-user-empty .chats-user-body .empty-chat-info-container .chat-messages-container .chat-message .chat-message-body .message-body .message-element .img-container {

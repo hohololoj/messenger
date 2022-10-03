@@ -8,7 +8,8 @@
 }
 body{
     img{
-        -webkit-user-drag: none;   
+        -webkit-user-drag: none;
+
     }
 }
 button{
@@ -73,6 +74,26 @@ button{
     }
     100%{
         opacity: 1;
+    }
+}
+@keyframes width-in {
+    0%{
+        width: 0px;
+        display: none;
+    }
+    100%{
+        width: 100px;
+        display: block;
+    }
+}
+@keyframes width-out {
+    0%{
+        width: 100px;
+        display: block;
+    }
+    100%{
+        width: 0px;
+        display: none;
     }
 }
 .loading-spinning-icon{
@@ -202,6 +223,9 @@ button{
     }
 }
 .modal-window-fullscreen-content-view{
+    img{
+        user-select: none;
+    }
     position: fixed;
     width: 100%;
     height: 100vh;
@@ -242,7 +266,7 @@ button{
                     width: auto;
                 }
                 .video-container{
-                    width: 100%;
+                    width: 80%;
                     height: 100%;
                     display: flex;
                     justify-content: center;
@@ -252,30 +276,129 @@ button{
                     top: 0;
                     video{
                         height: 100% !important;
-                        width: auto;
+                        width: 100% !important;
+                        max-height: 100% !important;
                     }
-                    .video-controls{
-                        height: 100%;
-                        width: 100%;
+                    .video-play-button{
+                        width: 32px;
+                        height: 32px;
                         position: absolute;
-                        top: 0;
-                        left: 0;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
                         animation-duration: 0.5s;
                         animation-fill-mode: forwards;
                         animation-timing-function: ease;
-                        .video-play-button{
-                            position: absolute;
-                            width: 48px;
-                            height: 48px !important;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -50%);
-                            cursor: pointer;
-                            animation-duration: 0.5s;
-                            animation-fill-mode: forwards;
-                            animation-timing-function: ease;
-                        }
+                        user-select: none;
+                        -webkit-user-drag: none;
                     }
+                    .video-controls{
+                        width: 100% !important;
+                        height: 100% !important;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                    }
+                    .controls-container{
+                        width: 90%;
+                        height: 40px;
+                        position: absolute;
+                        bottom: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        display: flex;
+                        flex-direction: column;
+                        animation-duration: 0.5s;
+                        animation-fill-mode: forwards;
+                        animation-timing-function: ease;
+                    }
+                    .video-progress-bar{
+                        width: 100%;
+                        height: 10px;
+                        cursor: pointer;
+                    }
+                    .controls-container-buttons{
+                        width: 100%;
+                        height: 30px;
+                        display: flex;
+                        gap: 16px;
+                        align-items: center;
+                    }
+                    .video-controls-options{
+                        width: 100%;
+                        height: 20px;
+                        display: flex;
+                        justify-content: flex-end;
+                        gap: 16px;
+                        
+                    }
+                    .video-volume-controller{
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .video-controls-volume{
+                        height: 20px !important;
+                        cursor: pointer;
+                        border-radius: 8px;
+                    }
+                    .video-unmuted{
+                        margin-left: 1.96px;
+                        margin-right: 1.96px;
+                    }
+                    .video-volume-input{
+                        width: 0px;
+                        height: 10px;
+                        animation-duration: 0.5s;
+                        animation-timing-function: ease;
+                        animation-fill-mode: forwards;
+                    }
+                    .video-controls-volume_hidden{
+                        display: none;
+                    }
+                    .video-timer{
+                        width: fit-content;
+                        height: 20px;
+                        display: flex;
+                        gap: 1px;
+                        align-items: center;
+                    }
+                    .video-timer-current{
+                        display: flex;
+                        gap: 1px;
+                        color: white;
+                        text-shadow: 1px 1px 1px #000;
+                        font-size: 16px;
+                    }
+                    .video-timer-separator{
+                        font-size: 18px;
+                        color: white;
+                        text-shadow: 1px 1px 1px #000;
+                        margin-left: 1px;
+                        margin-right: 1px;
+                    }
+                    .video-timer-total{
+                        display: flex;
+                        gap: 1px;
+                        color: white;
+                        text-shadow: 1px 1px 1px #000;
+                        font-size: 16px;
+                    }
+                    .video-timer-total-hours_hidden, .video-timer-current-hours_hidden, .colon-hours_hidden{
+                        display: none;
+                    }
+                    .video-controls-fullscreen-enter{
+                        width: 20px;
+                        height: 20px;
+                        cursor: pointer;
+                    }
+                    .icon_hidden{
+                        display: none;
+                    }
+                }
+                .video-container_fullscreen{
+                    width: 100vw;
+                    height: 100vh;
                 }
             }
         }
@@ -1996,33 +2119,130 @@ button{
                                                 width: 680px;
                                                 position: relative;
                                                 video{
+                                                    height: 100%;
                                                     width: 100%;
-                                                    height: auto;
-                                                    cursor: pointer;
+                                                }
+                                                .video-play-button{
+                                                    width: 32px;
+                                                    height: 32px;
                                                     position: absolute;
-                                                    z-index: 1;
-                                                    left: 0;
-                                                    top: 0;
+                                                    top: 50%;
+                                                    left: 50%;
+                                                    transform: translate(-50%, -50%);
+                                                    animation-duration: 0.5s;
+                                                    animation-fill-mode: forwards;
+                                                    animation-timing-function: ease;
+                                                    user-select: none;
+                                                    -webkit-user-drag: none;
                                                 }
                                                 .video-controls{
                                                     width: 100%;
                                                     height: 100%;
                                                     position: absolute;
-                                                    left: 0;
                                                     top: 0;
-                                                    z-index: 2;
+                                                    left: 0;
                                                     cursor: pointer;
-                                                    .video-play-button{
-                                                        position: absolute;
-                                                        width: 48px;
-                                                        height: 48px;
-                                                        top: 50%;
-                                                        left: 50%;
-                                                        transform: translate(-50%, -50%);
-                                                        -webkit-user-drag: none;
-                                                        user-select: none;
-                                                    }
                                                 }
+                                                .controls-container{
+                                                    width: 90%;
+                                                    height: 40px;
+                                                    position: absolute;
+                                                    bottom: 0;
+                                                    left: 50%;
+                                                    transform: translateX(-50%);
+                                                    display: flex;
+                                                    flex-direction: column;
+                                                    animation-duration: 0.5s;
+                                                    animation-fill-mode: forwards;
+                                                    animation-timing-function: ease;
+                                                }
+                                                .video-progress-bar{
+                                                    width: 100%;
+                                                    height: 10px;
+                                                    cursor: pointer;
+                                                }
+                                                .controls-container-buttons{
+                                                    width: 100%;
+                                                    height: 30px;
+                                                    display: flex;
+                                                    gap: 16px;
+                                                    align-items: center;
+                                                }
+                                                .video-controls-options{
+                                                    width: 100%;
+                                                    height: 20px;
+                                                    display: flex;
+                                                    justify-content: flex-end;
+                                                    gap: 16px;
+                                                    
+                                                }
+                                                .video-volume-controller{
+                                                    display: flex;
+                                                    align-items: center;
+                                                    gap: 8px;
+                                                }
+                                                .video-controls-volume{
+                                                    height: 20px;
+                                                    cursor: pointer;
+                                                    border-radius: 8px;
+                                                }
+                                                .video-unmuted{
+                                                    margin-left: 1.96px;
+                                                    margin-right: 1.96px;
+                                                }
+                                                .video-volume-input{
+                                                    width: 0px;
+                                                    height: 10px;
+                                                    animation-duration: 0.5s;
+                                                    animation-timing-function: ease;
+                                                    animation-fill-mode: forwards;
+                                                }
+                                                .video-controls-volume_hidden{
+                                                    display: none;
+                                                }
+                                                .video-timer{
+                                                    width: fit-content;
+                                                    height: 20px;
+                                                    display: flex;
+                                                    gap: 1px;
+                                                    align-items: center;
+                                                }
+                                                .video-timer-current{
+                                                    display: flex;
+                                                    gap: 1px;
+                                                    color: white;
+                                                    text-shadow: 1px 1px 1px #000;
+                                                    font-size: 16px;
+                                                }
+                                                .video-timer-separator{
+                                                    font-size: 18px;
+                                                    color: white;
+                                                    text-shadow: 1px 1px 1px #000;
+                                                    margin-left: 1px;
+                                                    margin-right: 1px;
+                                                }
+                                                .video-timer-total{
+                                                    display: flex;
+                                                    gap: 1px;
+                                                    color: white;
+                                                    text-shadow: 1px 1px 1px #000;
+                                                    font-size: 16px;
+                                                }
+                                                .video-timer-total-hours_hidden, .video-timer-current-hours_hidden, .colon-hours_hidden{
+                                                    display: none;
+                                                }
+                                                .video-controls-fullscreen-enter{
+                                                    width: 20px;
+                                                    height: 20px;
+                                                    cursor: pointer;
+                                                }
+                                                .icon_hidden{
+                                                    display: none;
+                                                }
+                                            }
+                                            .video-container_fullscreen{
+                                                width: 100vw;
+                                                height: 100vh;
                                             }
                                             .img-container{
                                                 width: 100%;

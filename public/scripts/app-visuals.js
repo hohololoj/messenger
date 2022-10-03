@@ -47,6 +47,15 @@ const contactsSearchForm = document.getElementsByClassName('contacts-search-form
 const messageContainer = document.getElementsByClassName('message-input')[0];
 const attachFile_button = document.getElementsByClassName('attachment-button-file')[0];
 const chatFileInput_element = document.getElementsByClassName('file-input-chat')[0];
+const fullScreen_modalWindow = document.getElementsByClassName('modal-window-fullscreen-content-view')[0];
+const fullScreen_modalWindow_closeButton = document.getElementsByClassName('modal-fullscreen-button-close')[0];
+const fullScreen_slider = document.getElementsByClassName('fullscreen-slider')[0];
+const fullScreen_sliderLine = document.getElementsByClassName('fullscreen-slider-line')[0];
+const fullScreen_slider_slideLeft_button = document.getElementsByClassName('fullscreen-slider-arrow-left')[0];
+const fullScreen_slider_slideRight_button = document.getElementsByClassName('fullscreen-slider-arrow-right')[0];
+const videoControls_layer = document.getElementsByClassName('video-controls');
+
+let fullScreenSlider_videoObjects = [];
 
 let isScrolling = false;
 let isAbleToDrag = false;
@@ -55,9 +64,113 @@ attachFile_button.addEventListener('click', function(){
     chatFileInput_element.click();
 })
 
+for(let i = 0; i < videoControls_layer.length; i++){
+    videoControls_layer[i].addEventListener('click', function(e){
+        this.previousElementSibling.click();
+    })
+}
+
+fullScreen_slider_slideLeft_button.addEventListener('click', function(){
+    fullScreenSlider_scroll('left');
+});
+fullScreen_slider_slideRight_button.addEventListener('click', function(){
+    fullScreenSlider_scroll('right')
+});
+
+function fullScreen_modalWindow_close(){
+    window.removeEventListener('keyup', handleSliderEvents, false);
+    fullScreen_modalWindow.classList.remove('modal-window-fullscreen-content-view_shown');
+}
+
+fullScreen_modalWindow_closeButton.addEventListener('click', fullScreen_modalWindow_close, false);
+
+function fullScreenSlider_scroll(direction){
+    if(direction == 'right'){
+        let hperc = window.innerWidth;
+        let sliderLine_width = fullScreen_sliderLine.clientWidth;
+        let maxScroll = sliderLine_width/hperc*(-100) + 100;
+        let left = fullScreen_sliderLine.style.left;
+        left = left.split('%')[0];
+        left = parseInt(left);
+        if(left != maxScroll){
+            console.log('left: ', left);
+            console.log('maxScroll: ', maxScroll);
+            left -= 100;
+            left += '%';
+            fullScreen_sliderLine.style.left = left;   
+        }
+        else{
+            fullScreen_modalWindow_close();
+        }
+    }
+    if(direction == 'left'){
+        let minScroll = 0;
+        let left = fullScreen_sliderLine.style.left;
+        left = left.split('%')[0];
+        left = parseInt(left);
+        if(left != minScroll){
+            left += 100;
+            left += '%';
+            fullScreen_sliderLine.style.left = left;   
+        }
+        else{
+            fullScreen_modalWindow_close();
+        }
+    }
+}
+
+function handleSliderEvents(e){
+    console.log(e.key);
+    if(e.key == 'ArrowRight'){
+        fullScreenSlider_scroll('right');
+    }
+    if(e.key == 'ArrowLeft'){
+        fullScreenSlider_scroll('left');
+    }
+}
+
+function addFullScreenSliderEvents(){
+    window.addEventListener('keyup', handleSliderEvents, false);
+    fullScreen_sliderLine.style.left = '0%';
+    let thisSlider_items = fullScreen_sliderLine.getElementsByClassName('fullscreen-slider-item');
+    for(let i = 0; i < thisSlider_items.length; i++){
+        if(thisSlider_items[i].getElementsByClassName('video-play-button')[0] != undefined){
+            thisSlider_items[i].getElementsByClassName('video-play-button')[0].addEventListener('click', function(){
+                let video_element = this.parentNode.parentNode.getElementsByTagName('video')[0];
+                let videoPlayer = new video(video_element);
+                fullScreenSlider_videoObjects.push(videoPlayer);
+                videoPlayer.initialize();
+            })
+        }
+    }
+}
+
+function showFullScreenSlider(thisMessage_viewableFiles){
+    fullScreen_sliderLine.innerHTML = '';
+    for(let i = 0; i < thisMessage_viewableFiles.length; i++){
+        let innerHTML = thisMessage_viewableFiles[i].parentNode.parentNode.innerHTML;
+        console.log(innerHTML);
+        fullScreen_sliderLine.innerHTML += 
+        `<div class="fullscreen-slider-item">
+            ${innerHTML}  
+        </div>`;
+    }
+    addFullScreenSliderEvents()
+}
+
+function updateChatEvents(thisMessage_body){
+    let thisMessage_viewableFiles = thisMessage_body.getElementsByClassName('message-element_viewable');
+    fullScreen_sliderLine.innerHTML = '';
+    for(let i = 0; i < thisMessage_viewableFiles.length; i++){
+        thisMessage_viewableFiles[i].addEventListener('click', function(){
+            showFullScreenSlider(thisMessage_viewableFiles);
+            fullScreen_modalWindow.classList.add('modal-window-fullscreen-content-view_shown');
+        })
+    }
+}
+updateChatEvents(document.getElementsByClassName('message-body')[0]);
 messageContainer.addEventListener('keydown', function(e){
     if(e.key == 'Enter' && e.shiftKey){
-        // messageContainer.innerHTML  += '<div><br></div>';
         messageInput[i].textContent += '\n';
         messageInput[i].focus();
         const range = document.createRange();

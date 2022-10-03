@@ -2138,9 +2138,6 @@ async function writeMessage(res, thisMessage_obj, token){
         timestamp: timestamp
     };
 
-    console.log(thisChat_collectionName);
-    console.log(thisChat_collectionName_reversed);
-
     await mongoRequest('chats', thisChat_collectionName, 'put', 'one', thisMessage);
     await mongoRequest('chats', thisChat_collectionName_reversed, 'put', 'one', thisMessage);
 }

@@ -21,6 +21,7 @@ const chatContainer = document.getElementsByClassName('chats-body-user-empty')[0
 const chat_unselected_contentBody = document.getElementsByClassName('chats-body-unselected')[0];
 const chatLoadingSpinner = document.getElementsByClassName('loading-spinning-icon')[0];
 const sendChatMessage_superSecretForm = document.getElementsByClassName('sendChatMessage_superSecretForm')[0];
+const chatMessages_container = document.getElementsByClassName('chat-messages-container')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
@@ -54,7 +55,6 @@ function sendChatMessage(message, files, user_toSend_id){
 }
 
 function getChat_history(id){
-    console.log(id);
     fetch('/app?action=getChatHistory',{
         method: 'POST',
         headers: {
@@ -65,8 +65,9 @@ function getChat_history(id){
     .then(
         function (response){
             response.json().then(function(data){
-                
+
                 let userInfo = data.userInfo;
+                let chatHistory = data.chatHistory;
 
                 chatContainer.getElementsByClassName('user-info-name')[0].innerHTML = userInfo.fullname;
 
@@ -81,8 +82,15 @@ function getChat_history(id){
                 }
                 
                 chatContainer.getElementsByClassName('user-avatar')[0].src = userInfo.avatar;
-
                 chatContainer.setAttribute('uid', userInfo.id);
+
+                // chatMessages_container.innerHTML = '';
+
+                // for(let i = 0; i < chatHistory.length; i++){
+                //     let message = `
+
+                //     `
+                // }
             })
         }
     )

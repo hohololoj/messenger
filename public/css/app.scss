@@ -2248,6 +2248,33 @@ button{
                                                 width: 100%;
                                                 height: auto;
                                             }
+                                            .others-files-container{
+                                                height: auto;
+                                                width: 100%;
+                                                display: flex;
+                                                gap: 16px;
+                                                padding: 8px 0px;
+                                                cursor: pointer;
+                                                .other-files-icon{
+                                                    height: 48px;
+                                                }
+                                                .others-file-info-container{
+                                                    display: flex;
+                                                    flex-direction: column;
+                                                    justify-content: space-between;
+                                                    .file-name{
+                                                        font-weight: 900;
+                                                        font-size: 15px;
+                                                        line-height: 24px;
+                                                        color: #171A1F;
+                                                    }
+                                                    .file-size{
+                                                        font-weight: 400;
+                                                        font-size: 13px;
+                                                        color: #71747A;
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

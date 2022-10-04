@@ -1950,6 +1950,29 @@ async function removeFromFriends(user_sending_token, user_toDelete_id, res){
     }
 }
 
+function getFullFileInfo(fileName, context){
+    let stats = fs.statSync(`./public/chat_files/${context}/${fileName}`);
+    let fileWeight = stats.size;
+    let fileWeight_toReturn;
+    if(fileWeight > 1024){
+        fileWeight = fileWeight/1024;
+        if(fileWeight > 1024){
+            fileWeight = fileWeight/1024;
+            fileWeight_toReturn = `${fileWeight.toFixed(1)}MB`;
+        }
+        else{
+            fileWeight_toReturn = `${fileWeight.toFixed(1)}KB`;
+        }
+    }
+    else{
+        fileWeight_toReturn = `${fileWeight}B`;
+    }
+    return {
+        fileName: fileName,
+        fileWeight: fileWeight_toReturn
+    }
+}
+
 async function getChatHistory(user_sending_token, user_toSend_id, res){
     console.log(user_toSend_id);
     let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: user_sending_token});
@@ -1970,7 +1993,6 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
         const db = mongoClient.db('chats');
         
         let chatHistory;
-        let userInfo;
 
         db.listCollections({ name: thisChat_collectionName }).next(function (err, colinfo) {
             if (colinfo == null) {
@@ -2008,6 +2030,36 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                 ])
                 .then(results => {
                     let chatHistory = results[0];
+                    let chatHistory_filled = [];
+                    for (let i = 0; i < chatHistory.length; i++) {
+                        chatHistory_filled.push({
+                            sender_id: '',
+                            message: '',
+                            files: {
+                                audios: [],
+                                videos: [],
+                                imgs: [],
+                                others: []
+                            }
+                        });
+                        chatHistory_filled[i].sender_id = chatHistory[i].sender_id;
+                        chatHistory_filled[i].message = chatHistory[i].message;
+                        chatHistory_filled[i].files = {
+                            audios: chatHistory[i].files.audios,
+                            videos: chatHistory[i].files.videos,
+                            imgs: chatHistory[i].files.imgs,
+                            others: [],
+                        };
+                        let others_arr = [];
+                        for (let j = 0; j < chatHistory[i].files.others.length; j++) {
+                            let thisFile_name = chatHistory[i].files.others[j];
+                            let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
+                            others_arr.push(thisFile_fullInfo);
+                        }
+                        chatHistory_filled[i].files.others = others_arr;
+                    }
+                    console.log(chatHistory_filled);
+                    
                     let user_toSend_info_response = results[1];
                     let user_toSend_info = {
                         fullname: user_toSend_info_response.fullname,
@@ -2016,7 +2068,7 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                         id: user_toSend_id
                     }
                     let response = {
-                        chatHistory: chatHistory,
+                        chatHistory: chatHistory_filled,
                         userInfo: user_toSend_info
                     }
                     res.send(response);

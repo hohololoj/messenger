@@ -159,7 +159,6 @@ function showFullScreenSlider(thisMessage_viewableFiles, context){
     }
     addFullScreenSliderEvents();
     for(let i = 0; i < context_toScroll; i++){
-        console.log(1);
         fullScreenSlider_scroll('right');
     }
 }

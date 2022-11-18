@@ -22,85 +22,500 @@ const chat_unselected_contentBody = document.getElementsByClassName('chats-body-
 const chatLoadingSpinner = document.getElementsByClassName('loading-spinning-icon')[0];
 const sendChatMessage_superSecretForm = document.getElementsByClassName('sendChatMessage_superSecretForm')[0];
 const chatMessages_container = document.getElementsByClassName('chat-messages-container')[0];
+const chatMessages_line = document.getElementsByClassName('empty-chat-info-container')[0];
+const chat_fileInput = document.getElementsByClassName('file-input-chat')[0];
+const inmessage_attachments_container = document.getElementsByClassName('attachments-inmessage-container')[0];
 
 socket.onopen = function () {
     socket.send('socket connection test')
 }
 
-function sendChatMessage(message, files, user_toSend_id){
-    if(message != ''){
+function deattach(thisButton){
+    let attached_files = inmessage_attachments_container.childNodes;
+    let index;
+    let thisImg_container = thisButton.parentNode;
+    for(let i = 0; i < attached_files.length; i++){
+        if(attached_files[i] == thisImg_container){
+            index = i;
+            break;
+        }
+    }
+    // исходя из индекса нажатой кнопки узнается индекс файла в массиве файлов  
+    console.log('файлы в инпуте до удаления: ', chat_fileInput.files);
+    inmessage_attachments_container.removeChild(thisImg_container);
+    // удаляется визуальный элемент файла, в котором была нажата кнопка ужаления
+    let files = new DataTransfer();
+    for(let i = 0; i < chat_fileInput.files.length; i++){
+        if(i != index){
+            let file = new File(['files'], chat_fileInput.files[i].name);
+            files.items.add(file)
+        }
+    }
+    console.log(files);
+    chat_fileInput.files = files.files;
+    console.log('файлы в инпуте после удаления: ', chat_fileInput.files);
+}
+
+function addDeleteAttachmentEvents(deattach_buttons){
+    for (let i = 0; i < deattach_buttons.length; i++) {
+        deattach_buttons[i].addEventListener('click', function(e){
+            deattach(this)
+        });
+    }
+}
+
+function calculateFileSize(fileSize_bytes){
+    if(fileSize_bytes >= 1024){
+        let fileSize_kbs = fileSize_bytes / 1024;
+        if(fileSize_kbs >= 1024){
+            let fileSize_mbs = fileSize_kbs / 1024;
+            if(fileSize_mbs >= 1024){
+                let fileSize_gbs = fileSize_mbs / 1024;
+                if(fileSize_gbs >= 1){
+                    return false;
+                }
+                else{
+                    return(fileSize_gbs.toFixed(1)+'GB');
+                }
+            }
+            else{
+                return(fileSize_mbs.toFixed(1)+'MB')
+            }
+        }
+        else{
+            return(fileSize_kbs.toFixed(1)+'KB')
+        }
+    }
+    else{
+        return(fileSize_bytes.toFixed(1)+'B');
+    }
+}
+
+//bookmark
+chat_fileInput.addEventListener('input', function(e){
+    console.log(chat_fileInput.files);
+    let files = this.files;
+    const img_exts = ['jpg', 'jpeg', 'png', 'gif', 'ico', 'svg', 'bmp'];
+    const video_exts = ['mp4', 'webm', 'avi'];
+    const audio_exts = ['mp3', 'wav', 'ogg'];
+    const prohibited_exts = ['exe', 'bat', 'bin', 'cmd'];
+    let promises = [];
+    for (let i = 0; i < files.length; i++) {
+        promises.push(new Promise((resolve, reject) => {
+            let thisFile_name = files[i].name;
+            let thisFile_ext = thisFile_name.split('.').reverse()[0];
+            const reader = new FileReader();
+            if (img_exts.includes(thisFile_ext)) {
+                reader.readAsDataURL(files[i]);
+                reader.addEventListener('load', function () {
+                    inmessage_attachments_container.innerHTML += `<div class="attached-img-container"><button class="deattach-img-button"><img src="./icons/icon-close_white.svg"></button><img src="${this.result}"></div>`;
+                    resolve()
+                })
+            }
+            else if(audio_exts.includes(thisFile_ext)){
+                reader.readAsDataURL(files[i]);
+                reader.addEventListener('load', function () {
+                    inmessage_attachments_container.innerHTML += `
+                    <div class="attached-audio-container">
+                    <button class="deattach-img-button"><img src="./icons/icon-close_white.svg"></button>
+                    <div class="audio-container">
+                        <audio src="${this.result}"></audio>
+                        <div class="audio-controls-container">
+                            <img src="./icons/icon-play-video.svg" class="audio-play-button">
+                            <img src="./icons/icon-pause.svg" class="audio-play-button audio-play-button_hidden">
+                            <img src="./icons/icon-video-volume.svg" class="volume-icon volume-icon-unmuted">
+                            <img src="./icons/icon-video-volume-muted.svg" class="volume-icon volume-icon_hidden">
+                            <input type="range" class="input-volume" value="50" max="100">
+                            <progress value="0" max="100" class="audio-progress"></progress>
+                        </div>
+                    </div>
+                </div>
+                    `;
+                    resolve()
+                })
+            }
+            else if(video_exts.includes(thisFile_ext)){
+                reader.readAsDataURL(files[i]);
+                reader.addEventListener('load', function () {
+                    inmessage_attachments_container.innerHTML += `<div class="attached-video-container"><button class="deattach-img-button"><img src="./icons/icon-close_white.svg"></button>
+                    <div class="video-container">
+                                            <video class="modal-window-fullscreen-content" src="${this.result}"></video>
+                                            <div class="video-controls message-element_viewable">
+                                                <img src="./icons/icon-play-video.svg" class="video-play-button">
+                                                <div class="controls-container">
+                                                    <progress value="0" max="100" class="video-progress-bar"></progress>
+                                                    <div class="controls-container-buttons">
+                                                        <div class="video-timer">
+                                                            <div class="video-timer-current">
+                                                                <p class="video-timer-current-hours video-timer-current-hours_hidden">00</p>
+                                                                <p class="colon-hours colon-hours_hidden">:</p>
+                                                                <p class="video-timer-current-minutes">00</p>
+                                                                <p class="colon">:</p>
+                                                                <p class="video-timer-current-seconds">00</p>
+                                                            </div>
+                                                            <p class="video-timer-separator">/</p>
+                                                            <div class="video-timer-total">
+                                                                <p class="video-timer-total-hours video-timer-total-hours_hidden">00</p>
+                                                                <p class="colon colon-hours_hidden">:</p>
+                                                                <p class="video-timer-total-minutes">00</p>
+                                                                <p class="colon">:</p>
+                                                                <p class="video-timer-total-seconds">00</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="video-volume-controller">
+                                                            <img src="./icons/icon-video-volume.svg" class="video-controls-volume video-unmuted">
+                                                            <img src="./icons/icon-video-volume-muted.svg" class="video-controls-volume video-controls-volume_hidden">
+                                                            <input type="range" value="50" max="100"class="video-volume-input">
+                                                        </div>
+                                                        <div class="video-controls-options">
+                                                            <img src="./icons/icon-fullscreen-enter.svg" class="video-controls-fullscreen-enter">
+                                                            <img src="./icons/icon-fullscreen-exit.svg" class="video-controls-fullscreen-enter icon_hidden">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                    `
+                    resolve()
+                })
+            }
+            else if(prohibited_exts.includes(thisFile_ext)){
+                showNotification({type: 'error', title: 'Failed to load file', message: 'This type of files is prohibited', hide: 'auto'})
+            }
+            else{
+                let fileSize_bytes = files[i].size;
+                let fileSize = calculateFileSize(fileSize_bytes);
+                if(fileSize != false){
+                    inmessage_attachments_container.innerHTML += 
+                    `
+                    <div class="attached-others-container"><button class="deattach-img-button"><img src="./icons/icon-close_white.svg"></button>
+                    <div class="others-files-container">
+                        <img src="./icons/icon-other-file.svg" class="other-files-icon">
+                        <div class="others-file-info-container">
+                            <p class="file-name">${files[i].name}</p>
+                            <p class="file-size">${fileSize}</p>
+                        </div>
+                    </div>
+                    </div>
+                    `
+                }
+                else{
+                    let files = new DataTransfer();
+                    let index = i;
+                    for(let j = 0; j < chat_fileInput.files.length; j++){
+                        if(j != index){
+                            let file = new File(['files'], chat_fileInput.files[j].name);
+                            files.items.add(file)
+                        }
+                    }
+                    chat_fileInput.files = files.files;
+                showNotification({type: 'error', title: 'Failed to load file', message: 'This file is too big', hide: 'auto'})
+                }
+                resolve();
+            }
+        }))
+    }
+    Promise.all(promises)
+        .then(() => {
+            let attached_videos = inmessage_attachments_container.getElementsByClassName('attached-video-container');
+            for(let i = 0; i < attached_videos.length; i++){
+                attached_videos[i].addEventListener('click', function(){
+                    let thisVideo_videoElement = attached_videos[i].getElementsByTagName('video')[0];
+                    let videoplayer = new video(thisVideo_videoElement);
+                    videoplayer.disableVolumeInput();
+                    videoplayer.initialize();
+                    let thisVideo_playButton = attached_videos[i].getElementsByClassName('video-play-button')[0];
+                    thisVideo_playButton.click();
+                })
+            }
+            let attached_audios = inmessage_attachments_container.getElementsByClassName('attached-audio-container');
+            for(let i = 0; i < attached_audios.length; i++){
+                let thisAudio = attached_audios[i].getElementsByTagName('audio')[0];
+                let thisAudio_playButton = attached_audios[i].getElementsByClassName('audio-play-button')[0];
+                thisAudio_playButton.addEventListener('click', function(){
+                    let audioplayer = new audio(thisAudio);
+                    audioplayer.initialize();
+                    audioplayer.play();
+                })
+            }
+            let deattach_buttons = document.getElementsByClassName('deattach-img-button');
+            addDeleteAttachmentEvents(deattach_buttons)
+        })
+})
+
+function updateQuickChats(){
+    let quickAccessChats = document.getElementsByClassName('chat-item');
+    for(let i = 0; i < quickAccessChats.length; i++){
+        quickAccessChats[i].addEventListener('click', function(){
+            let thisUser_id = this.getAttribute('uid');
+            chat_unselected_contentBody.classList.remove('chat_active');
+            chatContainer.classList.add('chat_active');
+            document.getElementsByClassName('actions-body_active')[0].classList.remove('actions-body_active');
+            document.getElementsByClassName('chats-body')[0].classList.add('actions-body_active');
+            // document.getElementsByClassName('menu-item-active')[0].classList.remove('menu-item-active');
+            // document.getElementsByClassName('menu-item-chats')[0].classList.add('menu-item-active');
+            chatLoadingSpinner.classList.add('chats-user-body-item_active');
+            getChat_history(thisUser_id);
+        })
+    }
+}
+
+function sendChatMessage(message, files, user_toSend_id) {
+    if(message != '') {
         sendChatMessage_superSecretForm.getElementsByClassName('input-message')[0].value = message;
         sendChatMessage_superSecretForm.getElementsByClassName('input-message')[0].setAttribute('name', 'message');
     }
-    if(files != undefined || files.length != 0){
+    if(files != null){
+        console.log(files);
+        sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].setAttribute('type', 'file');
         sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].files = files;
         sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].setAttribute('name', 'files');
+    }
+    else{
+        sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].setAttribute('type', 'text');
+        sendChatMessage_superSecretForm.getElementsByClassName('input-files')[0].value = false;
     }
     sendChatMessage_superSecretForm.getElementsByClassName('input-uid')[0].value = user_toSend_id;
     sendChatMessage_superSecretForm.getElementsByClassName('input-uid')[0].setAttribute('name', 'id');
 
     let thisFormObject = new FormData(sendChatMessage_superSecretForm);
-    
-    fetch('/app?action=writeMessage',{
-        method: 'POST',
-        body: thisFormObject
-    })
-    .then(
-        function (response){
-            response.json().then(function(data){
-                console.log(data);
-            })
-        }
-    )
+
+    if(message != '' || files != null){
+        fetch('/app?action=writeMessage', {
+            method: 'POST',
+            body: thisFormObject,
+        })
+    }
 }
 
-function getChat_history(id){
-    fetch('/app?action=getChatHistory',{
+function getChat_history(id) {
+    fetch('/app?action=getChatHistory', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify({uid: id})
+        body: JSON.stringify({ uid: id })
     })
-    .then(
-        function (response){
-            response.json().then(function(data){
+        .then(
+            function (response) {
+                response.json().then(function (data) {
 
-                let userInfo = data.userInfo;
-                let chatHistory = data.chatHistory;
+                    let userInfo = data.userInfo;
+                    let chatHistory = data.chatHistory;
 
-                chatContainer.getElementsByClassName('user-info-name')[0].innerHTML = userInfo.fullname;
+                    chatContainer.getElementsByClassName('user-info-name')[0].innerHTML = userInfo.fullname;
 
-                let lastOnline_container = chatContainer.getElementsByClassName('user-info-last-online')[0];
-                if(userInfo.onlineStatus == 'online'){
-                    lastOnline_container.classList.add('onlineStatus_online');
-                    lastOnline_container.innerHTML = userInfo.onlineStatus;
-                }
-                else{
-                    lastOnline_container.classList.add('onlineStatus_offline');
-                    lastOnline_container.innerHTML = `last seen ${userInfo.onlineStatus}`;
-                }
-                
-                chatContainer.getElementsByClassName('user-avatar')[0].src = userInfo.avatar;
-                chatContainer.setAttribute('uid', userInfo.id);
+                    let lastOnline_container = chatContainer.getElementsByClassName('user-info-last-online')[0];
+                    if (userInfo.onlineStatus == 'online') {
+                        lastOnline_container.classList.add('onlineStatus_online');
+                        lastOnline_container.innerHTML = userInfo.onlineStatus;
+                    }
+                    else {
+                        lastOnline_container.classList.add('onlineStatus_offline');
+                        lastOnline_container.innerHTML = `last seen ${userInfo.onlineStatus}`;
+                    }
 
-                // chatMessages_container.innerHTML = '';
+                    chatContainer.getElementsByClassName('user-avatar')[0].src = userInfo.avatar;
+                    chatContainer.setAttribute('uid', userInfo.id);
 
-                // for(let i = 0; i < chatHistory.length; i++){
-                //     let message = `
+                    chatMessages_container.innerHTML = '';
 
-                //     `
-                // }
-            })
-        }
-    )
+                    if (chatHistory.length == 0) {
+                        chatMessages_container.innerHTML +=
+                        `
+
+                        `
+                    }
+                    else {
+                        for (let i = 0; i < chatHistory.length; i++) {
+                            console.log(chatHistory[i]);
+                            let thisMessageDate_ms = chatHistory[i].time;
+                            let thisMessageDate_date;
+                            if (Date.now() - thisMessageDate_ms > 86400000) {
+                                let date = new Date(thisMessageDate_ms);
+                                let day = date.getUTCDate();
+                                if (day < 10) { day = '0' + day }
+                                let month = date.getUTCMonth();
+                                if (month < 10) { month = '0' + month }
+                                let year = date.getUTCFullYear();
+                                thisMessageDate_date = `${day}.${month}.${year}`;
+                            }
+                            else {
+                                let date = new Date(thisMessageDate_ms);
+                                let hour_offset = new Date().getTimezoneOffset() / 60;
+                                let hour = date.getUTCHours();
+                                let minutes = date.getMinutes();
+                                hour -= hour_offset;
+                                if (hour < 10) { hour = '0' + hour }
+                                if (minutes < 10) { minutes = '0' + minutes }
+                                thisMessageDate_date = `${hour}:${minutes}`;
+                            }
+                            let thisMessage_html =
+                                `
+                    <div class="chat-message">
+                    <div class="chat-message-avatar-container">
+                        <img src="${chatHistory[i].sender_avatar}">
+                    </div>
+                    <div class="chat-message-body">
+                    <div class="chat-message-header">
+                        <p class="user-name">${chatHistory[i].sender_fullname}</p>
+                        <p class="sent-date">${thisMessageDate_date}</p>
+                    </div>
+                    <div class="message-body">`
+                            if (chatHistory[i].message != '') {
+                                let message = chatHistory[i].message;
+                                message = message.replace(/\r/gm, '<br>');
+                                thisMessage_html += `<div class="message-element">${message}</div>`;
+                            }
+                            if (chatHistory[i].files.imgs.length != 0) {
+                                    for (let j = 0; j < chatHistory[i].files.imgs.length; j++) {
+                                    console.log(`картинка получена: ${chatHistory[i].files.imgs[j].path}\nШирина:${chatHistory[i].files.imgs[j].dimensions.width}\nВысота: ${chatHistory[i].files.imgs[j].dimensions.height}`);
+
+                                    let width = chatHistory[i].files.imgs[j].dimensions.width;
+                                    let height = chatHistory[i].files.imgs[j].dimensions.height;
+                                    let img_path = chatHistory[i].files.imgs[j].path;
+                                    let width_toSet;
+                                    let height_toSet;
+                                    if(width != height){
+                                        if(width > 680){
+                                            width_toSet = 680;
+                                        }
+                                        else{
+                                            width_toSet = width;
+                                        }
+                                        if(height > 360){
+                                            height_toSet = 360;
+                                        }
+                                        else{
+                                            height_toSet = height;
+                                        }
+                                    }
+                                    else{
+                                        if(height > 360){
+                                            width_toSet = 360;
+                                            height_toSet = 360;
+                                        }
+                                        else{
+                                            width_toSet = height;
+                                            height_toSet = height;
+                                        }
+                                    }
+                                    console.log(`картинка получена: ${chatHistory[i].files.imgs[j].path}\nШирина установлена:${width_toSet}\nВысота установлена: ${height_toSet}`);
+                                    
+                                    thisMessage_html +=
+                                        `<div class="message-element">
+                                        <div class="img-container">
+                                            <img width="${width_toSet}" height="${height_toSet}" class="message-element-img message-element_viewable modal-window-fullscreen-content modal-window-fullscreen-content_img"src="./chat_files/imgs/${img_path}">
+                                        </div>
+                                    </div>`
+                                }
+                            }
+                            if (chatHistory[i].files.videos.length != 0) {
+                                for (let j = 0; j < chatHistory[i].files.videos.length; j++) {
+                                    thisMessage_html +=
+                                        `
+                                    <div class="message-element">
+                                        <div class="video-container">
+                                            <video class="modal-window-fullscreen-content" src="./chat_files/videos/${chatHistory[i].files.videos[j]}"></video>
+                                            <div class="video-controls message-element_viewable">
+                                                <img src="./icons/icon-play-video.svg" class="video-play-button">
+                                                <div class="controls-container">
+                                                    <progress value="0" max="100" class="video-progress-bar"></progress>
+                                                    <div class="controls-container-buttons">
+                                                        <div class="video-timer">
+                                                            <div class="video-timer-current">
+                                                                <p class="video-timer-current-hours video-timer-current-hours_hidden">00</p>
+                                                                <p class="colon-hours colon-hours_hidden">:</p>
+                                                                <p class="video-timer-current-minutes">00</p>
+                                                                <p class="colon">:</p>
+                                                                <p class="video-timer-current-seconds">00</p>
+                                                            </div>
+                                                            <p class="video-timer-separator">/</p>
+                                                            <div class="video-timer-total">
+                                                                <p class="video-timer-total-hours video-timer-total-hours_hidden">00</p>
+                                                                <p class="colon colon-hours_hidden">:</p>
+                                                                <p class="video-timer-total-minutes">00</p>
+                                                                <p class="colon">:</p>
+                                                                <p class="video-timer-total-seconds">00</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="video-volume-controller">
+                                                            <img src="./icons/icon-video-volume.svg" class="video-controls-volume video-unmuted">
+                                                            <img src="./icons/icon-video-volume-muted.svg" class="video-controls-volume video-controls-volume_hidden">
+                                                            <input type="range" value="50" max="100"class="video-volume-input">
+                                                        </div>
+                                                        <div class="video-controls-options">
+                                                            <img src="./icons/icon-fullscreen-enter.svg" class="video-controls-fullscreen-enter">
+                                                            <img src="./icons/icon-fullscreen-exit.svg" class="video-controls-fullscreen-enter icon_hidden">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                                }
+                            }
+                            if (chatHistory[i].files.audios.length != 0) {
+                                for (let j = 0; j < chatHistory[i].files.audios.length; j++) {
+                                    thisMessage_html +=
+                                        `
+                                <div class="message-element">
+                                    <div class="audio-container">
+                                        <audio src="./chat_files/audios/${chatHistory[i].files.audios[j]}"></audio>
+                                        <div class="audio-controls-container">
+                                            <img src="./icons/icon-play-video.svg" class="audio-play-button">
+                                            <img src="./icons/icon-pause.svg" class="audio-play-button audio-play-button_hidden">
+                                            <img src="./icons/icon-video-volume.svg" class="volume-icon volume-icon-unmuted">
+                                            <img src="./icons/icon-video-volume-muted.svg" class="volume-icon volume-icon_hidden">
+                                            <input type="range" class="input-volume" value="50" max="100">
+                                            <progress value="0" max="100" class="audio-progress"></progress>
+                                        </div>
+                                    </div>
+                                </div>
+                                `
+                                }
+                            }
+                            if (chatHistory[i].files.others.length != 0) {
+                                for (let j = 0; j < chatHistory[i].files.others.length; j++) {
+                                    thisMessage_html +=
+                                        `
+                                <div class="message-element message-element_downloadable">
+                                    <div class="others-files-container">
+                                        <img src="./icons/icon-other-file.svg" class="other-files-icon">
+                                        <div class="others-file-info-container">
+                                            <p class="file-name">${chatHistory[i].files.others[j].fileName}</p>
+                                            <p class="file-size">${chatHistory[i].files.others[j].fileWeight}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                `
+                                }
+                            }
+                            thisMessage_html +=
+                                `
+                        </div>
+                    </div>
+                    </div>
+                    `;
+                            chatMessages_container.innerHTML += thisMessage_html;
+                        }
+                            let message_bodies = document.getElementsByClassName('message-body');
+                            for(let i = 0; i < message_bodies.length; i++){
+                                updateChatEvents(message_bodies[i]);
+                            }
+                            scrollIntoChatView(chatMessages_container)
+                    }
+                })
+            }
+        )
 }
 
-function addChatEvents(){
+function addChatEvents() {
     const sendMessageButtons = document.getElementsByClassName('send-message-button');
     console.log(sendMessageButtons);
-    for(let i = 0; i < sendMessageButtons.length; i++){
-        sendMessageButtons[i].addEventListener('click', function(){
+    for (let i = 0; i < sendMessageButtons.length; i++) {
+        sendMessageButtons[i].addEventListener('click', function () {
             let user_toChat_id = this.getAttribute('to');
             chat_unselected_contentBody.classList.remove('chat_active');
             chatContainer.classList.add('chat_active');
@@ -116,33 +531,36 @@ function addChatEvents(){
 }
 
 const notifications_settings = localStorage.getItem('notifications_settings');
-if(notifications_settings == undefined){
-    fetch('/app?action=getNotificationsSettings',{
+if (notifications_settings == undefined) {
+    fetch('/app?action=getNotificationsSettings', {
         method: 'POST'
     })
-    .then(
-        function (response){
-            response.json().then(function(data){
-                for(key in data){
-                    localStorage.setItem(key, data[key])
-                }
-            })
-        }
-    )
+        .then(
+            function (response) {
+                response.json().then(function (data) {
+                    for (key in data) {
+                        localStorage.setItem(key, data[key])
+                    }
+                })
+            }
+        )
 }
 
-socket.onmessage = function(e){
+function scrollIntoChatView(chatMessages_container){
+    let scroll_value = chatMessages_container.scrollHeight;
+    chatMessages_container.scrollTo(0, scroll_value);
+}
+
+socket.onmessage = function (e) {
     let thisMessage = JSON.parse(e.data);
-    // console.log('notification received', thisMessage);
-    switch(thisMessage.action){
-        case 'notification':{
+    switch (thisMessage.action) {
+        case 'notification': {
             showNotification(thisMessage);
             break;
         }
-        case 'system':{
-            switch(thisMessage.context){
-                case 'contacts':{
-                    console.log(thisMessage);
+        case 'system': {
+            switch (thisMessage.context) {
+                case 'contacts': {
                     let html = `
                         <div class="contacts-item contacts-item_${thisMessage.toadd.onlineStatus_classPart}">
                             <div class="avatar">
@@ -165,33 +583,204 @@ socket.onmessage = function(e){
                 }
             }
         }
+        case 'chatMessage': {
+            let message = JSON.parse(thisMessage.message);
+            console.log(message);
+            let thisMessageTime_ms = message.timestamp;
+            let thisMessageDate_date;
+            if (Date.now() - thisMessageTime_ms > 86400000) {
+                let date = new Date(thisMessageTime_ms);
+                let day = date.getUTCDate();
+                if (day < 10) { day = '0' + day }
+                let month = date.getUTCMonth();
+                if (month < 10) { month = '0' + month }
+                let year = date.getUTCFullYear();
+                thisMessageDate_date = `${day}.${month}.${year}`;
+            }
+            else {
+                let date = new Date(thisMessageTime_ms);
+                let hour_offset = new Date().getTimezoneOffset() / 60;
+                let hour = date.getUTCHours();
+                let minutes = date.getMinutes();
+                hour -= hour_offset;
+                if (hour < 10) { hour = '0' + hour }
+                if (minutes < 10) { minutes = '0' + minutes }
+                thisMessageDate_date = `${hour}:${minutes}`;
+            }
+            let thisMessage_html =
+                `
+                    <div class="chat-message">
+                    <div class="chat-message-avatar-container">
+                        <img src="${message.avatar}">
+                    </div>
+                    <div class="chat-message-body">
+                    <div class="chat-message-header">
+                        <p class="user-name">${message.fullname}</p>
+                        <p class="sent-date">${thisMessageDate_date}</p>
+                    </div>
+                    <div class="message-body">`
+            if (message.message != '') {
+                let thisMessage = message.message;
+                thisMessage = thisMessage.replace(/\r/gm, '<br>');
+                thisMessage_html += `<p class="message-element">${thisMessage}</p>`;
+            }
+            if(message.files != null){
+                if (message.files.imgs.length != 0) {
+                    for (let j = 0; j < message.files.imgs.length; j++) {
+                        let width = message.files.imgs[j].dimensions.width;
+                                    let height = message.files.imgs[j].dimensions.height;
+                                    let img_path = message.files.imgs[j].path;
+                                    let width_toSet;
+                                    let height_toSet;
+                                    if(width != height){
+                                        if(width > 680){
+                                            width_toSet = 680;
+                                        }
+                                        if(height > 360){
+                                            height_toSet = 360;
+                                        }
+                                    }
+                                    else{
+                                        if(height > 360){
+                                            width_toSet = 360;
+                                            height_toSet = 360;
+                                        }
+                                        else{
+                                            width_toSet = height;
+                                            height_toSet = height;
+                                        }
+                                    }
+                        thisMessage_html +=
+                            `<div class="message-element">
+                                            <div class="img-container">
+                                                <img width="${width_toSet}" height="${height_toSet}" class="message-element-img message-element_viewable modal-window-fullscreen-content modal-window-fullscreen-content_img"src="./chat_files/imgs/${img_path}">
+                                            </div>
+                                        </div>`
+                    }
+                }
+                if (message.files.videos.length != 0) {
+                    for (let j = 0; j < message.files.videos.length; j++) {
+                        thisMessage_html +=
+                            `
+                                        <div class="message-element">
+                                            <div class="video-container">
+                                                <video class="modal-window-fullscreen-content" src="./chat_files/videos/${message.files.videos[j]}"></video>
+                                                <div class="video-controls message-element_viewable">
+                                                    <img src="./icons/icon-play-video.svg" class="video-play-button">
+                                                    <div class="controls-container">
+                                                        <progress value="0" max="100" class="video-progress-bar"></progress>
+                                                        <div class="controls-container-buttons">
+                                                            <div class="video-timer">
+                                                                <div class="video-timer-current">
+                                                                    <p class="video-timer-current-hours video-timer-current-hours_hidden">00</p>
+                                                                    <p class="colon-hours colon-hours_hidden">:</p>
+                                                                    <p class="video-timer-current-minutes">00</p>
+                                                                    <p class="colon">:</p>
+                                                                    <p class="video-timer-current-seconds">00</p>
+                                                                </div>
+                                                                <p class="video-timer-separator">/</p>
+                                                                <div class="video-timer-total">
+                                                                    <p class="video-timer-total-hours video-timer-total-hours_hidden">00</p>
+                                                                    <p class="colon colon-hours_hidden">:</p>
+                                                                    <p class="video-timer-total-minutes">00</p>
+                                                                    <p class="colon">:</p>
+                                                                    <p class="video-timer-total-seconds">00</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="video-volume-controller">
+                                                                <img src="./icons/icon-video-volume.svg" class="video-controls-volume video-unmuted">
+                                                                <img src="./icons/icon-video-volume-muted.svg" class="video-controls-volume video-controls-volume_hidden">
+                                                                <input type="range" value="50" max="100"class="video-volume-input">
+                                                            </div>
+                                                            <div class="video-controls-options">
+                                                                <img src="./icons/icon-fullscreen-enter.svg" class="video-controls-fullscreen-enter">
+                                                                <img src="./icons/icon-fullscreen-exit.svg" class="video-controls-fullscreen-enter icon_hidden">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `
+                    }
+                }
+                if (message.files.audios.length != 0) {
+                    for (let j = 0; j < message.files.audios.length; j++) {
+                        thisMessage_html +=
+                            `
+                                    <div class="message-element">
+                                        <div class="audio-container">
+                                            <audio src="./chat_files/audios/${message.files.audios[j]}"></audio>
+                                            <div class="audio-controls-container">
+                                                <img src="./icons/icon-play-video.svg" class="audio-play-button">
+                                                <img src="./icons/icon-pause.svg" class="audio-play-button audio-play-button_hidden">
+                                                <img src="./icons/icon-video-volume.svg" class="volume-icon volume-icon-unmuted">
+                                                <img src="./icons/icon-video-volume-muted.svg" class="volume-icon volume-icon_hidden">
+                                                <input type="range" class="input-volume" value="50" max="100">
+                                                <progress value="0" max="100" class="audio-progress"></progress>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `
+                    }
+                }
+                if (message.files.others.length != 0) {
+                    for (let j = 0; j < message.files.others.length; j++) {
+                        thisMessage_html +=
+                            `
+                                    <div class="message-element message-element_downloadable">
+                                        <div class="others-files-container">
+                                            <img src="./icons/icon-other-file.svg" class="other-files-icon">
+                                            <div class="others-file-info-container">
+                                                <p class="file-name">${message.files.others[j].fileName}</p>
+                                                <p class="file-size">${message.files.others[j].fileWeight}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `
+                    }
+                }
+            }
+            thisMessage_html +=
+                `
+                        </div>
+                    </div>
+                    </div>
+                    `;
+            chatMessages_container.innerHTML += thisMessage_html;
+            scrollIntoChatView(chatMessages_container)
+
+            let message_elements = chatMessages_container.getElementsByClassName('message-body');
+            for(let i = 0; i < message_elements.length; i++){
+                updateChatEvents(message_elements[i]);
+            }
+        }
     }
 }
 
-function hideNotification(el){
+function hideNotification(el) {
     el.style.animationName = 'notification-hide';
-    setTimeout(() => {       
+    setTimeout(() => {
         el.parentNode.removeChild(el);
     }, 500);
 }
 
-function addContactsEvents(){
-    let contacts_avatars = document.getElementsByClassName('contacts-avatar');
-    for(let i = 0; i < contacts_avatars.length; i++){
-        contacts_avatars[i].addEventListener('click', function(){
-            let thisUser_id = this.getAttribute('uid');
-            console.log('contacts avatar ckick');
+function addContactsEvents() {
+    let contacts_content = document.getElementsByClassName('contacts-item');
+    for (let i = 0; i < contacts_content.length; i++) {
+        contacts_content[i].addEventListener('click', function () {
+            let thisUser_id = this.getElementsByClassName('contacts-avatar')[0].getAttribute('uid');
             showSearchFullInfo('user', thisUser_id);
         })
     }
 }
 
-function send_friendRequestResponse(type, from){
+function send_friendRequestResponse(type, from) {
     let response_obj = {
         answer: type,
         from: from
     }
-    fetch('app/?action=friendRequestResponse',{
+    fetch('app/?action=friendRequestResponse', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
@@ -200,21 +789,21 @@ function send_friendRequestResponse(type, from){
     })
 }
 
-function showNotification(thisNotification){
+function showNotification(thisNotification) {
     // action: "notification"
     // hide: "auto"
     // message: "This email is already in use"
     // title: "An error occurred"
     // type: "error"
     let html = '';
-    switch(thisNotification.type){
-        case 'error':{
-            html+=`
+    switch (thisNotification.type) {
+        case 'error': {
+            html += `
             <div class="popup-notification popup-notification-error autohide">
                 <h1 class="notification-title">${thisNotification.title}</h1>
                 <span class="notification-description description-error">${thisNotification.message}</span>
             </div>`
-            
+
             notification_container.innerHTML += html;
             let thisAutoHide_element = document.getElementsByClassName('autohide')[0];
             setTimeout(() => {
@@ -222,8 +811,8 @@ function showNotification(thisNotification){
             }, 5000);
             break;
         }
-        case 'friends':{
-            html+=`
+        case 'friends': {
+            html += `
             <div class="popup-notification popup-notification-friend">
                 <h1 class="notification-title">${thisNotification.title}</h1>
                 <div class="buttons-container">
@@ -233,15 +822,15 @@ function showNotification(thisNotification){
             </div>`
             notification_container.innerHTML += html;
             let thisNotes = document.getElementsByClassName('popup-notification-friend');
-            for(let i = 0; i < thisNotes.length; i++){
-                thisNotes[i].getElementsByClassName('friend-request-accept')[0].addEventListener('click', function(){
+            for (let i = 0; i < thisNotes.length; i++) {
+                thisNotes[i].getElementsByClassName('friend-request-accept')[0].addEventListener('click', function () {
                     let from = thisNotes[i].getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
                     thisNotes[i].parentNode.removeChild(thisNotes[i]);
                     send_friendRequestResponse('accept', from);
                 })
             }
-            for(let i = 0; i < thisNotes.length; i++){
-                thisNotes[i].getElementsByClassName('friend-request-reject')[0].addEventListener('click', function(){
+            for (let i = 0; i < thisNotes.length; i++) {
+                thisNotes[i].getElementsByClassName('friend-request-reject')[0].addEventListener('click', function () {
                     let from = thisNotes[i].getElementsByClassName('notification-title')[0].getElementsByClassName('account-notification-link')[0].getAttribute('uid');
                     thisNotes[i].parentNode.removeChild(thisNotes[i]);
                     send_friendRequestResponse('reject', from);
@@ -249,8 +838,8 @@ function showNotification(thisNotification){
             }
             break;
         }
-        case 'alert':{
-            html+= `
+        case 'alert': {
+            html += `
             <div class="popup-notification popup-notification-alert">
                 <h1 class="notification-title">${thisNotification.title}</h1>
                 <span class="notification-description">${thisNotification.message}</span>
@@ -259,8 +848,8 @@ function showNotification(thisNotification){
             `
             notification_container.innerHTML += html;
             const buttonOK = document.getElementsByClassName('alert-button-ok');
-            for(let i = 0; i < buttonOK.length; i++){
-                buttonOK[i].addEventListener('click', function() {
+            for (let i = 0; i < buttonOK.length; i++) {
+                buttonOK[i].addEventListener('click', function () {
                     let thisNote = this.parentNode;
                     console.log('thisNote = ', thisNote);
                     hideNotification(thisNote);
@@ -270,46 +859,46 @@ function showNotification(thisNotification){
     }
 }
 
-function sumbitCommunityChanges(form){
+function sumbitCommunityChanges(form) {
     let data = new FormData(form);
     showLoadingSection();
-    fetch('/app?action=editCommunity',{
+    fetch('/app?action=editCommunity', {
         method: 'POST',
         body: data
     })
-    .then(
-        function (response){
-            response.json().then(function(data){
-                if(data.success == 'error'){
-                    alert(data.message);
-                    hideLoadingSection();
-                }
-                else{
-                    window.location.reload();
-                }
-            })
-        }
-    )
+        .then(
+            function (response) {
+                response.json().then(function (data) {
+                    if (data.success == 'error') {
+                        alert(data.message);
+                        hideLoadingSection();
+                    }
+                    else {
+                        window.location.reload();
+                    }
+                })
+            }
+        )
 }
 
-for(let i = 0; i < editCommunityButtons.length; i++){
-    editCommunityButtons[i].addEventListener('click', function(){
+for (let i = 0; i < editCommunityButtons.length; i++) {
+    editCommunityButtons[i].addEventListener('click', function () {
         let thisGroup_id = this.getAttribute('groupid');
-        fetch('/app?action=getGroupInfo',{
+        fetch('/app?action=getGroupInfo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8'
             },
-            body: JSON.stringify({groupid: thisGroup_id})
+            body: JSON.stringify({ groupid: thisGroup_id })
         })
-        .then(
-            function (response){
-                response.json().then(function(data){
-                    if(data.status){
-                        let response = data.data;
-                        let form = modalEditCommunity.getElementsByClassName('edit-community-secret-form')[0];
-                        form.innerHTML = '';
-                        let html = `
+            .then(
+                function (response) {
+                    response.json().then(function (data) {
+                        if (data.status) {
+                            let response = data.data;
+                            let form = modalEditCommunity.getElementsByClassName('edit-community-secret-form')[0];
+                            form.innerHTML = '';
+                            let html = `
                         <div class="edit-avatar-container edit-avatar-container-group">
                             <img src="${response.avatar_path}" class="edit-community-avatar avatar-default edit-community-avatar-default" alt=">
                             <img src="./imgs/avatar_hover.png" alt="" class="edit-community-avatar avatar-hover">
@@ -355,85 +944,85 @@ for(let i = 0; i < editCommunityButtons.length; i++){
                         </div>
                         <input type="hidden" class="groupid_edit_secret-input" value="${response.groupid}" name="groupid">
                         `
-                        form.innerHTML = html;
-                        form.getElementsByClassName('edit-avatar-container-group')[0].addEventListener('click', function () {
-                            form.getElementsByClassName('group-edit-avatar-input-element')[0].click();
-                            form.getElementsByClassName('group-edit-avatar-input-element')[0].addEventListener('input', function () {
-                                let img = this.files[0];
-                                if (img) {
-                                    let reader = new FileReader();
-                                    reader.readAsDataURL(img)
-                                    reader.addEventListener('load', function () {
-                                        form.getElementsByClassName('edit-community-avatar-default')[0].src = this.result;
-                                    })
-                                }
+                            form.innerHTML = html;
+                            form.getElementsByClassName('edit-avatar-container-group')[0].addEventListener('click', function () {
+                                form.getElementsByClassName('group-edit-avatar-input-element')[0].click();
+                                form.getElementsByClassName('group-edit-avatar-input-element')[0].addEventListener('input', function () {
+                                    let img = this.files[0];
+                                    if (img) {
+                                        let reader = new FileReader();
+                                        reader.readAsDataURL(img)
+                                        reader.addEventListener('load', function () {
+                                            form.getElementsByClassName('edit-community-avatar-default')[0].src = this.result;
+                                        })
+                                    }
+                                })
                             })
-                        })
-                        modalEditCommunity.classList.add('modal-edit-community_shown');
-                        const deleteCommunityButton = modalEditCommunity.getElementsByClassName('delete-community-button')[0];
-                        deleteCommunityButton.addEventListener('click', function(){
-                            let thisGroupid = modalEditCommunity.getElementsByClassName('groupid_edit_secret-input')[0].value;
-                            let confirm_val = confirm('You sure you want to delete this group?');
-                            if(confirm_val){
-                                fetch('/app?action=deleteCommunity',{
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json;charset=utf-8'
-                                    },
-                                    body: JSON.stringify({id: thisGroupid})
-                                })
-                                .then(function(response){
-                                    response.json().then(function(data){
-                                        if(data.status == 'error'){
-                                            alert(data.message)
-                                        }
-                                        else{
-                                            window.location.reload();
-                                        }
+                            modalEditCommunity.classList.add('modal-edit-community_shown');
+                            const deleteCommunityButton = modalEditCommunity.getElementsByClassName('delete-community-button')[0];
+                            deleteCommunityButton.addEventListener('click', function () {
+                                let thisGroupid = modalEditCommunity.getElementsByClassName('groupid_edit_secret-input')[0].value;
+                                let confirm_val = confirm('You sure you want to delete this group?');
+                                if (confirm_val) {
+                                    fetch('/app?action=deleteCommunity', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json;charset=utf-8'
+                                        },
+                                        body: JSON.stringify({ id: thisGroupid })
                                     })
-                                })
-                            }
-                        });
-                        modalEditCommunity_buttonSubmit.addEventListener('click', function(){
-                            sumbitCommunityChanges(editCommunity_form);
-                        })
-                    }
-                    else{
-                        alert(data.message);
-                    }
-                })
-            }
-        )
+                                        .then(function (response) {
+                                            response.json().then(function (data) {
+                                                if (data.status == 'error') {
+                                                    alert(data.message)
+                                                }
+                                                else {
+                                                    window.location.reload();
+                                                }
+                                            })
+                                        })
+                                }
+                            });
+                            modalEditCommunity_buttonSubmit.addEventListener('click', function () {
+                                sumbitCommunityChanges(editCommunity_form);
+                            })
+                        }
+                        else {
+                            alert(data.message);
+                        }
+                    })
+                }
+            )
     })
 }
 
-function createNewCommunity_sendRequest(superSecretForm){
+function createNewCommunity_sendRequest(superSecretForm) {
     console.log(superSecretForm);
     const body = new FormData(superSecretForm);
     console.log(body.avatar);
     for (var pair of body.entries()) {
-        console.log(pair[0]+ ', ' + pair[1]); 
+        console.log(pair[0] + ', ' + pair[1]);
     }
     console.log(body);
     showLoadingSection();
-    fetch('/app?action=createCommunity',{
+    fetch('/app?action=createCommunity', {
         method: 'POST',
         body: body
     })
-    .then(
-        function (response){
-            response.json().then(function(data){
-                hideLoadingSection();
-                if(data.status == 'success'){
-                    alert('Community created successfully. Customize it in settings for more convenient use');
-                    window.location.reload();
-                }
-                if(data.status == 'error'){
-                    alert(message);
-                }
-            })
-        }
-    )
+        .then(
+            function (response) {
+                response.json().then(function (data) {
+                    hideLoadingSection();
+                    if (data.status == 'success') {
+                        alert('Community created successfully. Customize it in settings for more convenient use');
+                        window.location.reload();
+                    }
+                    if (data.status == 'error') {
+                        alert(message);
+                    }
+                })
+            }
+        )
 }
 
 for (let i = 0; i < notificationPreviewSettings.length; i++) {
@@ -487,20 +1076,20 @@ for (let i = 0; i < notificationSettingsCheckboxes.length; i++) {
                 },
                 body: JSON.stringify(thisSetting_obj)
             })
-            .then(
-                function (response) {
-                    response.json().then(function (data) {
-                        console.log('asd');
-                        if (data.status == 'success') {
-                            hideLoadingSection();
-                        }
-                        else {
-                            alert(data.message)
-                            window.location.reload();
-                        }
-                    })
-                }
-            )
+                .then(
+                    function (response) {
+                        response.json().then(function (data) {
+                            console.log('asd');
+                            if (data.status == 'success') {
+                                hideLoadingSection();
+                            }
+                            else {
+                                alert(data.message)
+                                window.location.reload();
+                            }
+                        })
+                    }
+                )
         }, 100);
     })
 }
@@ -575,10 +1164,10 @@ function fillUserInfoModal(body) {
     let location = (body.location != '') ? `<a href="https://www.google.com/maps/place/${body.location}" target="_blank"><div class="user-quick-info-item"><img src="./icons/icon-location.svg"> ${body.location}</div></a>` : '';
     let vk = (body.vk != '') ? `<a href="https://www.${body.vk}" target="_blank"><div class="user-quick-info-item"><img src="./icons/icon-vk.svg"> ${body.vkshort}</div></a>` : '';
     let isFriend_toFill_content = ``;
-    if(body.isFriend){
+    if (body.isFriend) {
         isFriend_toFill_content = `<div class="user-actions-block-item button-remove-from-friends contacts-user-action" action="remove" uid="${body.id}"><img src="./icons/icon-remove-friend.svg"> Remove from contacts</div>`
     }
-    if(!body.isFriend){
+    if (!body.isFriend) {
         isFriend_toFill_content = `<div class="user-actions-block-item button-add-to-friends contacts-user-action" action="add" uid="${body.id}"><img src="./icons/icon-add-friend.svg"> Add to contacts</div>`
     }
     modal.innerHTML = `
@@ -612,7 +1201,7 @@ function fillUserInfoModal(body) {
             </div>
     `
     addChatEvents();
-    document.getElementsByClassName('contacts-user-action')[0].addEventListener('click', function(){
+    document.getElementsByClassName('contacts-user-action')[0].addEventListener('click', function () {
         if (this.getAttribute('action') == 'add') {
             let thisUser_id = this.getAttribute('uid');
             let response = fetch('/app?action=addToFriends', {
@@ -630,22 +1219,22 @@ function fillUserInfoModal(body) {
                     }
                 )
         }
-        if(this.getAttribute('action') == 'remove'){
+        if (this.getAttribute('action') == 'remove') {
             let thisUser_id = this.getAttribute('uid');
-            fetch('/app?action=removeFromFriends',{
+            fetch('/app?action=removeFromFriends', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json;charset=utf-8'
                 },
-                body: JSON.stringify({id: thisUser_id})
+                body: JSON.stringify({ id: thisUser_id })
             })
-            .then(
-                function (response){
-                    response.json().then(function(data){
-                        console.log(data);
-                    })
-                }
-            )
+                .then(
+                    function (response) {
+                        response.json().then(function (data) {
+                            console.log(data);
+                        })
+                    }
+                )
         }
     })
 }
@@ -689,7 +1278,7 @@ async function sendSearchRequest(request, range, thisForm_searchIcon, thisForm_l
                         html += `<h1 class="search-result-title">People</h1>`;
                         for (let i = 0; i < data.people.length; i++) {
                             let isFriend = ``;
-                            if(data.people[i].isFriend == true){
+                            if (data.people[i].isFriend == true) {
                                 isFriend = `
                                     <div class="search-result-isFriend">
                                         <img src="/icons/menu-icons/icon-friends.svg">
@@ -709,7 +1298,7 @@ async function sendSearchRequest(request, range, thisForm_searchIcon, thisForm_l
                             `
                         }
                     }
-                    if(data.groups.length != 0){
+                    if (data.groups.length != 0) {
                         html += `<h1 class="search-result-title">Groups</h1>`;
                         for (let i = 0; i < data.groups.length; i++) {
                             html += `
@@ -837,3 +1426,4 @@ editProfile_button.addEventListener('click', function (e) {
         )
 })
 addContactsEvents()
+updateQuickChats()

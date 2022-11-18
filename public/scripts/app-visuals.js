@@ -12,7 +12,6 @@ const copySharingLink_button = document.getElementsByClassName('invite-friends-c
 const notificationSettings_switchers = document.getElementsByClassName('notification-settings-group-item-input');
 const notificationSettings_checkboxes = document.getElementsByClassName('notification-settings-group-item-input-checkbox');
 const settingsNavItems = document.getElementsByClassName('settings-item');
-const messageInput = document.getElementsByClassName('message-input');
 const fileDrop_window = document.getElementsByClassName('modal-file-drop-window')[0];
 const fileDrop_input = document.getElementById('fileDropInput');
 const modalWindowActions = document.getElementsByClassName('user-actions-modal')[0];
@@ -53,22 +52,59 @@ const fullScreen_slider = document.getElementsByClassName('fullscreen-slider')[0
 const fullScreen_sliderLine = document.getElementsByClassName('fullscreen-slider-line')[0];
 const fullScreen_slider_slideLeft_button = document.getElementsByClassName('fullscreen-slider-arrow-left')[0];
 const fullScreen_slider_slideRight_button = document.getElementsByClassName('fullscreen-slider-arrow-right')[0];
-
+const message_textContainer = document.getElementsByClassName('message-text-container')[0];
+const fileDrop_area = document.getElementsByClassName('file-drop-area')[0];
+const fullScreenSlider_previewContainer = document.getElementsByClassName('fullscreen-slider-content-preview-container')[0];
+const attachSticker_button = document.getElementsByClassName('attach-sticker-button')[0];
+const stickersContainer = document.getElementsByClassName('stickers-container_top')[0];
+const stickersContainer_closeButton = document.getElementsByClassName('sticker-container-close-button')[0];
+const chatUserBar = document.getElementsByClassName('chats-user-bar')[0];
 
 let fullScreenSlider_videoObjects = [];
+let audioObjects = [];
 
 let isScrolling = false;
 let isAbleToDrag = false;
+
+chatUserBar.addEventListener('click', function(){
+    let chat_container = this.parentNode;
+    let uid = parseInt(chat_container.getAttribute('uid'));
+    if(uid != undefined){
+        showSearchFullInfo('user', uid);
+    }
+    modalUserInfo_closeButton.addEventListener('click', function(){
+        discoverUserInfo.classList.remove('modal-user-info_active');
+    }, {once: true});
+})
 
 attachFile_button.addEventListener('click', function(){
     chatFileInput_element.click();
 })
 
+function moveFullscreenSliderPreview(direction){
+    if(direction == 'right'){
+        let currentPreview = fullScreenSlider_previewContainer.getElementsByClassName('content-preview-container-item_active')[0];
+        if(currentPreview.nextSibling.nextSibling != undefined){
+            currentPreview.classList.remove('content-preview-container-item_active');
+            currentPreview.nextSibling.nextSibling.classList.add('content-preview-container-item_active');
+        }
+    }
+    if(direction == 'left'){
+        let currentPreview = fullScreenSlider_previewContainer.getElementsByClassName('content-preview-container-item_active')[0];
+        if(currentPreview.previousSibling.previousSibling != undefined){
+            currentPreview.classList.remove('content-preview-container-item_active');
+            currentPreview.previousSibling.previousSibling.classList.add('content-preview-container-item_active');
+        }
+    }
+}
+
 fullScreen_slider_slideLeft_button.addEventListener('click', function(){
     fullScreenSlider_scroll('left');
+    moveFullscreenSliderPreview('left')
 });
 fullScreen_slider_slideRight_button.addEventListener('click', function(){
     fullScreenSlider_scroll('right')
+    moveFullscreenSliderPreview('right')
 });
 
 function fullScreen_modalWindow_close(){
@@ -83,7 +119,6 @@ fullScreen_modalWindow_closeButton.addEventListener('click', fullScreen_modalWin
 
 function fullScreenSlider_scroll(direction){
     if(direction == 'right'){
-        console.log('scrolling');
         let hperc = window.innerWidth;
         let sliderLine_width = fullScreen_sliderLine.clientWidth;
         let maxScroll = sliderLine_width/hperc*(-100) + 100;
@@ -124,9 +159,11 @@ function fullScreenSlider_scroll(direction){
 function handleSliderEvents(e){
     if(e.key == 'ArrowRight'){
         fullScreenSlider_scroll('right');
+        moveFullscreenSliderPreview('right')
     }
     if(e.key == 'ArrowLeft'){
         fullScreenSlider_scroll('left');
+        moveFullscreenSliderPreview('left')
     }
 }
 
@@ -143,19 +180,51 @@ function addFullScreenSliderEvents(){
         })
     }
 }
-
 function showFullScreenSlider(thisMessage_viewableFiles, context){
+    //fullScreenSlider_previewContainer
+    console.log(thisMessage_viewableFiles);
+    console.log(context);
     fullScreen_sliderLine.innerHTML = '';
     let context_toScroll;
+    fullScreenSlider_previewContainer.innerHTML = '';
     for(let i = 0; i < thisMessage_viewableFiles.length; i++){
         let innerHTML = thisMessage_viewableFiles[i].parentNode.parentNode.innerHTML;
+        let isActive = false;
         if(context == thisMessage_viewableFiles[i]){
-            context_toScroll = (i);
+            context_toScroll = i;
+            isActive = true;
         }
         fullScreen_sliderLine.innerHTML += 
         `<div class="fullscreen-slider-item">
             ${innerHTML}  
         </div>`;
+        let contentPreview_html;
+        if(thisMessage_viewableFiles[i].tagName == 'IMG'){
+            let className = 'content-preview-container-item';
+            if(isActive){
+                className += ' content-preview-container-item_active';
+            }
+            contentPreview_html = 
+        `
+            <div class="${className}">
+                <img src="${thisMessage_viewableFiles[i].src}">
+            </div>
+        `
+        }
+        if(thisMessage_viewableFiles[i].tagName == 'DIV'){
+            let video = thisMessage_viewableFiles[i].previousSibling.previousSibling;
+            let className = 'content-preview-container-item';
+            if(isActive){
+                className += ' content-preview-container-item_active';
+            }
+            contentPreview_html = 
+        `
+            <div class="${className}">
+                <video src="${video.src}">
+            </div>
+        `
+        }
+        fullScreenSlider_previewContainer.innerHTML += contentPreview_html;
     }
     addFullScreenSliderEvents();
     for(let i = 0; i < context_toScroll; i++){
@@ -164,7 +233,9 @@ function showFullScreenSlider(thisMessage_viewableFiles, context){
 }
 
 function updateChatEvents(thisMessage_body){
+    console.log('element получен в updateChatEvents: ', thisMessage_body);
     let thisMessage_viewableFiles = thisMessage_body.getElementsByClassName('message-element_viewable');
+    let thisMessage_downloadableFiles = thisMessage_body.getElementsByClassName('message-element_downloadable');
     fullScreen_sliderLine.innerHTML = '';
     for(let i = 0; i < thisMessage_viewableFiles.length; i++){
         thisMessage_viewableFiles[i].addEventListener('click', function(){
@@ -172,25 +243,49 @@ function updateChatEvents(thisMessage_body){
             fullScreen_modalWindow.classList.add('modal-window-fullscreen-content-view_shown');
         })
     }
+    for(let i = 0; i < thisMessage_downloadableFiles.length; i++){
+        thisMessage_downloadableFiles[i].addEventListener('click', function(){
+            let fileName = this.getElementsByClassName('file-name')[0].innerText;
+            let url = `http://127.0.0.1:8000/app?action=download&fileName=${fileName}`
+            window.open(url, '_blank');
+        })
+    }
 }
-updateChatEvents(document.getElementsByClassName('message-body')[0]);
-messageContainer.addEventListener('keydown', function(e){
+
+message_textContainer.addEventListener('keydown', function(e){
     if(e.key == 'Enter' && e.shiftKey){
-        messageInput[i].textContent += '\n';
-        messageInput[i].focus();
+        message_textContainer.innerText += '\n';
+        message_textContainer.focus();
         const range = document.createRange();
-        range.selectNodeContents(messageInput[i]);
+        range.selectNodeContents(message_textContainer);
         range.collapse(false);
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
+        console.log('enter + shift');
     }
-    if(e.key == 'Enter'){
+    else if(e.key == 'Enter'){
+        console.log('enter');
         e.preventDefault();
-        let message = this.textContent;
+        let message = message_textContainer.innerText;
+        let images = message_textContainer.getElementsByTagName('img');
+        for(let i = 0; i < images.length; i++){
+
+        }
         let user_toSend_id = document.getElementsByClassName('chat_active')[0].getAttribute('uid');
-        let files = chatFileInput_element.files;
+        let files = [];
+        if(chatFileInput_element.files.length != 0){
+            files = chatFileInput_element.files;
+        }
+        else{
+            files = null;
+        }
+        message_textContainer.textContent = '';
+        inmessage_attachments_container.innerHTML = '';
         sendChatMessage(message, files, user_toSend_id);
+    }
+    else{
+        
     }
 })
 
@@ -346,7 +441,20 @@ for(let i = 0; i < createCommunity_select.length; i++){
         }
     })
 }
-
+//bookmark
+const stickers = stickersContainer.getElementsByClassName('sticker-item-container');
+for(let i = 0; i < stickers.length; i++){
+    stickers[i].addEventListener('click', function(){
+        let emoji = this.innerText;
+        message_textContainer.innerText+=emoji;
+    })
+}
+attachSticker_button.addEventListener('click', function(e){
+    stickersContainer.classList.add('stickers-container_top_shown');
+    stickersContainer_closeButton.addEventListener('click', function(){
+        stickersContainer.classList.remove('stickers-container_top_shown');
+    }, {once: true})
+})
 createCommunityButton.addEventListener('click', function(){
 
 })
@@ -440,60 +548,61 @@ for(let i = 0; i < userProfileEdit_inputs.length; i++){
 }
 
 userChatOpenActions_button.addEventListener('click', function(){
+    console.log(1);
     modalWindowActions.classList.add('user-actions-modal_active');
+    setTimeout(() => {
+        document.addEventListener('click', function(){
+            modalWindowActions.classList.remove('user-actions-modal_active');
+            console.log(2);
+        }, {once: true});
+    }, 100);
 })
 
 copySharingLink_button.addEventListener('click', function(){
     let link = document.getElementsByClassName('link-output')[0].innerHTML;
     window.navigator.clipboard.writeText(link);
 })
-
-document.getElementsByTagName('body')[0].ondragover = function(e){
+chatContainer.addEventListener('dragover', function(e){
     e.preventDefault();
     e.stopPropagation();
-    if(isAbleToDrag){
-        fileDrop_window.classList.add('modal-file-drop-window_active');
-    }
-}
-document.getElementsByTagName('body')[0].ondrop = function(){
+    fileDrop_window.classList.add('modal-file-drop-window_active');
+})
+fileDrop_area.addEventListener('dragleave', function(e){
     e.preventDefault();
     e.stopPropagation();
-}
-fileDrop_window.ondrop = function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if(isAbleToDrag){
-        fileInput = e.dataTransfer.files;
-        fileDrop_window.classList.remove('modal-file-drop-window_active');
-        fileDrop_input.files = fileInput;
-    }
-    //Дописать отправку файлов
-
-}
-fileDrop_window.ondragout = function(){
     fileDrop_window.classList.remove('modal-file-drop-window_active');
+})
+fileDrop_window.addEventListener('dragover', (e)=>{e.preventDefault()}, false);
+fileDrop_window.addEventListener('drop', function(e){
+    let input_event = new Event('input');
+    fileDrop_window.classList.remove('modal-file-drop-window_active');
+    let thisFiles = e.dataTransfer.files;
+    chat_fileInput.value = '';
+    chat_fileInput.files = thisFiles;
+    chat_fileInput.dispatchEvent(input_event);
+    e.preventDefault();
+})
+
+message_textContainer.onpaste = function(e){
+    console.log('paste');
+    let pasteText = e.clipboardData.getData('text/plain');
+    message_textContainer.innerText += pasteText;
+    message_textContainer.focus();
+    const range = document.createRange();
+    range.selectNodeContents(message_textContainer);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return false;
+}
+message_textContainer.ondrop = function (e) {
+    fileInput = e.dataTransfer.files;
+    let thisFileInput = this.parentNode.getElementsByClassName('file-input')[0];
+    thisFileInput.files = fileInput;
+    return false;
 }
 
-for(let i = 0; i < messageInput.length; i++){
-    messageInput[i].onpaste = function(e){
-        let pasteText = e.clipboardData.getData('text/plain');
-        messageInput[i].textContent += pasteText;
-        messageInput[i].focus();
-        const range = document.createRange();
-        range.selectNodeContents(messageInput[i]);
-        range.collapse(false);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        return false;
-    }
-    messageInput[i].ondrop = function(e){
-        fileInput = e.dataTransfer.files;
-        let thisFileInput = this.parentNode.getElementsByClassName('file-input')[0];
-        thisFileInput.files = fileInput;
-        return false;
-    }
-}
 
 for(let i = 0; i < settingsNavItems.length; i++){
     settingsNavItems[i].addEventListener('click', function(){

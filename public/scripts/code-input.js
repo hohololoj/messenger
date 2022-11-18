@@ -61,12 +61,14 @@ function getCode(){
     for(let i = 0; i<6; i++){
         code += inputs[i].value;
     }
+    let date = new Date();
+    let timezone_offset = date.getTimezoneOffset();
     let response = fetch('/auth?action=code',{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify({code: code})
+        body: JSON.stringify({code: code, timezone_offset: timezone_offset})
     })
     .then(
         function (response){

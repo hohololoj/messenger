@@ -1,3 +1,4 @@
+@import url(https://fonts.googleapis.com/css?family=Noto+Color+Emoji:regular);
 ::-webkit-scrollbar{
     width: 5px;
     height: 5px;
@@ -239,6 +240,47 @@ button{
     .modal-window-fullscreen-content{
         max-width: 100%;
         max-height: 90%;
+    }
+    .fullscreen-slider-content-preview-container{
+        height: 120px;
+        position: fixed;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        width: auto;
+        gap: 8px;
+        align-items: center;
+        .content-preview-container-item{
+            width: 80px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            img{
+                width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center;
+                border-radius: 8px;
+                border: 2px solid rgba(255, 255, 255, 0);
+            }
+            video{
+                width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center;
+                border-radius: 8px;
+                border: 2px solid rgba(255, 255, 255, 0);
+            }
+        }
+        .content-preview-container-item_active{
+            img{
+                border: 2px solid white;
+            }
+            video{
+                border: 2px solid white;
+            }
+        }
     }
     .fullscreen-slider{
         width: 100%;
@@ -1146,31 +1188,53 @@ button{
     display: flex;
 }
 .modal-file-drop-window{
-    form{
-        width: 100%;
+    .file-drop-area{
+        width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
         height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        z-index: 9999;
+    }
+    form{
+        width: fit-content;
+        height: auto;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 128px;
+        border: 2px dashed white;
+        position: relative;
+        z-index: 9998;
+        pointer-events: none;
     }
     position: fixed;
-    z-index: 10;
+    z-index: 9999;
     width: 100%;
     height: 100%;
-    background: rgba($color: #000000, $alpha: 0.5);
+    background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 20%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.1) 100%);
     display: none;
     color: white;
     font-size: 32px;
     font-weight: 800;
     opacity: 0;
     transition: opacity 0.5s ease;
+    justify-content: center;
+    align-items: center;
     #fileDropInput{
         display: none;
     }
+    .file-drop-description{
+        font-size: 24px;
+        font-weight: bold;
+    }
 }
 .modal-file-drop-window_active{
-    display: flex;
     opacity: 1;
+    display: flex;
 }
 .section-app{
     display: grid;
@@ -1395,16 +1459,29 @@ button{
                     width: 56px;
                     height: 56px;
                     border-radius: 50%;
-                    background: red;
+                    position: relative;
+                    .avatar_img{
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        object-position: center;
+                        position: relative;
+                        z-index: 1;
+                    }
                     .online-status{
                         width: 6px;
                         height: 6px;
                         border-radius: 50%;
                         background: #398FE5;
-                        border: 2px solid #398FE5;
-                        position: relative;
+                        border: 1px solid white;
+                        position: absolute;
                         left: 80%;
                         top: 80%;
+                        z-index: 2;
+                    }
+                    .online-status_offline{
+                        display: none;
                     }
                 }
                 .chat-content{
@@ -1938,6 +2015,8 @@ button{
                             top: 100%;
                             box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08), 0px 0px 48px rgba(0, 0, 0, 0.04);
                             border-radius: 8px;
+                            background: white;
+                            z-index: 1000;
                             .action-item{
                                 display: flex;
                                 gap: 16px;
@@ -1988,13 +2067,419 @@ button{
                     }
                     .message-input-container{
                         width: 680px;
-                        height: 40px;
+                        height: auto;
+                        min-height: 40px;
                         border-radius: 8px;
                         position: relative;
                         display: flex;
                         align-items: flex-end;
                         background: #E3E4E5;
-
+                        .stickers-container_top{
+                            display: none;
+                            width: fit-content;
+                            height: auto;
+                            position: absolute;
+                            bottom: 40px;
+                            right: 0;
+                            z-index: 1000;
+                            background: white;
+                            box-shadow: 4px 4px 8px 0px rgba(34, 60, 80, 0.2);
+                            border-radius: 8px;
+                            flex-direction: column;
+                            .close-button-container{
+                                height: 32px;
+                                width: 192px;
+                                display: flex;
+                                padding: 8px 8px 8px 0px;
+                                justify-content: flex-end;
+                                align-items: center;
+                                img{
+                                    height: 100%;
+                                    width: auto;
+                                    cursor: pointer;
+                                    border-radius: 8px;
+                                    &:hover{
+                                        background: #E3E4E5;
+                                    }
+                                }
+                            }
+                        }
+                        .stickers-container_top_shown{
+                            display: flex;
+                        }
+                        .stickers-container{
+                            width: 192px;
+                            height: 192px;
+                            overflow: scroll;
+                            display: flex;
+                            flex-direction: column;
+                            .stickers-container-group{
+                                display: flex;
+                                flex-direction: column;
+                                .stickers-container-group-title{
+                                    width: 100%;
+                                    height: 32px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-weight: 900;
+                                    font-size: 15px;
+                                    line-height: 24px;
+                                    color: #171A1F;
+                                    position: relative;
+                                    .stickers-close-button{
+                                        position: absolute;
+                                        cursor: pointer;
+                                        right: 8px;
+                                    }
+                                }
+                                .stickers-content-container{
+                                    display: grid;
+                                    grid-template-columns: repeat(6, 1fr);
+                                    grid-auto-rows: 32px;
+                                    .sticker-item-container{
+                                        width: 100%;
+                                        height: 100%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        cursor: pointer;
+                                        border-radius: 8px;
+                                        font-size: 24px;
+                                        &:hover{
+                                            background: #E3E4E5;
+                                        }
+                                    }
+                                }
+                            }
+                            .stickers-container-group-context{
+                                display: none;
+                            }
+                        }
+                        .message-text-container{
+                            width: 612px;
+                            height: auto;
+                            display: flex;
+                            align-items: flex-end;
+                            background: #E3E4E5;
+                            outline: none;
+                            word-wrap: normal;
+                            word-break: break-all;
+                        }
+                        .attachments-inmessage-container{
+                            width: 100%;
+                            display: grid;
+                            grid-template-columns: 200px 200px 200px;
+                            grid-auto-rows: 120px;
+                            height: fit-content;
+                            justify-items: center;
+                            align-items: center;
+                            justify-content: space-between;
+                            .attached-others-container{
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                gap: 8px;
+                                position: relative;
+                                button{
+                                    position: absolute;
+                                    top: 0;
+                                    right: 0;
+                                    width: 20px;
+                                    height: 20px;
+                                    background: rgba(0,0,0,0.48);
+                                    padding: 2px;
+                                    cursor: pointer;
+                                    img{
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                }
+                                .others-files-container{
+                                    height: auto;
+                                    width: 100%;
+                                    display: flex;
+                                    gap: 16px;
+                                    padding: 8px 0px;
+                                    cursor: pointer;
+                                    .other-files-icon{
+                                        height: 48px;
+                                        width: auto;
+                                    }
+                                    .others-file-info-container{
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: space-between;
+                                        .file-name{
+                                            font-weight: 900;
+                                            font-size: 15px;
+                                            line-height: 24px;
+                                            color: #171A1F;
+                                        }
+                                        .file-size{
+                                            font-weight: 400;
+                                            font-size: 13px;
+                                            color: #71747A;
+                                        }
+                                    }
+                                }
+                            }
+                            .attached-img-container{
+                                width: fit-content;
+                                height: auto;
+                                position: relative;
+                                display: flex;
+                                justify-content: center;
+                                button{
+                                    position: absolute;
+                                    top: 0;
+                                    right: 0;
+                                    width: 20px;
+                                    height: 20px;
+                                    background: rgba(0,0,0,0.48);
+                                    padding: 2px;
+                                    cursor: pointer;
+                                    img{
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                }
+                                img{
+                                    max-width: 200px;
+                                    max-height: 120px;
+                                }
+                            }
+                            .attached-audio-container{
+                                width: 200px;
+                                height: auto;
+                                position: relative;
+                                button{
+                                    position: absolute;
+                                    top: -10px;
+                                    right: 0;
+                                    width: 20px;
+                                    height: 20px;
+                                    background: rgba(0,0,0,0.48);
+                                    padding: 2px;
+                                    cursor: pointer;
+                                    img{
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                }
+                                img{
+                                    max-width: 200px;
+                                    max-height: 120px;
+                                }
+                                .audio-container{
+                                    width: 100%;
+                                    height: 40px;
+                                    background: #F2F3F5;
+                                    border-radius: 8px;
+                                    display: flex;
+                                    align-items: center;
+                                    .audio-controls-container{
+                                        width: 100%;
+                                        height: 100%;
+                                        display: flex;
+                                        align-items: center;
+                                        padding: 8px;
+                                        gap: 8px;
+                                    }
+                                    .audio-container > audio{
+                                        display: none;
+                                    }
+                                    .audio-play-button{
+                                        height: 100%;
+                                        cursor: pointer;
+                                    }
+                                    .audio-play-button_hidden{
+                                        display: none;
+                                    }
+                                    .volume-icon{
+                                        height: 70%;
+                                        cursor: pointer;
+                                    }
+                                    .volume-icon_hidden{
+                                        display: none;
+                                    }
+                                    .volume-icon-unmuted{
+                                        margin-left: 1.67px;
+                                        margin-right: 1.67px;
+                                    }
+                                    .input-volume{
+                                        height: 5px;
+                                        max-width: 50px;
+                                        animation-duration: 0.5s;
+                                        animation-fill-mode: forwards;
+                                        animation-timing-function: ease;
+                                        cursor: pointer;
+                                        width: 0;
+                                    }
+                                    .audio-progress{
+                                        width: 100%;
+                                        height: 5px;
+                                        cursor: pointer;
+                                        transition: height 0.2s ease-in-out;
+                                        outline: none;
+                                        margin-left: 8px;
+                                    }
+                                    .audio-progress:hover{
+                                        height: 10px;
+                                    }
+                                }
+                            }
+                            .attached-video-container{
+                                width: fit-content;
+                                height: auto;
+                                position: relative;
+                                display: flex;
+                                justify-content: center;
+                                button{
+                                    position: absolute;
+                                    top: 0;
+                                    right: 0;
+                                    z-index: 999;
+                                    width: 20px;
+                                    height: 20px;
+                                    background: rgba(0,0,0,0.48);
+                                    padding: 2px;
+                                    cursor: pointer;
+                                    img{
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                }
+                                .video-container{
+                                    max-width: 200px;
+                                    max-height: 120px;
+                                    position: relative;
+                                    video{
+                                        height: 100%;
+                                        width: 100%;
+                                    }
+                                    .video-play-button{
+                                        width: 32px;
+                                        height: 32px;
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        animation-duration: 0.5s;
+                                        animation-fill-mode: forwards;
+                                        animation-timing-function: ease;
+                                        user-select: none;
+                                        -webkit-user-drag: none;
+                                        z-index: 999;
+                                    }
+                                    .video-controls{
+                                        width: 100%;
+                                        height: 100%;
+                                        position: absolute;
+                                        top: 0;
+                                        left: 0;
+                                        cursor: pointer;
+                                    }
+                                    .controls-container{
+                                        width: 90%;
+                                        height: 40px;
+                                        position: absolute;
+                                        bottom: 0;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        display: flex;
+                                        flex-direction: column;
+                                        animation-duration: 0.5s;
+                                        animation-fill-mode: forwards;
+                                        animation-timing-function: ease;
+                                    }
+                                    .video-progress-bar{
+                                        width: 100%;
+                                        height: 10px;
+                                        cursor: pointer;
+                                    }
+                                    .controls-container-buttons{
+                                        width: 100%;
+                                        height: 30px;
+                                        display: flex;
+                                        gap: 16px;
+                                        align-items: center;
+                                    }
+                                    .video-controls-options{
+                                        width: 100%;
+                                        height: 20px;
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        gap: 16px;
+                                    }
+                                    .video-volume-controller{
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    }
+                                    .video-controls-volume{
+                                        height: 20px;
+                                        cursor: pointer;
+                                        border-radius: 8px;
+                                    }
+                                    .video-unmuted{
+                                        margin-left: 1.96px;
+                                        margin-right: 1.96px;
+                                    }
+                                    .video-volume-input{
+                                        width: 0px;
+                                        height: 10px;
+                                        animation-duration: 0.5s;
+                                        animation-timing-function: ease;
+                                        animation-fill-mode: forwards;
+                                    }
+                                    .video-controls-volume_hidden{
+                                        display: none;
+                                    }
+                                    .video-timer{
+                                        width: fit-content;
+                                        height: 20px;
+                                        display: flex;
+                                        gap: 1px;
+                                        align-items: center;
+                                    }
+                                    .video-timer-current{
+                                        display: flex;
+                                        gap: 1px;
+                                        color: white;
+                                        text-shadow: 1px 1px 1px #000;
+                                        font-size: 16px;
+                                    }
+                                    .video-timer-separator{
+                                        font-size: 18px;
+                                        color: white;
+                                        text-shadow: 1px 1px 1px #000;
+                                        margin-left: 1px;
+                                        margin-right: 1px;
+                                    }
+                                    .video-timer-total{
+                                        display: flex;
+                                        gap: 1px;
+                                        color: white;
+                                        text-shadow: 1px 1px 1px #000;
+                                        font-size: 16px;
+                                    }
+                                    .video-timer-total-hours_hidden, .video-timer-current-hours_hidden, .colon-hours_hidden{
+                                        display: none;
+                                    }
+                                    .video-controls-fullscreen-enter{
+                                        width: 20px;
+                                        height: 20px;
+                                        cursor: pointer;
+                                    }
+                                    .icon_hidden{
+                                        display: none;
+                                    }
+                                }
+                            }
+                        }
                         .message-input{
                             background: #E3E4E5;
                             border-radius: 8px 8px 0px 8px;
@@ -2010,6 +2495,7 @@ button{
                             color: #171A1F;
                             max-width: 644px;
                             padding: 8px 16px;
+                            gap: 8px;
                         }
                         .attach-sticker-button{
                             position: absolute;
@@ -2020,6 +2506,10 @@ button{
                             border: none;
                             outline: none;
                             border-radius: 0px 8px 8px 0px;
+                            cursor: pointer;
+                            &:hover{
+                                background: #cbcbcb;
+                            }
                         }
                     }
                 }
@@ -2111,7 +2601,7 @@ button{
                                                 max-width: 680px;
                                                 max-height: 360px;
                                                 object-fit: contain;
-                                                object-position: center;
+                                                object-position: left;
                                                 cursor: pointer;
                                             }
                                             .video-container{
@@ -2257,6 +2747,7 @@ button{
                                                 cursor: pointer;
                                                 .other-files-icon{
                                                     height: 48px;
+                                                    width: auto;
                                                 }
                                                 .others-file-info-container{
                                                     display: flex;
@@ -2273,6 +2764,63 @@ button{
                                                         font-size: 13px;
                                                         color: #71747A;
                                                     }
+                                                }
+                                            }
+                                            .audio-container{
+                                                width: 100%;
+                                                height: 40px;
+                                                background: #F2F3F5;
+                                                border-radius: 8px;
+                                                display: flex;
+                                                align-items: center;
+                                                .audio-controls-container{
+                                                    width: 100%;
+                                                    height: 100%;
+                                                    display: flex;
+                                                    align-items: center;
+                                                    padding: 8px;
+                                                    gap: 8px;
+                                                }
+                                                .audio-container > audio{
+                                                    display: none;
+                                                }
+                                                .audio-play-button{
+                                                    height: 100%;
+                                                    cursor: pointer;
+                                                }
+                                                .audio-play-button_hidden{
+                                                    display: none;
+                                                }
+                                                .volume-icon{
+                                                    height: 70%;
+                                                    cursor: pointer;
+                                                }
+                                                .volume-icon_hidden{
+                                                    display: none;
+                                                }
+                                                .volume-icon-unmuted{
+                                                    margin-left: 1.67px;
+                                                    margin-right: 1.67px;
+                                                }
+                                                .input-volume{
+                                                    height: 5px;
+                                                    width: 100px;
+                                                    animation-duration: 0.5s;
+                                                    animation-fill-mode: forwards;
+                                                    animation-timing-function: ease;
+                                                    cursor: pointer;
+                                                    width: 0;
+                                                }
+                                                .audio-progress{
+                                                    width: 100%;
+                                                    height: 5px;
+                                                    cursor: pointer;
+                                                    transition: height 0.2s ease-in-out;
+                                                    outline: none;
+                                                    margin-left: 8px;
+                                                }
+                                                .audio-progress:hover{
+                                                    height: 10px;
                                                 }
                                             }
                                         }

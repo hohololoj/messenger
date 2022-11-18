@@ -18,6 +18,7 @@ class video{
         this.muted_icon = this.controlsButtons.getElementsByClassName('video-controls-volume')[1];
         this.volumeInput = this.controlsButtons.getElementsByClassName('video-volume-input')[0];
         this.fullScreenButton_enter = this.controlsButtons.getElementsByClassName('video-controls-fullscreen-enter');
+        this.volumeInputDisabled = false;
         this.timer;
         this.volumeTimer;
         this.playState = 0;
@@ -42,12 +43,6 @@ class video{
         this.video.addEventListener('timeupdate', e => {
             this.progressBar_handle();
         })
-        this.volumeInput.addEventListener('click', e => {
-            e.stopPropagation();
-        })
-        this.volumeInput.addEventListener('input', e => {
-            this.volume_handle();
-        })
         this.progressBar.addEventListener('click', e => {
             e.stopPropagation();
             this.progressBarRewind(e);
@@ -58,6 +53,12 @@ class video{
         this.volumeInput.addEventListener('mouseleave', e => {
             this.hideVolumeInput();
         })
+        this.volumeInput.addEventListener('click', e => {
+            e.stopPropagation();
+        })
+        this.volumeInput.addEventListener('input', e => {
+            this.volume_handle();
+        })
         this.fullScreenButton_enter[0].addEventListener('click', e => {
             e.stopPropagation();
             this.fullScreen_open();
@@ -66,12 +67,14 @@ class video{
             e.stopPropagation();
             this.fullScreen_close();
         })
-
         this.video_container.addEventListener('fullscreenchange', e => {
             this.fullScreenStateChange_handle();
         })
         this.showtime();
         this.mute_handle();
+        if(this.volumeInputDisabled){
+            this.volumeInput.style.display = 'none';
+        }
         for(let i = 0; i < this.videoControls_volume.length; i++){
             this.videoControls_volume[i].addEventListener('click', e => {
                 e.stopPropagation();
@@ -101,9 +104,13 @@ class video{
     }
     fullScreen_open(){
         this.video_container.requestFullscreen();
+        if(this.volumeInputDisabled){
+            this.volumeInput.style.display = 'block';
+        }
     }
     fullScreen_close(){
         document.exitFullscreen();
+        this.volumeInput.style.display = 'none';
     }
     showVolumeInput(){
         clearTimeout(this.volumeTimer);
@@ -251,5 +258,8 @@ class video{
         this.playState = 0;
         this.video.currentTime = 0;
         this.showPlayButton();
+    }
+    disableVolumeInput(){
+        this.volumeInputDisabled = true;
     }
 }

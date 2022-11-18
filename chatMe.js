@@ -1,6 +1,6 @@
 'use strict'
 import express, { json, response } from 'express';
-import path from 'path';
+import path, { resolve } from 'path';
 import fs from 'fs';
 import { route } from './router.js';
 import cookieParser from 'cookie-parser';
@@ -11,6 +11,7 @@ import multiparty from 'multiparty';
 import expressHandlebars from 'express-handlebars';
 import { error } from 'console';
 import expressWs from 'express-ws';
+import imageSize from 'image-size';
 
 const __dirname = path.resolve();
 const ip = '127.0.0.1';
@@ -344,8 +345,6 @@ async function checkForLogged(token) {
             return false;
         }
         else {
-            const db = mongoClient.db('logged');
-            const tokens = db.collection('tokens');
             return true;
         }
     }
@@ -389,17 +388,18 @@ async function getUserInfo(token) {
                         onlineStatus_text = 'yesterday';
                     }
                     else {
-                        let date = new Date(onlineStatus_text);
-                        let day = date.getDay();
-                        if (day.length != 2) {
+                        let date = new Date(currentUser_info.onlineStatus);
+                        console.log(date);
+                        let day = date.getUTCDate();
+                        if (day < 10) {
                             day = '0' + day;
                         }
-                        let month = date.getMonth();
+                        let month = date.getUTCMonth();
                         month++;
-                        if (month.length != 2) {
+                        if (month < 10) {
                             month = '0' + month;
                         }
-                        let year = date.getFullYear();
+                        let year = date.getUTCFullYear();
                         onlineStatus_text = (day + ':' + month + ':' + year)
                     }
                 }
@@ -448,6 +448,18 @@ async function getUserInfo(token) {
 
 }
 
+async function getStickers(){
+    let stickers = await mongoRequest('emojis', 'emojis', 'get', 'many', {});
+    let stickers_arr = [];
+    for(let i = 0; i < stickers.length; i++){
+        stickers_arr[stickers[i].name] = {
+            id: stickers[i]._id,
+            src: stickers[i].path
+        }
+    }
+    console.log(stickers_arr)
+}
+
 async function writeApp(token, res) {
     
     let promise = new Promise((resolve, reject) => {
@@ -457,7 +469,112 @@ async function writeApp(token, res) {
     promise.then((thisUser) => {
         let avatar_path = thisUser.avatar_path;
         thisUser.avatar_path = avatar_path.slice(48);
-        res.render('app.hbs', thisUser);
+        let promises = [];
+        let chats = thisUser.chats;
+        if(chats != undefined){
+            for(let i = 0; i < chats.length; i++){
+                let thisFriend_id = chats[i];
+                promises.push(new Promise((resolve, reject) => {
+                    let promise_userInfo = new Promise((resolve, reject) => {
+                        let thisFriend_info = mongoRequest('users', 'users', 'get', 'one', {id: thisFriend_id});
+                        resolve(thisFriend_info)
+                    })
+                    let promise_lastMessage = new Promise((resolve, reject) => {
+                        let chatName = `${thisUser.id} - ${thisFriend_id}`;
+                        let promise_mongoConnect = new Promise((resolve, reject) => {
+                            let mongoClient = new MongoClient('mongodb://localhost:27017');
+                            mongoClient.connect();
+                            const db = mongoClient.db('chats');
+                            const thisChat = db.collection(chatName);
+                            resolve(thisChat);
+                        })
+                        promise_mongoConnect.then((thisChat)=>{
+                            let lastMessage = thisChat.find().sort({$natural: -1}).limit(1).toArray();
+                            resolve(lastMessage);
+                        })
+                    })
+                    Promise.all([promise_userInfo, promise_lastMessage])
+                    .then((thisChat)=>{
+                        let thisFriend_info = thisChat[0];
+                        let lastMessage = thisChat[1][0];
+                        let thisFriend_info_toRender = {
+                            id: thisFriend_info.id,
+                            name: thisFriend_info.fullname,
+                            avatar: thisFriend_info.avatar_path.slice(39),
+                            onlineStatus: thisFriend_info.onlineStatus
+                        }
+                        thisFriend_info_toRender.onlineStatus == 'online' ? thisFriend_info_toRender.onlineStatus = 'online-status' : thisFriend_info_toRender.onlineStatus = 'online-status online-status_offline'; 
+                        let lastMessage_toRender = {
+                            id: lastMessage._id,
+                            message: '',
+                            timestamp: ''
+                        }
+                        if(lastMessage.sender_id == thisUser.id){
+                            lastMessage_toRender.message = 'You: ';
+                        }
+                        if(lastMessage.message == ''){
+                            let length = 0;
+                            if(lastMessage.files.audios != []){
+                                length += lastMessage.files.audios.length
+                            }
+                            if(lastMessage.files.videos != []){
+                                length += lastMessage.files.videos.length
+                            }
+                            if(lastMessage.files.others != []){
+                                length += lastMessage.files.others.length
+                            }
+                            if(lastMessage.files.imgs != []){
+                                length += lastMessage.files.imgs.length
+                            }
+                            lastMessage_toRender.message += `${length} attachments`;
+                        }
+                        else{
+                            if(lastMessage.message.length > 60){
+                                lastMessage_toRender.message += lastMessage.message.slice(57) + '...';
+                            }
+                            else{
+                                lastMessage_toRender.message += lastMessage.message;
+                            }
+                        }
+                        let today = new Date();
+                        let lastMessage_timestamp = new Date(lastMessage.timestamp);
+                        if(today.getUTCDate() == lastMessage_timestamp.getUTCDate() && today.getUTCMonth() == lastMessage_timestamp.getUTCMonth() && today.getUTCFullYear() == lastMessage_timestamp.getUTCFullYear()){
+                            let timezone_offset = thisUser.timezone_offset;
+                            timezone_offset /= 60;
+                            let lastMessage_hours = lastMessage_timestamp.getUTCHours();
+                            lastMessage_hours -= timezone_offset
+                            if(lastMessage_hours < 10){
+                                lastMessage_hours = '0'+lastMessage_hours;
+                            }
+                            let lastMessage_minutes = lastMessage_timestamp.getUTCMinutes();
+                            if(lastMessage_minutes < 10){
+                                lastMessage_minutes = '0'+lastMessage_minutes;
+                            }
+                            let date = `${lastMessage_hours}:${lastMessage_minutes}`;
+                            lastMessage_toRender.timestamp = date;
+                        }
+                        else{
+                            let date = `
+                            ${lastMessage_timestamp.getUTCDate() < 10 ? ('0'+lastMessage_timestamp.getUTCDate()) : lastMessage_timestamp.getUTCDate()}.${lastMessage_timestamp.getUTCMonth() < 10 ? ('0'+lastMessage_timestamp.getUTCMonth()) : lastMessage_timestamp.getUTCMonth()}.${lastMessage_timestamp.getUTCFullYear()}`;
+                            lastMessage_toRender.timestamp = date;
+                        }
+                        resolve({
+                            friendInfo: thisFriend_info_toRender,
+                            lastMessage: lastMessage_toRender
+                        })
+                    })
+                }))
+            }
+        }
+        Promise.all(promises)
+        .then((chats) => {
+            let chats_arr = [];
+            for(let i = 0; i < chats.length; i++){
+                chats_arr.push(chats[i]);
+            }
+            thisUser.chats = chats_arr;
+            res.render('app.hbs', thisUser);
+        })
     })
 }
 
@@ -611,6 +728,11 @@ app.get('*', function (req, res) {
             if(req.query.action == 'logout'){
                 res.clearCookie('token');  
             }
+            if(req.query.action == 'download'){
+                let fileName = req.query.fileName;
+                sendFileToDownload(fileName, res);
+                return 0;
+            }
         }
         default: {
             let token = req.signedCookies.token;
@@ -656,9 +778,10 @@ async function findRegistrationCode(token) {
             let email = response.email;
             const codes = db.collection('codes');
             response = await codes.findOne({ email: email });
-            return response;
+            let userinfo = await mongoRequest('users', 'users', 'get', 'one', {email: email});
+            return {response: response, userinfo: userinfo};
         }
-
+        
     } catch (error) {
         console.error('Connection to MongoDB Atlas failed!', error);
         //process.exit();
@@ -707,6 +830,9 @@ async function register_validate(fields) {
         const db = mongoClient.db('users');
         const users = db.collection('users');
         nickname = nickname.toString();
+        if(nickname == ''){
+            return { status: false, message: 'please enter the nickname' };
+        }
         response = await users.findOne({ nickname: nickname });
         if (response == '' || response === undefined || response == null) {
             return { status: true }
@@ -1139,6 +1265,7 @@ async function changeSettings(res, token, req) {
 }
 
 async function search(res, search_object, token){
+    console.log(search_object)
     let idreq = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
     let requestingUser_id = idreq.id;
     let range = search_object.range;
@@ -1154,6 +1281,7 @@ async function search(res, search_object, token){
                 const db = mongoClient.db('users');
                 const users = db.collection('users');
                 response = await users.find({ $or: [{nickname: {$regex: search_regexp, $options:"i"}}, {fullname: {$regex: search_regexp, $options:"i"}}] }).sort({date: '1'}).limit(10).toArray();
+                console.log('response: ', response);
                 let response_obj = {};
                 response_obj.people = [];
                 let requestingUser_frindsList = await mongoRequest('users', 'users', 'get', 'one', {id: requestingUser_id});
@@ -1182,7 +1310,7 @@ async function search(res, search_object, token){
                                 }
                                 let month = date.getMonth();
                                 month++;
-                                if(month.length != 2){
+                                if(month < 10){
                                     month = '0'+month;
                                 }
                                 let year = date.getFullYear();
@@ -1253,7 +1381,7 @@ async function search(res, search_object, token){
                                 }
                                 let month = date.getMonth();
                                 month++;
-                                if (month.length != 2) {
+                                if (month < 10) {
                                     month = '0' + month;
                                 }
                                 let year = date.getFullYear();
@@ -1322,16 +1450,16 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                             }
                             else{
                                 let date = new Date(response.onlineStatus);
-                                let day = date.getDay();
-                                if(day.length != 2){
+                                let day = date.getUTCDate();
+                                if(day < 10){
                                     day = '0'+day;
                                 }
-                                let month = date.getMonth();
+                                let month = date.getUTCMonth();
                                 month++;
-                                if(month.length != 2){
+                                if(month < 10){
                                     month = '0'+month;
                                 }
-                                let year = date.getFullYear();
+                                let year = date.getUTCFullYear();
                                 thisUser_onlineStatus = (day+':'+month+':'+year)
                             }
                         }                        
@@ -1351,24 +1479,47 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                 if(thisUserEmailSettings == 'Nobody'){
                     thisUserEmail = 'hidden';
                 }
-                let date = new Date(response.dateOfBirth_year, --response.dateOfBirth_month, response.dateOfBirth_day);
-                let time = Date.now() - date.getTime();
-                let age = Math.floor(time/1000/60/60/24/365);
-                date = new Date(response.date);
-                let joined = (date.getDay()+1)+' '+months[('0'+date.getMonth().toString())]+' '+date.getFullYear();
-                let birthday = response.dateOfBirth_day;
-                if(birthday.length != 2){
-                    birthday = '0'+birthday;
+                let date = new Date(response.date);
+                let joined_day = date.getUTCDay()+1;
+                let joined_month = date.getUTCMonth()+1;
+                joined_month = joined_month.toString();
+                if(parseInt(joined_month) < 10){
+                    joined_month = '0'+joined_month;
                 }
-                let birthmonth = response.dateOfBirth_month;
-                birthmonth++;
-                if(birthmonth.length != 2){
-                    birthmonth = '0'+birthmonth;
+                joined_month = months[joined_month];
+                let joined_year = date.getUTCFullYear();
+                let joined = joined_day+' '+joined_month+' '+joined_year;
+                let birthday, birthmonth, birthyear, age;
+                if (response.dateOfBirth_day != '') {
+                    birthday = response.dateOfBirth_day;
+                    if (birthday.length != 2) {
+                        birthday = '0' + birthday;
+                    }
+                    birthmonth = response.dateOfBirth_month;
+                    birthmonth++;
+                    if (birthmonth < 10) {
+                        birthmonth = '0' + birthmonth;
+                    }
+                    birthyear = response.dateOfBirth_year;
+                    birthyear.toString();
+                    birthyear += ',';
+                    birthday = birthday.toString();
+                    birthmonth = birthmonth.toString();
+                    birthmonth = months[birthmonth];
+                    let date = new Date(response.dateOfBirth_year, --response.dateOfBirth_month, response.dateOfBirth_day);
+                    let time = Date.now() - date.getTime();
+                    console.log(time)
+                    age = Math.floor(time/1000/60/60/24/365);
+                    age += 'y.o.';
                 }
-                birthday = birthday.toString();
-                birthmonth = birthmonth.toString();
+                else{
+                    birthday = 'Not filled yet';
+                    birthmonth = '';
+                    birthyear = '';
+                    age = '';
+                }
                 let vk = response.vk;
-                let vkshort;
+                let vkshort = '';
                 if(vk != ''){
                     let regexp = /[\w _]+?$/;
                     vkshort = vk.match(regexp)
@@ -1383,7 +1534,7 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                     location: response.location,
                     email: thisUserEmail,
                     vk: response.vk,
-                    dateOfBirth: (birthday+' '+months[birthmonth]+' '+ response.dateOfBirth_year+', '+age+'y.o.'),
+                    dateOfBirth: (birthday+' '+birthmonth+' '+ birthyear+' '+age),
                     joined: joined,
                     about: response.about,
                     vkshort: vkshort[0],
@@ -1626,6 +1777,64 @@ function send_socket_message(token, message){
     thisUser.send(thisMessage);
 }
 
+function send_socket_chatMessage(token, message){
+    if (message.files != null) {
+        let thisMessage_images = message.files.imgs;
+        let images_toReturn = [];
+        let promises = [];
+        for (let i = 0; i < thisMessage_images.length; i++) {
+            let thisImage_path = './public/chat_files/imgs/' + thisMessage_images[i];
+            promises.push(new Promise((resolve, reject) => {
+                imageSize(thisImage_path, (err, dimensions) => {
+                    let thisImage = {
+                        path: `${thisMessage_images[i]}`,
+                        dimensions: {
+                            height: dimensions.height,
+                            width: dimensions.width
+                        }
+                    }
+                    console.log(`картинка получена: ${thisImage_path}\nШирина: ${dimensions.width}\nВысота: ${dimensions.height}`);
+                    thisMessage_images[i] = thisImage;
+                    resolve()
+                })
+            }))
+        }
+        let promise = new Promise((resolve, reject) => {
+            Promise.all(promises)
+                .then(() => {
+                    resolve()
+                })
+        })
+        promise.then(() => {
+            let others_arr = [];
+            for (let i = 0; i < message.files.others.length; i++) {
+                let thisFile_name = message.files.others[i];
+                let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
+                others_arr.push(thisFile_fullInfo);
+            }
+            message.files.others = others_arr;
+            let thisMessage = JSON.stringify(message);
+            let thisUser = WSclients[token].ws;
+            let messageObj = {
+                action: 'chatMessage',
+                message: thisMessage
+            }
+            messageObj = JSON.stringify(messageObj);
+            thisUser.send(messageObj);
+        })
+    }
+    else {
+        let thisMessage = JSON.stringify(message);
+        let thisUser = WSclients[token].ws;
+        let messageObj = {
+            action: 'chatMessage',
+            message: thisMessage
+        }
+        messageObj = JSON.stringify(messageObj);
+        thisUser.send(messageObj);
+    }
+}
+
 async function getNotificationsSettings(res, token){
     let mongoClient;
     try {
@@ -1652,8 +1861,8 @@ async function getNotificationsSettings(res, token){
     }
 }
 
-async function writeOfflineNotification(thisUser, token, type, title, message, hide){
-    if(thisUser.offlineNotifications == [] || thisUser.offlineNotifications == '' || thisUser.offlineNotifications == undefined){
+async function writeOfflineNotification(thisUser, token, type, title, message, hide) {
+    if (thisUser.offlineNotifications == [] || thisUser.offlineNotifications == '' || thisUser.offlineNotifications == undefined) {
         thisUser.offlineNotifications = [];
         thisUser.offlineNotifications.push({
             type: type,
@@ -1661,16 +1870,28 @@ async function writeOfflineNotification(thisUser, token, type, title, message, h
             message: message,
             hide: hide
         })
+        mongoRequest('users', 'users', 'update', '', { condition: { id: thisUser.id }, toUpdate: { offlineNotifications: thisUser.offlineNotifications } });
     }
-    else{
-        thisUser.offlineNotifications.push({
+    else {
+        let thisNotification = {
             type: type,
             title: title,
             message: message,
             hide: hide
-        })
+        }
+        if (thisUser.offlineNotifications.indexOf(thisNotification) != -1) {
+            thisUser.offlineNotifications.push({
+                type: type,
+                title: title,
+                message: message,
+                hide: hide
+            })
+            mongoRequest('users', 'users', 'update', '', { condition: { id: thisUser.id }, toUpdate: { offlineNotifications: thisUser.offlineNotifications } });
+        }
+        else{
+            console.log('Такое уведомление уже есть');
+        }
     }
-    mongoRequest('users', 'users', 'update', '', {condition: {id: thisUser.id}, toUpdate: {offlineNotifications: thisUser.offlineNotifications}});
 }
 
 async function addToFriends(user_toAdd_id, token, res){
@@ -1718,6 +1939,7 @@ async function addToFriends(user_toAdd_id, token, res){
 }
 
 function calculateLastOnline(lastOnline){
+    console.log(lastOnline);
     if(lastOnline == 'online'){
         return 'online';
     }
@@ -1732,17 +1954,17 @@ function calculateLastOnline(lastOnline){
             onlineStatus_text = 'yesterday';
         }
         else {
-            let date = new Date(onlineStatus_text);
-            let day = date.getDay();
-            if (day.length != 2) {
+            let date = new Date(lastOnline);
+            let day = date.getUTCDate();
+            if (day < 10) {
                 day = '0' + day;
             }
-            let month = date.getMonth();
+            let month = date.getUTCMonth();
             month++;
-            if (month.length != 2) {
+            if (month < 10) {
                 month = '0' + month;
             }
-            let year = date.getFullYear();
+            let year = date.getUTCFullYear();
             onlineStatus_text = (day + ':' + month + ':' + year)
         }
     }
@@ -1761,7 +1983,6 @@ async function friendRequestResponse_handler(token, answer, from, res){
     const loggeddb = mongoClient.db('logged');
     const tokens = loggeddb.collection('tokens');
     let reciever_id = await tokens.findOne({ token: token });
-    // reciever_token = token
     reciever_id = reciever_id.id;
     switch(answer){
         case 'accept':{
@@ -1973,14 +2194,57 @@ function getFullFileInfo(fileName, context){
     }
 }
 
+async function fillChatHistory_info(res, response){
+    for(let i = 0; i < response.chatHistory.length; i++){
+        let thisMessage_senderid = response.chatHistory[i].sender_id;
+        let sender_info = await mongoRequest('users', 'users', 'get', 'one', {id: thisMessage_senderid});
+        response.chatHistory[i].sender_avatar = sender_info.avatar_path.slice(39);
+        response.chatHistory[i].sender_fullname = sender_info.fullname;
+    }
+    res.send(response);
+}
+
+async function calculateImages(images){
+    return new Promise((resolve, reject) => {
+        let images_toReturn = [];
+        let promises = [];
+
+        for(let i = 0; i < images.length; i++){
+            let thisImage = './public/chat_files/imgs/'+images[i];
+            promises.push(new Promise((resolve, reject) => {
+                imageSize(thisImage, (err, dimensions) => {
+                    images_toReturn.push({
+                        path: images[i],
+                        dimensions: {
+                            'width': dimensions.width,
+                            'height': dimensions.height
+                        }
+                    })
+                    console.log(`Картинка отправлена: `, {
+                        path: images[i],
+                        dimensions: {
+                            'width': dimensions.width,
+                            'height': dimensions.height
+                        }
+                    });
+                    resolve()
+                })
+            }))
+        }
+        Promise.all(promises)
+        .then(
+            () => {
+            resolve(images_toReturn)
+        })
+    })
+}
+
 async function getChatHistory(user_sending_token, user_toSend_id, res){
-    console.log(user_toSend_id);
     let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: user_sending_token});
     user_sending_id = user_sending_id.id;
     user_toSend_id = parseInt(user_toSend_id);
 
     let user_toSend_onlineStatus = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-    console.log({id: user_toSend_id});
     user_toSend_onlineStatus = user_toSend_onlineStatus.onlineStatus;
 
     let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
@@ -2005,6 +2269,7 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                 })
                 promise.then((user_toSend_info_response) => {
                     let user_toSend_info = {
+                        avatar: user_toSend_info_response.avatar_path.slice(39),
                         fullname: user_toSend_info_response.fullname,
                         onlineStatus: calculateLastOnline(user_toSend_info_response.onlineStatus),
                         id: user_toSend_id,
@@ -2028,12 +2293,17 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                         resolve(user_toSend_info);
                     })
                 ])
-                .then(results => {
+                .then(results => {                    
                     let chatHistory = results[0];
                     let chatHistory_filled = [];
+                    let filePromise = new Promise((resolve, reject) => {
                     for (let i = 0; i < chatHistory.length; i++) {
                         chatHistory_filled.push({
+                            message_id: '',
                             sender_id: '',
+                            sender_avatar: '',
+                            sender_fullname: '',
+                            time: '',
                             message: '',
                             files: {
                                 audios: [],
@@ -2042,25 +2312,43 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                                 others: []
                             }
                         });
+                        chatHistory_filled[i].message_id = chatHistory[i]._id;
                         chatHistory_filled[i].sender_id = chatHistory[i].sender_id;
                         chatHistory_filled[i].message = chatHistory[i].message;
-                        chatHistory_filled[i].files = {
-                            audios: chatHistory[i].files.audios,
-                            videos: chatHistory[i].files.videos,
-                            imgs: chatHistory[i].files.imgs,
-                            others: [],
-                        };
-                        let others_arr = [];
-                        for (let j = 0; j < chatHistory[i].files.others.length; j++) {
-                            let thisFile_name = chatHistory[i].files.others[j];
-                            let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
-                            others_arr.push(thisFile_fullInfo);
+                        chatHistory_filled[i].time = chatHistory[i].timestamp;
+                        if (chatHistory[i].files != null) {
+                            chatHistory_filled[i].files = {
+                                audios: chatHistory[i].files.audios,
+                                videos: chatHistory[i].files.videos,
+                                imgs: chatHistory[i].files.imgs,
+                                others: [],
+                            };
+                            let thisImages = chatHistory_filled[i].files.imgs;
+                            calculateImages(thisImages)
+                            .then((images) => {
+                                chatHistory_filled[i].files.imgs = images;
+                            })
+                            let others_arr = [];
+                            for (let j = 0; j < chatHistory[i].files.others.length; j++) {
+                                let thisFile_name = chatHistory[i].files.others[j];
+                                let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
+                                others_arr.push(thisFile_fullInfo);
+                            }
+                            chatHistory_filled[i].files.others = others_arr;
                         }
-                        chatHistory_filled[i].files.others = others_arr;
+                        else{
+                            chatHistory_filled[i].files = {
+                                audios: [],
+                                videos: [],
+                                imgs: [],
+                                others: [],
+                            };
+                        }
                     }
-                    console.log(chatHistory_filled);
-                    
-                    let user_toSend_info_response = results[1];
+                    resolve()
+                    })
+                    .then(() => {
+                        let user_toSend_info_response = results[1];
                     let user_toSend_info = {
                         fullname: user_toSend_info_response.fullname,
                         avatar: user_toSend_info_response.avatar_path.slice(39),
@@ -2071,13 +2359,14 @@ async function getChatHistory(user_sending_token, user_toSend_id, res){
                         chatHistory: chatHistory_filled,
                         userInfo: user_toSend_info
                     }
-                    res.send(response);
+                    fillChatHistory_info(res, response);
+                    db.listCollections({ name: thisChat_collectionName_reversed }).next(function (err, colinfo) {
+                        if (colinfo == null) {
+                            db.createCollection(thisChat_collectionName_reversed);
+                        }
+                    })
+                    })
                 })
-            }
-        })
-        db.listCollections({ name: thisChat_collectionName_reversed }).next(function (err, colinfo) {
-            if (colinfo == null) {
-                db.createCollection(thisChat_collectionName_reversed);
             }
         })
     } catch (error) {
@@ -2092,14 +2381,100 @@ function generateUniqueFileName(ext, type){
     let fullFilePath = `/public/chat_files/${type}/${fullFileName}`;
     return new Promise((resolve, reject) => {
         fs.stat(fullFilePath, (err, stats) => {
-            if(err){resolve(thisFileName)}
-            else{generateUniqueFileName(ext, type)}
+            if(err){
+                resolve(fullFileName)
+            }
+            else{
+                generateUniqueFileName(ext, type)
+            }
         })
-    });
+    })
+}
+
+async function saveFile(extname, thisFilePath, thisFile_type) {
+    return new Promise((resolve, reject) => {
+        generateUniqueFileName(extname, 'imgs')
+            .then((thisFile_newName) => {
+                console.log('результат генерации названия: ', thisFile_newName);
+                fs.rename(thisFilePath, (__dirname + (`/public/chat_files/${thisFile_type}/` + thisFile_newName)), function (err) { if (err) { console.log(err); } });
+                resolve(thisFile_newName);
+            })
+    })
+}
+
+async function sortFiles(files){
+    return new Promise((resolve, reject) => {
+        let thisMesssage_files = {
+            'audios': [],
+            'videos': [],
+            'imgs': [],
+            'others': [],
+        }
+        for (let i = 0; i < files.length; i++) {
+            let extname = files[i].originalFilename.split('.').pop();
+            let thisFile_type;
+            let thisFilePath = files[i].path;
+            if (images_extnames.includes(extname)) {
+                thisFile_type = 'imgs';
+            }
+            else if (audio_extnames.includes(extname)) {
+                thisFile_type = 'audios';
+            }
+            else if (video_extnames.includes(extname)) {
+                thisFile_type = 'videos';
+            }
+            else if (prehibited_extnames.includes(extname)) {
+                notification_send(user_sending_token, 'error', 'Prohibited files', 'One or more files are defined as not allowed to be sent they will not be sent', 'auto');
+            }
+            else {
+                thisFile_type = 'others';
+            }
+            saveFile(extname, thisFilePath, thisFile_type)
+            .then((thisFile_newName) => {
+                console.log('thisFile_newName: ',thisFile_newName);
+                switch (thisFile_type){
+                    case 'imgs':{
+                        thisMesssage_files.imgs.push(thisFile_newName)
+                        break;
+                    }
+                    case 'audios':{
+                        thisMesssage_files.audios.push(thisFile_newName)
+                        break;
+                    }
+                    case 'videos':{
+                        thisMesssage_files.videos.push(thisFile_newName)
+                        break;
+                    }
+                    case 'others':{
+                        thisMesssage_files.others.push(thisFile_newName)
+                        break;
+                    }
+                }  
+                resolve(thisMesssage_files);
+            })
+        }
+    })
+}
+
+async function saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info){
+    await mongoRequest('chats', thisChat_collectionName, 'put', 'one', thisMessage);
+    await mongoRequest('chats', thisChat_collectionName_reversed, 'put', 'one', thisMessage);
+
+    thisMessage['avatar'] = user_sending_info.avatar_path.slice(39);
+    thisMessage['fullname'] = user_sending_info.fullname;
+
+    send_socket_chatMessage(user_sending_token, thisMessage);
+    console.log('Сообщение отправлено по websocket');
+    if(user_toSend_token != false){
+        send_socket_chatMessage(user_toSend_token, thisMessage);
+        notification_send(user_toSend_token, 'alert', `${user_sending_info.fullname}`, 'Sent you a private message', 'auto');
+    }
+    else{
+        writeOfflineNotification(user_toSend_info, null, 'alert', `${user_sending_info.fullname}`, 'Sent you a private message', 'auto');
+    }
 }
 
 async function writeMessage(res, thisMessage_obj, token){
-    
     let user_sending_token = token;
     let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
     user_sending_id = user_sending_id.id;
@@ -2108,76 +2483,44 @@ async function writeMessage(res, thisMessage_obj, token){
     let userSettings_collectionName = `user-${user_toSend_id}`;
     let user_toSend_directMessage_settings = mongoRequest('user-settings', userSettings_collectionName, 'get', 'one', {name: 'showDirectMessagesNotifications'});
     user_toSend_directMessage_settings = user_toSend_directMessage_settings.showDirectMessagesNotifications;
-    let user_toSend_info = mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+    let user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
+    if(user_sending_info.chats == undefined){
+        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: []}});
+        user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
+    }
+    let user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+    if(user_toSend_info.chats == undefined){
+        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: []}});
+        user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+    }
     let user_toSend_onlineStatus = user_toSend_info.onlineStatus;
     let user_toSend_token;
+
+    if(user_sending_info.chats.indexOf(user_toSend_id) == -1){
+        let arr = user_sending_info.chats;
+        arr.push(user_toSend_id);
+        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: arr}});
+    }
+    if(user_toSend_info.chats.indexOf(user_sending_id) == -1){
+        let arr = user_toSend_info.chats;
+        arr.push(user_sending_id);
+        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: arr}});
+    }
+
     if(user_toSend_onlineStatus == 'online'){
-        let user_toSend_logged_info = mongoRequest('logged', 'tokens', 'get', 'one', {id: user_toSend_id});
+        let user_toSend_logged_info = await mongoRequest('logged', 'tokens', 'get', 'one', {id: user_toSend_id});
         user_toSend_token = user_toSend_logged_info.token;
     }
     else{
         user_toSend_token = false;
     }
-    let thisMesssage_files = {
-        'audios': [],
-        'videos': [],
-        'imgs': [],
-        'others': [],
+    let message;
+    if(thisMessage_obj.message != undefined){
+        message = thisMessage_obj.message[0];
     }
-    if(thisMessage_obj.files != false){
-        let files = thisMessage_obj.files.files
-        for(let i = 0; i < files.length; i++){
-            let extname = files[i].originalFilename.split('.').pop();
-            if(images_extnames.includes(extname)){
-                generateUniqueFileName(extname, 'imgs')
-                .then(
-                    thisFile_newName => {
-                        let thisFile_fullname = thisFile_newName+'.'+extname;
-                        thisMesssage_files.imgs.push(thisFile_fullname);
-                        let thisFilePath = files[i].path;
-                        fs.rename(thisFilePath, (__dirname + ('/public/chat_files/imgs/' + thisFile_newName + '.' + extname)), function(err){if(err){console.log(err);}});
-                    }
-                )
-            }
-            else if(audio_extnames.includes(extname)){
-                generateUniqueFileName(extname, 'audios')
-                .then(
-                    thisFile_newName => {
-                        let thisFile_fullname = thisFile_newName+'.'+extname;
-                        thisMesssage_files.audios.push(thisFile_fullname);
-                        let thisFilePath = files[i].path;
-                        fs.rename(thisFilePath, (__dirname + ('/public/chat_files/audios/' + thisFile_newName + '.' + extname)), function(err){if(err){console.log(err);}});
-                    }
-                )
-            }
-            else if(video_extnames.includes(extname)){
-                generateUniqueFileName(extname, 'videos')
-                .then(
-                    thisFile_newName => {
-                        let thisFile_fullname = thisFile_newName+'.'+extname;
-                        thisMesssage_files.videos.push(thisFile_fullname);
-                        let thisFilePath = files[i].path;
-                        fs.rename(thisFilePath, (__dirname + ('/public/chat_files/videos/' + thisFile_newName + '.' + extname)), function(err){if(err){console.log(err);}});
-                    }
-                )
-            }
-            else if(prehibited_extnames.includes(extname)){
-                notification_send(user_sending_token, 'error', 'Prohibited files', 'One or more files are defined as not allowed to be sent they will not be sent', 'auto');
-            }
-            else if(true){
-                generateUniqueFileName(extname, 'others')
-                .then(
-                    thisFile_newName => {
-                        let thisFile_fullname = thisFile_newName+'.'+extname;
-                        thisMesssage_files.others.push(thisFile_fullname);
-                        let thisFilePath = files[i].path;
-                        fs.rename(thisFilePath, (__dirname + ('/public/chat_files/others/' + thisFile_newName + '.' + extname)), function(err){if(err){console.log(err);}});
-                    }
-                )
-            }
-        }
+    else{
+        message = '';
     }
-    let message = thisMessage_obj.message[0];
     let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
     let thisChat_collectionName_reversed = `${user_toSend_id} - ${user_sending_id}`;
 
@@ -2186,12 +2529,84 @@ async function writeMessage(res, thisMessage_obj, token){
     let thisMessage = {
         sender_id: user_sending_id,
         message: message,
-        files: thisMesssage_files,
         timestamp: timestamp
     };
+    if(thisMessage_obj.files != false){
+        let promise = new Promise((resolve, reject) => {
+            sortFiles(thisMessage_obj.files.files)
+            .then((response) => {
+                resolve(response)
+            })
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+        promise.then((response) => {
+            console.log('отсортированные файлы: ', response);
+            thisMessage['files'] = response;
+            saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info)
+            res.sendStatus(200);
+        })
+    }
+    else{
+        thisMessage['files'] = null;
+        saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info)
+        res.sendStatus(200);
+    }
+}
 
-    await mongoRequest('chats', thisChat_collectionName, 'put', 'one', thisMessage);
-    await mongoRequest('chats', thisChat_collectionName_reversed, 'put', 'one', thisMessage);
+async function sendFileToDownload(fileName, res){
+    console.log(fileName);
+    fileName = fileName.replace(/..\//gi, '');
+    fileName = './public/chat_files/others/' + fileName;
+    let thisFile_path = path.resolve(fileName);
+    res.download(thisFile_path);
+}
+
+async function findTimeZoneOffset(timezone_offset){
+    
+}
+
+async function handleCodeInput(token, code, timezone_offset, res){
+    let response = await findRegistrationCode(token);
+    if (response.response == undefined) {
+        res.send({ status: false })
+    }
+    else {
+        let userinfo = response.userinfo;
+        if(userinfo.timezone_offset == undefined){
+            await mongoRequest('users', 'users', 'update', 'one', {condition: {id: userinfo.id}, toUpdate:{timezone_offset: timezone_offset}})
+            .then(() => {
+                if (code == response.response.code) {
+                    res.send({ status: true })
+                }
+                else {
+                    res.send({ status: false })
+                }
+            })
+        }
+        else{
+            if(userinfo.timezone_offset == timezone_offset){
+                if (code == response.response.code) {
+                    res.send({ status: true })
+                }
+                else {
+                    res.send({ status: false })
+                }
+            }
+            else{
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: userinfo.id}, toUpdate:{timezone_offset: timezone_offset}})
+                .then(() => {
+                    if (code == response.response.code) {
+                        res.send({ status: true })
+                    }
+                    else {
+                        res.send({ status: false })
+                    }
+                })
+            }
+        }
+    }
 }
 
 app.post('*', function (req, res) {
@@ -2212,20 +2627,9 @@ app.post('*', function (req, res) {
         }
         case 'code': {
             let token = req.signedCookies.token;
-            findRegistrationCode(token).then(function (response) {
-                if (response == undefined) {
-                    res.send({ status: false })
-                }
-                else {
-                    let code = req.body.code;
-                    if (code == response.code) {
-                        res.send({ status: true })
-                    }
-                    else {
-                        res.send({ status: false })
-                    }
-                }
-            })
+            let code = req.body.code;
+            let timezone_offset = req.body.timezone_offset;
+            handleCodeInput(token, code, timezone_offset, res)
             break;
         }
         case 'resend': {
@@ -2372,18 +2776,28 @@ app.post('*', function (req, res) {
                     if(id == undefined || id == ''){
                         notification_send(token, 'error', 'Sending message failed', 'Something went wrong', 'auto');
                     }
-                    else{
+                    else {
                         let thisMessage_obj = {}
+                        if ((message == undefined || message == '') && files.files == undefined) {
+                            console.log('сообщение пустое');
+                        }
+                        else {
+                            if (message == undefined || message == '') { message = false }
+                            else { thisMessage_obj['message'] = message }
 
-                        if(message == undefined || message == ''){message = false}
-                        else{thisMessage_obj['message'] = message}
+                            if (files.files == undefined) {
+                                thisMessage_obj['files'] = false;
+                                console.log('файлов нет');
+                            }
+                            else {
+                                thisMessage_obj['files'] = files;
+                                console.log('файлы есть');
+                                console.log(files);
+                            }
 
-                        if(files == undefined || files.length == 0){thisMessage_obj['files'] = false;}
-                        else{thisMessage_obj['files'] = files}
-
-                        thisMessage_obj['id'] = id;
-
-                        writeMessage(res, thisMessage_obj, token);
+                            thisMessage_obj['id'] = id;
+                            writeMessage(res, thisMessage_obj, token);
+                        }
                     }
                 }   
             })

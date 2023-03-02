@@ -69,8 +69,12 @@ let isAbleToDrag = false;
 chatUserBar.addEventListener('click', function(){
     let chat_container = this.parentNode;
     let uid = parseInt(chat_container.getAttribute('uid'));
-    if(uid != undefined){
+    let context = chat_container.getAttribute('context');
+    if(context == 'user'){
         showSearchFullInfo('user', uid);
+    }
+    else{
+        showSearchFullInfo('groups', uid);
     }
     modalUserInfo_closeButton.addEventListener('click', function(){
         discoverUserInfo.classList.remove('modal-user-info_active');
@@ -236,6 +240,7 @@ function updateChatEvents(thisMessage_body){
     console.log('element получен в updateChatEvents: ', thisMessage_body);
     let thisMessage_viewableFiles = thisMessage_body.getElementsByClassName('message-element_viewable');
     let thisMessage_downloadableFiles = thisMessage_body.getElementsByClassName('message-element_downloadable');
+    let thisMessage_audios = thisMessage_body.getElementsByClassName('audio-container');
     fullScreen_sliderLine.innerHTML = '';
     for(let i = 0; i < thisMessage_viewableFiles.length; i++){
         thisMessage_viewableFiles[i].addEventListener('click', function(){
@@ -248,6 +253,13 @@ function updateChatEvents(thisMessage_body){
             let fileName = this.getElementsByClassName('file-name')[0].innerText;
             let url = `http://127.0.0.1:8000/app?action=download&fileName=${fileName}`
             window.open(url, '_blank');
+        })
+    }
+    for(let i = 0; i < thisMessage_audios.length; i++){
+        let thisAudio = thisMessage_audios[i].getElementsByTagName('audio')[0];
+        thisAudio.addEventListener('loadedmetadata', function(){
+            let audioplayer = new audio(thisAudio);
+            audioplayer.initialize();
         })
     }
 }
@@ -282,7 +294,8 @@ message_textContainer.addEventListener('keydown', function(e){
         }
         message_textContainer.textContent = '';
         inmessage_attachments_container.innerHTML = '';
-        sendChatMessage(message, files, user_toSend_id);
+        let context = chatContainer.getAttribute('context');
+        sendChatMessage(message, files, user_toSend_id, context);
     }
     else{
         
@@ -621,62 +634,69 @@ for(let i = 0; i < settingsNavItems.length; i++){
 
 for(let i = 0; i<notificationSettings_checkboxes.length; i++){
     notificationSettings_checkboxes[i].addEventListener('click', function(){
-        if(this.getAttribute('state') == 'off'){
-            this.classList.remove('checkbox-off');
-            this.classList.add('checkbox-on');
-            this.setAttribute('state', 'on')
-            this.getElementsByClassName('notifications-settins-input-element')[0].checked = 1;
-            if(this.getAttribute('type') == 'NameAndText'){
-                let oppositeCheckBox = document.getElementsByClassName('NameOnly')[0];
-                oppositeCheckBox.classList.remove('checkbox-on');
-                oppositeCheckBox.classList.add('checkbox-off');
-                oppositeCheckBox.getElementsByClassName('notifications-settins-input-element')[0].checked = 0;
+        // Классы: checkbox-off checkbox-on
+        // Атрибут state: on/off
+        // settings:{email_visibility: 0,
+        // id: 1658641865843,
+        // notification_preview: 0,
+        // phone_visibility: 0,
+        // play_comment_sound: true,
+        // play_direct_sound: true,
+        // play_group_sound: true,
+        // show_comment_notification: true,
+        // show_direct_notifications: true,
+        // show_group_notifications: true,
+        // theme_accent: "#398FE5",
+        // theme_main: "#FFF"}
+        let type = this.getAttribute('type');
+        let state = this.getAttribute('state');
+        let settings = JSON.parse(localStorage.getItem('user_settings'));
+        for(let j = 0; j < notificationSettings_checkboxes.length; j++){
+            notificationSettings_checkboxes[j].classList.remove('checkbox-on');
+            notificationSettings_checkboxes[j].setAttribute('state', 'off');
+            notificationSettings_checkboxes[j].classList.add('checkbox-off');
+        }
+        this.classList.add('checkbox-on');
+        this.setAttribute('state', 'on');
+        switch(type){
+            case 'NameAndText':{
+                if(state == 'off'){
+                    settings.notification_preview = 0;
+                }
+                break;
             }
-            else if(this.getAttribute('type') == 'NameOnly'){
-                let oppositeCheckBox = document.getElementsByClassName('NameAndText')[0];
-                oppositeCheckBox.classList.remove('checkbox-on');
-                oppositeCheckBox.classList.add('checkbox-off');
-                oppositeCheckBox.getElementsByClassName('notifications-settins-input-element')[0].checked = 0;
+            case 'NameOnly':{
+                if(state == 'off'){
+                    settings.notification_preview = 1;
+                }
+                break;
+            }
+            default:{
+                return 0;
             }
         }
-        else if(this.getAttribute('state') == 'on'){
-            this.classList.remove('checkbox-on');
-            this.classList.add('checkbox-off');
-            this.setAttribute('state', 'off');
-            this.getElementsByClassName('notifications-settins-input-element')[0].checked = 0;
-            if(this.getAttribute('type') == 'NameAndText'){
-                let oppositeCheckBox = document.getElementsByClassName('NameOnly')[0];
-                oppositeCheckBox.classList.remove('checkbox-off');
-                oppositeCheckBox.classList.add('checkbox-on');
-                oppositeCheckBox.getElementsByClassName('notifications-settins-input-element')[0].checked = 1;
-            }
-            else if(this.getAttribute('type') == 'NameOnly'){
-                let oppositeCheckBox = document.getElementsByClassName('NameAndText')[0];
-                oppositeCheckBox.classList.remove('checkbox-off');
-                oppositeCheckBox.classList.add('checkbox-on');
-                oppositeCheckBox.getElementsByClassName('notifications-settins-input-element')[0].checked = 1;
-            }
-        }
-    })
-}
-
-for(let i = 0; i<notificationSettings_switchers.length; i++){
-    if(notificationSettings_switchers[i].classList[2] == 'switcher-true'){
-        notificationSettings_switchers[i].setAttribute('state', 'on')
-    }
-    notificationSettings_switchers[i].addEventListener('click', function(){
-        if(this.getAttribute('state') == 'off'){
-            this.classList.remove('switcher-false');
-            this.classList.add('switcher-true');
-            this.setAttribute('state', 'on')
-            this.getElementsByClassName('notifications-settins-input-element')[0].checked = 1;
-        }
-        else if(this.getAttribute('state') == 'on'){
-            this.classList.remove('switcher-true');
-            this.classList.add('switcher-false');
-            this.setAttribute('state', 'off');
-            this.getElementsByClassName('notifications-settins-input-element')[0].checked = 0;
-        }
+        localStorage.removeItem('user_settings');
+        localStorage.setItem('user_settings', JSON.stringify(settings));
+        showLoadingSection();
+        fetch('/app?action=settings',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify({name: 'notification_preview', setting: settings.notification_preview})
+        })
+        .then((response)=>{
+            response.json()
+            .then((data)=>{
+                if(data.status != 'success'){
+                    window.location.reload();
+                }
+                else{
+                    hideLoadingSection();
+                }
+            })
+        })  
+        
     })
 }
 

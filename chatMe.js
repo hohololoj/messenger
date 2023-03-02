@@ -23,52 +23,6 @@ let images_extnames = ['jpg', 'jpeg', 'png', 'gif', 'ico', 'svg', 'bmp'];
 let audio_extnames = ['mp3', 'wav', 'ogg'];
 let video_extnames = ['mp4', 'webm', 'avi'];
 let prehibited_extnames = ['exe', 'bat', 'bin', 'cmd'];
-const userSettings = {
-    'WCSMP':{
-        name: 'whoCanSeeMyPhone',
-        accepts: ['Everyone', 'Friends', 'Nobody']
-    },
-    'WCSME':{
-        name: 'whoCanSeeMyEmail',
-        accepts: ['Everyone', 'Friends', 'Nobody']
-    },
-    'SDMN':{
-        name: 'showDirectMessagesNotifications',
-        accepts: [true, false]
-    },
-    'PDMS':{
-        name: 'playDirectMessagesSound',
-        accepts: [true, false]
-    },
-    'SSGN':{
-        name: 'showSecretGroupNotifications',
-        accepts: [true, false]
-    },
-    'PSGS':{
-        name: 'playSecretGroupSound',
-        accepts: [true, false]
-    },
-    'SCGN':{
-        name: 'showCommunityGroupNotifications',
-        accepts: [true, false]
-    },
-    'PCGS':{
-        name: 'playCommunityGroupSound',
-        accepts: [true, false]
-    },
-    'SCN':{
-        name: 'showCommentNotifications',
-        accepts: [true, false]
-    },
-    'PCS':{
-        name: 'playCommentSound',
-        accepts: [true, false]
-    },
-    'NP':{
-        name: 'notificationPreview',
-        accepts: [1,2]
-}
-}
 const WSclients = {}
 const months = {
     '01': 'Jan',
@@ -85,6 +39,41 @@ const months = {
     '12': 'Dec'
 }
 const categories = ['Animals', 'Auto', 'Beauty', 'Cooking', 'Education', 'Family', 'Finance', 'Hobby', 'House', 'Humour', 'Just talk', 'Literature', 'Medicine', 'Movies', 'Music', 'Own business', 'Product design', 'Programming', 'Sports', 'Technologies', 'Town community', 'Travel', 'True health', 'Videogames'];
+const settings = {
+    email_visibility: {
+        accepts: [0,1,2]
+    },
+    notification_preview: {
+        accepts: [0,1]
+    },
+    phone_visibility: {
+        accepts: [0,1,2]
+    },
+    play_comment_sound: {
+        accepts: [true, false]
+    },
+    play_direct_sound: {
+        accepts: [true, false]
+    },
+    play_group_sound: {
+        accepts: [true, false]
+    },
+    show_comment_notification: {
+        accepts: [true, false]
+    },
+    show_direct_notifications: {
+        accepts: [true, false]
+    },
+    show_group_notifications: {
+        accepts: [true, false]
+    },
+    theme_accent: {
+        accepts: 'any'
+    },
+    theme_main: {
+        accepts: 'any'
+    }
+}
 
 app.use(express.json());
 app.use(express.static(path.resolve('public')));
@@ -425,20 +414,59 @@ async function getUserInfo(token) {
             await invitations.insertOne({id: user_id, link: `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`});
             thisUser.invitationLink = `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`;
         }
-        const settingsdb = mongoClient.db('user-settings');
-        const thisUser_settings_collectionName = ('user-'+user_id);
-        const thisUser_settings_collection = settingsdb.collection(thisUser_settings_collectionName);
-        let thisUser_settings = await thisUser_settings_collection.find({}).toArray();
-        let thisUser_settings_obj = {};
-        for(let i = 0; i < thisUser_settings.length; i++){
-            thisUser_settings_obj[Object.entries(thisUser_settings[i])[2][0]] = Object.entries(thisUser_settings[i])[2][1]
+        // const settingsdb = mongoClient.db('user-settings');
+        // const thisUser_settings_collectionName = ('user-'+user_id);
+        // const thisUser_settings_collection = settingsdb.collection(thisUser_settings_collectionName);
+        // let thisUser_settings = await thisUser_settings_collection.find({}).toArray();
+        // let thisUser_settings_obj = {};
+        // for(let i = 0; i < thisUser_settings.length; i++){
+        //     thisUser_settings_obj[Object.entries(thisUser_settings[i])[2][0]] = Object.entries(thisUser_settings[i])[2][1]
+        // }
+        let thisUser_settings = await mongoRequest('users', 'settings', 'get', 'one', {id: user_id});
+        let thisUser_settings_obj = {
+            whoCanSeeMyPhone: null,
+            whoCanSeeMyEmail: null,
+            showDirectMessagesNotifications: thisUser_settings.show_direct_notifications,
+            playDirectMessagesSound: thisUser_settings.play_direct_sound,
+            ShowCommunityGroupNotifications: thisUser_settings.show_group_notifications,
+            PlayCommunityGroupSound: thisUser_settings.play_group_sound,
+            ShowCommentNotifications: thisUser_settings.show_comment_notification,
+            PlayCommentSound: thisUser_settings.play_comment_sound,
+            NotificationPreview: thisUser_settings.notification_preview
         }
+        console.log({'изначальные настройки:': thisUser_settings.phone_visibility})
+        switch(thisUser_settings.phone_visibility){
+            case 0:{thisUser_settings_obj.whoCanSeeMyPhone = 'Everyone'; break;}
+            case 1:{thisUser_settings_obj.whoCanSeeMyPhone = 'Friends'; break;}
+            case 2:{thisUser_settings_obj.whoCanSeeMyPhone = 'Nobody'; break;}
+        }
+        switch(thisUser_settings.email_visibility){
+            case 0:{thisUser_settings_obj.whoCanSeeMyEmail = 'Everyone'; break;}
+            case 1:{thisUser_settings_obj.whoCanSeeMyEmail = 'Friends'; break;}
+            case 2:{thisUser_settings_obj.whoCanSeeMyEmail = 'Nobody'; break;}
+        }
+        console.log(thisUser_settings_obj)
         const groupsdb = mongoClient.db('groups');
         const list = groupsdb.collection('list');
         let thisUser_groupsAdmin = await list.find({creator_id: user_id}).toArray();
         thisUser_groupsAdmin = {thisUser_groupsAdmin: thisUser_groupsAdmin}
-        // let thisUser_groups = ''
-        thisUser = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin, {thisUser_contacts: thisUser_contacts});
+        let thisUser_groups = thisUser.groups;
+        let thisUser_groups_toRender = [];
+
+        for(let i = 0; i < thisUser_groups.length; i++){
+            let thisGroup_id = thisUser_groups[i];
+            let thisGroup_info = await mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id});
+            thisUser_groups_toRender.push({
+                id: thisGroup_id,
+                avatar: thisGroup_info.avatar_path,
+                name: thisGroup_info.name,
+                members: thisGroup_info.members.length
+            })
+        }
+
+        thisUser_groups_toRender = {thisUser_groups_toRender: thisUser_groups_toRender}
+
+        thisUser = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin, {thisUser_contacts: thisUser_contacts}, thisUser_groups_toRender);
         return thisUser;
     }
     catch (error) {
@@ -446,18 +474,6 @@ async function getUserInfo(token) {
         //process.exit();
     }
 
-}
-
-async function getStickers(){
-    let stickers = await mongoRequest('emojis', 'emojis', 'get', 'many', {});
-    let stickers_arr = [];
-    for(let i = 0; i < stickers.length; i++){
-        stickers_arr[stickers[i].name] = {
-            id: stickers[i]._id,
-            src: stickers[i].path
-        }
-    }
-    console.log(stickers_arr)
 }
 
 async function writeApp(token, res) {
@@ -474,20 +490,48 @@ async function writeApp(token, res) {
         if(chats != undefined){
             for(let i = 0; i < chats.length; i++){
                 let thisFriend_id = chats[i];
+                let isGroup = false;
+                if(/g/.test(thisFriend_id)){
+                    isGroup = true;
+                    thisFriend_id = parseInt(thisFriend_id.replace(/g/, ''));
+                }
                 promises.push(new Promise((resolve, reject) => {
-                    let promise_userInfo = new Promise((resolve, reject) => {
-                        let thisFriend_info = mongoRequest('users', 'users', 'get', 'one', {id: thisFriend_id});
-                        resolve(thisFriend_info)
-                    })
+
+                    let promise_userInfo;
+                    if(isGroup){
+                        promise_userInfo = new Promise((resolve, reject) => {
+                            let groupData = mongoRequest('groups', 'list', 'get', 'one', {groupid: thisFriend_id});
+                            resolve(groupData);
+                        })
+                    }
+                    else{
+                        promise_userInfo = new Promise((resolve, reject) => {
+                            let userData = mongoRequest('users', 'users', 'get', 'one', {id: thisFriend_id});
+                            resolve(userData);
+                        })
+                    }
                     let promise_lastMessage = new Promise((resolve, reject) => {
-                        let chatName = `${thisUser.id} - ${thisFriend_id}`;
-                        let promise_mongoConnect = new Promise((resolve, reject) => {
+                        let promise_mongoConnect;
+                        if(!isGroup){
+                            let chatName = `${thisUser.id} - ${thisFriend_id}`;
+                            promise_mongoConnect = new Promise((resolve, reject) => {
                             let mongoClient = new MongoClient('mongodb://localhost:27017');
                             mongoClient.connect();
                             const db = mongoClient.db('chats');
                             const thisChat = db.collection(chatName);
                             resolve(thisChat);
-                        })
+                            })
+                        }
+                        else{
+                            let chatName = `group - ${thisFriend_id}`;
+                            promise_mongoConnect = new Promise((resolve, reject) => {
+                                let mongoClient = new MongoClient('mongodb://localhost:27017');
+                                mongoClient.connect();
+                                const db = mongoClient.db('chats');
+                                const thisChat = db.collection(chatName);
+                                resolve(thisChat);
+                            })
+                        }
                         promise_mongoConnect.then((thisChat)=>{
                             let lastMessage = thisChat.find().sort({$natural: -1}).limit(1).toArray();
                             resolve(lastMessage);
@@ -497,13 +541,26 @@ async function writeApp(token, res) {
                     .then((thisChat)=>{
                         let thisFriend_info = thisChat[0];
                         let lastMessage = thisChat[1][0];
-                        let thisFriend_info_toRender = {
-                            id: thisFriend_info.id,
-                            name: thisFriend_info.fullname,
-                            avatar: thisFriend_info.avatar_path.slice(39),
-                            onlineStatus: thisFriend_info.onlineStatus
+                        let thisFriend_info_toRender;
+                        if(!isGroup){
+                            thisFriend_info_toRender = {
+                                id: thisFriend_info.id,
+                                name: thisFriend_info.fullname,
+                                avatar: thisFriend_info.avatar_path.slice(39),
+                                onlineStatus: thisFriend_info.onlineStatus,
+                                type: 'user'
+                            }
+                            thisFriend_info_toRender.onlineStatus == 'online' ? thisFriend_info_toRender.onlineStatus = 'online-status' : thisFriend_info_toRender.onlineStatus = 'online-status online-status_offline'; 
                         }
-                        thisFriend_info_toRender.onlineStatus == 'online' ? thisFriend_info_toRender.onlineStatus = 'online-status' : thisFriend_info_toRender.onlineStatus = 'online-status online-status_offline'; 
+                        else{
+                            thisFriend_info_toRender = {
+                                id: thisFriend_info.groupid,
+                                name: thisFriend_info.name,
+                                avatar: thisFriend_info.avatar_path,
+                                onlineStatus: 'online-status online-status_offline',
+                                type: 'group'
+                            }
+                        }
                         let lastMessage_toRender = {
                             id: lastMessage._id,
                             message: '',
@@ -542,6 +599,7 @@ async function writeApp(token, res) {
                             let timezone_offset = thisUser.timezone_offset;
                             timezone_offset /= 60;
                             let lastMessage_hours = lastMessage_timestamp.getUTCHours();
+                            
                             lastMessage_hours -= timezone_offset
                             if(lastMessage_hours < 10){
                                 lastMessage_hours = '0'+lastMessage_hours;
@@ -558,7 +616,9 @@ async function writeApp(token, res) {
                             ${lastMessage_timestamp.getUTCDate() < 10 ? ('0'+lastMessage_timestamp.getUTCDate()) : lastMessage_timestamp.getUTCDate()}.${lastMessage_timestamp.getUTCMonth() < 10 ? ('0'+lastMessage_timestamp.getUTCMonth()) : lastMessage_timestamp.getUTCMonth()}.${lastMessage_timestamp.getUTCFullYear()}`;
                             lastMessage_toRender.timestamp = date;
                         }
+
                         resolve({
+                            type: isGroup ? 'group':'user',
                             friendInfo: thisFriend_info_toRender,
                             lastMessage: lastMessage_toRender
                         })
@@ -568,6 +628,7 @@ async function writeApp(token, res) {
         }
         Promise.all(promises)
         .then((chats) => {
+            console.log(chats)
             let chats_arr = [];
             for(let i = 0; i < chats.length; i++){
                 chats_arr.push(chats[i]);
@@ -579,7 +640,7 @@ async function writeApp(token, res) {
 }
 
 async function register_route(token, res) {
-    let isRegistered = await checkForRegistered(token);
+    let isRegistered = await checkForRegistered(token, res);
     console.log(`/register: isRegistered: ${isRegistered.isRegistered}`);
     if (!isRegistered.isRegistered) {
         res.sendFile(path.resolve('./public/register.html'));
@@ -764,6 +825,7 @@ app.get('*', function (req, res) {
 })
 
 async function findRegistrationCode(token) {
+    console.log(token);
     let mongoClient;
     try {
         mongoClient = new MongoClient('mongodb://localhost:27017');
@@ -772,7 +834,7 @@ async function findRegistrationCode(token) {
         const tokens = db.collection('tokens');
         let response = await tokens.findOne({ token: token });
         if (response == undefined) {
-
+            return false;
         }
         else {
             let email = response.email;
@@ -986,7 +1048,7 @@ function generate_avatar_name(){
     return name;
 }
 
-async function checkForRegistered(token) {
+async function checkForRegistered(token, res) {
     let mongoClient;
     let response;
     try {
@@ -1048,34 +1110,6 @@ async function writeLogged(user) {
             await tokens.deleteOne({ id: user.id });
         }
         await tokens.insertOne({ token: user.token, id: user.id });
-        const userSettingsdb = mongoClient.db('user-settings');
-        const collectionName = ('user-'+user.id);
-        // let isExists_settingsFile = await db.listCollections({ name: collectionName }).hasNext()
-        // const isExists_settingsFile = userSettingsdb.ListCollectionNames().into(new ArrayList()).contains(collectionName);
-        const collections = userSettingsdb.listCollections({name: collectionName}).next(function(err, collinfo){
-            if(err){
-                console.log(err);
-            }
-            if(collinfo){}
-            else{
-                userSettingsdb.createCollection(collectionName);
-            const settings = [
-                {name: 'whoCanSeeMyPhone',whoCanSeeMyPhone: 'Everyone'},
-                {name: 'whoCanSeeMyEmail',whoCanSeeMyEmail: 'Everyone'},
-                {name:'showDirectMessagesNotifications',showDirectMessagesNotifications: true},
-                {name:'playDirectMessagesSound',playDirectMessagesSound: true},
-                {name:'showSecretGroupNotifications',showSecretGroupNotifications: true},
-                {name:'playSecretGroupSound',playSecretGroupSound: true},
-                {name:'showCommunityGroupNotifications',showCommunityGroupNotifications: true},
-                {name:'playCommunityGroupSound',playCommunityGroupSound: true},
-                {name:'showCommentNotifications',showCommentNotifications: true},
-                {name:'playCommentSound',playCommentSound: true},
-                {name:'notificationPreview',notificationPreview: 1}
-            ]
-            const thisUserSettings = userSettingsdb.collection(collectionName);
-            thisUserSettings.insertMany(settings);
-            }
-        })
     }
     catch (error) {
         console.error('Connection to MongoDB Atlas failed!', error);
@@ -1230,46 +1264,48 @@ async function changeEmailSendCode(res, email, token) {
     }
 }
 
-async function changeSettings(res, token, req) {
-    let settingName = req.body.name;
-    let settingValue = req.body.setting;
-    let settingFullName = userSettings[settingName].name;
-    if (userSettings[settingName].accepts.includes(settingValue)) {
-        let mongoClient;
-        let response;
-        try {
-            mongoClient = new MongoClient('mongodb://localhost:27017');
-            await mongoClient.connect();
-            let db = mongoClient.db('logged');
-            const tokens = db.collection('tokens');
-            response = await tokens.findOne({ token: token });
-            let user_id = response.id;
-            db = mongoClient.db('user-settings');
-            let collectionName = ('user-'+user_id);
-            const settings = db.collection(collectionName);
-            let totalSetting = {}
-            totalSetting[settingFullName] = settingValue;
-            settings.updateOne({name: settingFullName}, {
-                $set:totalSetting
-            })
-            res.send({status: 'success', message:'property changed successfully'})
-        }
-        catch (error) {
-            console.error('Connection to MongoDB Atlas failed!', error);
-            //process.exit();
-        }
+async function changeSettings(token, setting, res) {
+
+    console.log('Принят запос на изменение настроек:', {
+        setting: setting
+    })
+    let key = setting.name;
+    let settings_list = Object.keys(settings);
+    console.log(settings[key])
+    if((!settings_list.includes(key) || !settings[key].accepts.includes(setting.setting)) && settings[key].accepts != 'any'){
+        res.send({});
+        notification_send(token, 'error', 'Something went wrong', '', 'auto')
     }
+    
     else{
-        res.send({status: 'error', message: 'something went wrong'});
+        let userLogged_promise = new Promise((resolve, reject) => {
+            let thisUser_logged = mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+            resolve(thisUser_logged);
+        })
+        userLogged_promise.then((thisUser_logged) => {
+            let thisUser_id = thisUser_logged.id;
+            let updateSetting_promise = new Promise((resolve, reject) => {
+                let setting_toUpdate = {};
+                setting_toUpdate[key] = setting.setting;
+                console.log(setting_toUpdate);
+                mongoRequest('users', 'settings', 'update', '', { condition: { id: thisUser_id }, toUpdate: setting_toUpdate });
+                resolve()
+            })
+            updateSetting_promise.then(()=>{
+                res.send({status: 'success'});
+            })
+        })
     }
 }
 
 async function search(res, search_object, token){
-    console.log(search_object)
     let idreq = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
     let requestingUser_id = idreq.id;
     let range = search_object.range;
     let request = search_object.search_request;
+    if(request.includes('@')){
+        request = request.replace(/@/gm, '');
+    }
     let search_regexp = `.*?${request}.*?`;
     switch(range){
         case 'discover':{
@@ -1337,7 +1373,7 @@ async function search(res, search_object, token){
                     response_obj.groups.push({
                         avatar: response[i].avatar_path,
                         name: response[i].name,
-                        members: response[i].members,
+                        members: response[i].members.length,
                         id: response[i].groupid
                     })
                 }
@@ -1413,15 +1449,12 @@ async function search(res, search_object, token){
     }
 }
 
-function findSettingProperty(settings, name){
-    for(let i = 0; i < settings.length; i++){
-        if(settings[i].name == name){
-            return settings[i][name];
-        }
-    }
-}
-
 async function getFullInfo(type, id, res, token){ //Полная инфа о юзере
+    console.log('получен запрос на полное инфо: ', {
+        type: type,
+        id: id,
+        token: token
+    })
     switch(type){
         case 'user':{
             let mongoClient;
@@ -1434,9 +1467,7 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                 let isFriend = requestingUser_frindsList.includes(id);
                 mongoClient = new MongoClient('mongodb://localhost:27017');
                 await mongoClient.connect();
-                const db = mongoClient.db('users');
-                const users = db.collection('users');
-                response = await users.findOne({id: id});
+                response = await mongoRequest('users', 'users', 'get', 'one', {id: id});
                 let thisUser_onlineStatus;
                     if(response.onlineStatus != 'online'){
                         let lastSeen = Date.now() - response.onlineStatus;
@@ -1467,20 +1498,20 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                     else{
                         thisUser_onlineStatus = 'online'
                     }
-                let settingsdb = mongoClient.db('user-settings');
-                let UserSettings = settingsdb.collection(`user-${response.id}`);
-                let thisUserSettings = await UserSettings.find({}).toArray();
-                let thisUserEmailSettings = findSettingProperty(thisUserSettings, 'whoCanSeeMyEmail');
+                let thisUserSettings = await mongoRequest('users', 'settings', 'get', 'range', {id: id});
+                // let thisUserEmailSettings = findSettingProperty(thisUserSettings, 'whoCanSeeMyEmail');
                 let thisUserEmail;
+                thisUserEmail = response.email;
+                // Доделать проверку скрытости email
+                // if(thisUserEmailSettings == 'Everyone'){
+                //     thisUserEmail = response.email;
+                // }
+                // if(thisUserEmailSettings == 'Nobody'){
+                //     thisUserEmail = 'hidden';
+                // }
                 
-                if(thisUserEmailSettings == 'Everyone'){
-                    thisUserEmail = response.email;
-                }
-                if(thisUserEmailSettings == 'Nobody'){
-                    thisUserEmail = 'hidden';
-                }
                 let date = new Date(response.date);
-                let joined_day = date.getUTCDay()+1;
+                let joined_day = date.getUTCDate()+1;
                 let joined_month = date.getUTCMonth()+1;
                 joined_month = joined_month.toString();
                 if(parseInt(joined_month) < 10){
@@ -1496,10 +1527,6 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                         birthday = '0' + birthday;
                     }
                     birthmonth = response.dateOfBirth_month;
-                    birthmonth++;
-                    if (birthmonth < 10) {
-                        birthmonth = '0' + birthmonth;
-                    }
                     birthyear = response.dateOfBirth_year;
                     birthyear.toString();
                     birthyear += ',';
@@ -1547,23 +1574,63 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
             }
             break;
         }
-        //Дописать, когда будут группы
-        // case 'group':{
-        //     let mongoClient;
-        //     let response;
-        //     try {
-        //         mongoClient = new MongoClient('mongodb://localhost:27017');
-        //         await mongoClient.connect();
-        //         const db = mongoClient.db('groups');
-        //         const users = db.collection('users');
-        //         response = await users.findOne({ id: id });
-        //         res.send(response);
-        //     }
-        //     catch (error) {
-        //         console.error('Connection to MongoDB Atlas failed!', error);
-        //     }
-        //     break;
-        // }
+        case 'groups':{
+            let groupInfo = await mongoRequest('groups', 'list', 'get', 'one', {groupid: id});
+            let thisUser_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+            thisUser_id = thisUser_id.id;
+            let isMember = groupInfo.members.includes(thisUser_id);
+            let thisGroupMembers = groupInfo.members;
+            let thisGroupMembers_responseArr = [];
+            for(let i = 0; i < thisGroupMembers.length; i++){
+                let thisMemberInfo = await mongoRequest('users', 'users', 'get', 'one', {id: thisGroupMembers[i]});
+                thisMemberInfo = {
+                    id: thisMemberInfo.id,
+                    avatar: thisMemberInfo.avatar_path.slice(39),
+                    fullname: thisMemberInfo.fullname,
+                    onlineStatus: thisMemberInfo.onlineStatus
+                }
+                if(thisMemberInfo.onlineStatus == 'online'){
+                    thisMemberInfo.onlineStatus = `<div class="member-subtitle-text member-subtitle-text_online">online</div>`
+                }
+                else{
+                    let today = new Date();
+                    let lastOnline = new Date(thisMemberInfo.onlineStatus);
+                    if(today.getUTCDate() == lastOnline.getUTCDate() && today.getUTCMonth() == lastOnline.getUTCMonth() && today.getUTCFullYear() == lastOnline.getUTCFullYear()){
+                        thisMemberInfo.onlineStatus = `<div class="member-subtitle-text">last seen today</div>`;
+                    }
+                    else{                       
+                        let day = lastOnline.getUTCDate();
+                        if(day < 10){day = '0'+day;}
+
+                        let month = lastOnline.getUTCMonth()+1;
+                        if(month < 10){month = '0'+month;}
+
+                        let year = lastOnline.getUTCFullYear();
+
+                        let date = `${day}.${month}.${year}`;
+
+                        thisMemberInfo.onlineStatus = `<div class="member-subtitle-text">last seen ${date}</div>`
+                    }
+                }
+                thisGroupMembers_responseArr.push(thisMemberInfo);
+            }      
+            console.log(groupInfo.avatar_path); 
+            let response_obj = {
+                gid: groupInfo.groupid,
+                name: groupInfo.name,
+                avatar: groupInfo.avatar_path,
+                members_quantity: groupInfo.members.length,
+                isMember: isMember,
+                memberActions: isMember? '<div class="user-actions-block-item"><img src="./icons/icon-mute.svg"> Mute notifications</div><div class="user-actions-block-item group-action_leave-button"><img src="./icons/icon-leave.svg"> Leave the group</div>': '',
+                ownerActions: (groupInfo.creator_id == thisUser_id)? `<div class="user-actions-block-item edit-community-button-secret" groupid="${groupInfo.groupid}"><img src="./icons/icon-edit.svg"> Edit group</div>`: '',
+                shortName: groupInfo.shortname,
+                about: groupInfo.description,
+                payments: (groupInfo.payments=='Free')?'$Free':`$${groupInfo.pricing} per month`,
+                members_list: thisGroupMembers_responseArr
+            }
+            res.send(response_obj)
+            break;
+        }
         default:{
             res.send('Something went wrong');
         }
@@ -1628,7 +1695,7 @@ async function createCommunity_validate(res, thisGroup, token) {
             pricing: htmlspecialchars(thisGroup.pricing),
             visibility: htmlspecialchars(thisGroup.visibility),
             category: htmlspecialchars(thisGroup.category),
-            members: 1,
+            members: [thisUser_id],
             creation_timestamp: Date.now(),
             shortname: '',
             description: '',
@@ -1832,32 +1899,6 @@ function send_socket_chatMessage(token, message){
         }
         messageObj = JSON.stringify(messageObj);
         thisUser.send(messageObj);
-    }
-}
-
-async function getNotificationsSettings(res, token){
-    let mongoClient;
-    try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
-        await mongoClient.connect();
-        const loggeddb = mongoClient.db('logged');
-        const tokens = loggeddb.collection('tokens');
-        let response = await tokens.findOne({token: token});
-        let thisUser_id = response.id;
-        let thisUser_settingsCollection = `user-${thisUser_id}`;
-        const settingsdb = mongoClient.db('user-settings');
-        const collection = settingsdb.collection(thisUser_settingsCollection);
-        let thisUser_settings = await collection.find({}).toArray();
-        let response_obj = {}
-        for(let i = 2; i < thisUser_settings.length; i++){
-            let thisSetting_name = thisUser_settings[i].name;
-            let thisSetting_value = thisUser_settings[i][thisSetting_name];
-            response_obj[thisSetting_name] = thisSetting_value;
-        }
-        res.send(response_obj);
-    } catch (error) {
-        console.error('Connection to MongoDB Atlas failed!', error);
-        //process.exit();
     }
 }
 
@@ -2239,140 +2280,267 @@ async function calculateImages(images){
     })
 }
 
-async function getChatHistory(user_sending_token, user_toSend_id, res){
+async function getChatHistory(user_sending_token, user_toSend_id, action_context, res){
     let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: user_sending_token});
     user_sending_id = user_sending_id.id;
     user_toSend_id = parseInt(user_toSend_id);
-
-    let user_toSend_onlineStatus = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-    user_toSend_onlineStatus = user_toSend_onlineStatus.onlineStatus;
-
-    let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
-    let thisChat_collectionName_reversed = `${user_toSend_id} - ${user_sending_id}`;
-
-    let mongoClient;
-    try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
-        await mongoClient.connect();
-        const db = mongoClient.db('chats');
+    switch(action_context){
+        case 'user':{
+            
+            let user_toSend_onlineStatus = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+            user_toSend_onlineStatus = user_toSend_onlineStatus.onlineStatus;
         
-        let chatHistory;
-
-        db.listCollections({ name: thisChat_collectionName }).next(function (err, colinfo) {
-            if (colinfo == null) {
-                db.createCollection(thisChat_collectionName);
-                chatHistory = [];
+            let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
+            let thisChat_collectionName_reversed = `${user_toSend_id} - ${user_sending_id}`;
+        
+            let mongoClient;
+            try {
+                mongoClient = new MongoClient('mongodb://localhost:27017');
+                await mongoClient.connect();
+                const db = mongoClient.db('chats');
                 
-                let promise = new Promise((resolve, reject) => {
-                    let user_toSend_info_response = mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-                    resolve(user_toSend_info_response);
-                })
-                promise.then((user_toSend_info_response) => {
-                    let user_toSend_info = {
-                        avatar: user_toSend_info_response.avatar_path.slice(39),
-                        fullname: user_toSend_info_response.fullname,
-                        onlineStatus: calculateLastOnline(user_toSend_info_response.onlineStatus),
-                        id: user_toSend_id,
-                    }
-                    let response = {
-                        chatHistory: chatHistory,
-                        userInfo: user_toSend_info
-                    }
-                    console.log('chat not found, response: ', response);
-                    res.send(response);
-                })
-            }
-            else{
-                Promise.all([
-                    new Promise((resolve,reject) => {
-                        let chatHistory = mongoRequest('chats', thisChat_collectionName, 'get', 'many', {});
-                        resolve(chatHistory);
-                    }),
-                    new Promise((resolve,reject) => {
-                        let user_toSend_info = mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-                        resolve(user_toSend_info);
-                    })
-                ])
-                .then(results => {                    
-                    let chatHistory = results[0];
-                    let chatHistory_filled = [];
-                    let filePromise = new Promise((resolve, reject) => {
-                    for (let i = 0; i < chatHistory.length; i++) {
-                        chatHistory_filled.push({
-                            message_id: '',
-                            sender_id: '',
-                            sender_avatar: '',
-                            sender_fullname: '',
-                            time: '',
-                            message: '',
-                            files: {
-                                audios: [],
-                                videos: [],
-                                imgs: [],
-                                others: []
+                let chatHistory;
+        
+                db.listCollections({ name: thisChat_collectionName }).next(function (err, colinfo) {
+                    if (colinfo == null) {
+                        db.createCollection(thisChat_collectionName);
+                        chatHistory = [];
+                        
+                        let promise = new Promise((resolve, reject) => {
+                            let user_toSend_info_response = mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+                            resolve(user_toSend_info_response);
+                        })
+                        promise.then((user_toSend_info_response) => {
+                            let user_toSend_info = {
+                                avatar: user_toSend_info_response.avatar_path.slice(39),
+                                fullname: user_toSend_info_response.fullname,
+                                onlineStatus: calculateLastOnline(user_toSend_info_response.onlineStatus),
+                                id: user_toSend_id,
                             }
-                        });
-                        chatHistory_filled[i].message_id = chatHistory[i]._id;
-                        chatHistory_filled[i].sender_id = chatHistory[i].sender_id;
-                        chatHistory_filled[i].message = chatHistory[i].message;
-                        chatHistory_filled[i].time = chatHistory[i].timestamp;
-                        if (chatHistory[i].files != null) {
-                            chatHistory_filled[i].files = {
-                                audios: chatHistory[i].files.audios,
-                                videos: chatHistory[i].files.videos,
-                                imgs: chatHistory[i].files.imgs,
-                                others: [],
-                            };
-                            let thisImages = chatHistory_filled[i].files.imgs;
-                            calculateImages(thisImages)
-                            .then((images) => {
-                                chatHistory_filled[i].files.imgs = images;
+                            let response = {
+                                chatHistory: chatHistory,
+                                userInfo: user_toSend_info
+                            }
+                            console.log('chat not found, response: ', response);
+                            res.send(response);
+                        })
+                    }
+                    else{
+                        Promise.all([
+                            new Promise((resolve,reject) => {
+                                let chatHistory = mongoRequest('chats', thisChat_collectionName, 'get', 'many', {});
+                                resolve(chatHistory);
+                            }),
+                            new Promise((resolve,reject) => {
+                                let user_toSend_info = mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+                                resolve(user_toSend_info);
                             })
-                            let others_arr = [];
-                            for (let j = 0; j < chatHistory[i].files.others.length; j++) {
-                                let thisFile_name = chatHistory[i].files.others[j];
-                                let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
-                                others_arr.push(thisFile_fullInfo);
+                        ])
+                        .then(results => {                    
+                            let chatHistory = results[0];
+                            let chatHistory_filled = [];
+                            let filePromise = new Promise((resolve, reject) => {
+                            for (let i = 0; i < chatHistory.length; i++) {
+                                chatHistory_filled.push({
+                                    message_id: '',
+                                    sender_id: '',
+                                    sender_avatar: '',
+                                    sender_fullname: '',
+                                    time: '',
+                                    message: '',
+                                    files: {
+                                        audios: [],
+                                        videos: [],
+                                        imgs: [],
+                                        others: []
+                                    }
+                                });
+                                chatHistory_filled[i].message_id = chatHistory[i]._id;
+                                chatHistory_filled[i].sender_id = chatHistory[i].sender_id;
+                                chatHistory_filled[i].message = chatHistory[i].message;
+                                chatHistory_filled[i].time = chatHistory[i].timestamp;
+                                if (chatHistory[i].files != null) {
+                                    chatHistory_filled[i].files = {
+                                        audios: chatHistory[i].files.audios,
+                                        videos: chatHistory[i].files.videos,
+                                        imgs: chatHistory[i].files.imgs,
+                                        others: [],
+                                    };
+                                    let thisImages = chatHistory_filled[i].files.imgs;
+                                    calculateImages(thisImages)
+                                    .then((images) => {
+                                        chatHistory_filled[i].files.imgs = images;
+                                    })
+                                    let others_arr = [];
+                                    for (let j = 0; j < chatHistory[i].files.others.length; j++) {
+                                        let thisFile_name = chatHistory[i].files.others[j];
+                                        let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
+                                        others_arr.push(thisFile_fullInfo);
+                                    }
+                                    chatHistory_filled[i].files.others = others_arr;
+                                }
+                                else{
+                                    chatHistory_filled[i].files = {
+                                        audios: [],
+                                        videos: [],
+                                        imgs: [],
+                                        others: [],
+                                    };
+                                }
                             }
-                            chatHistory_filled[i].files.others = others_arr;
+                            resolve()
+                            })
+                            .then(() => {
+                                let user_toSend_info_response = results[1];
+                            let user_toSend_info = {
+                                fullname: user_toSend_info_response.fullname,
+                                avatar: user_toSend_info_response.avatar_path.slice(39),
+                                onlineStatus: calculateLastOnline(user_toSend_info_response.onlineStatus),
+                                id: user_toSend_id
+                            }
+                            let response = {
+                                chatHistory: chatHistory_filled,
+                                userInfo: user_toSend_info
+                            }
+                            fillChatHistory_info(res, response);
+                            db.listCollections({ name: thisChat_collectionName_reversed }).next(function (err, colinfo) {
+                                if (colinfo == null) {
+                                    db.createCollection(thisChat_collectionName_reversed);
+                                }
+                            })
+                            })
+                        })
+                    }
+                })
+            } catch (error) {
+                console.error('Connection to MongoDB Atlas failed!', error);
+                //process.exit();
+            }
+            break;
+        }
+        case 'group':{
+            let thisGroup_info = await mongoRequest('groups', 'list', 'get', 'one', {groupid: user_toSend_id});
+            let thisGroup_members = thisGroup_info.members;
+            if(thisGroup_members.includes(user_sending_id)){
+                let groupChat_collectionName = `group - ${user_toSend_id}`;
+                let mongoClient;
+                try {
+                    mongoClient = new MongoClient('mongodb://localhost:27017');
+                    await mongoClient.connect();
+                    const db = mongoClient.db('chats');
+                    
+                    let chatHistory;
+                    
+                    db.listCollections({ name: groupChat_collectionName }).next(function (err, colinfo) {
+                        if (colinfo == null) {
+                            db.createCollection(groupChat_collectionName);
+                            chatHistory = [];
+                            let response_obj = {
+                                chatHistory: chatHistory,
+                                groupInfo: {
+                                    groupName: thisGroup_info.name,
+                                    avatar: thisGroup_info.avatar_path,
+                                    id: thisGroup_info.groupid,
+                                    members: thisGroup_info.members.length
+                                }
+                            }
+                            console.log('groupChatHistory response sent: ', response_obj)
+                            res.send(response_obj);
                         }
                         else{
-                            chatHistory_filled[i].files = {
-                                audios: [],
-                                videos: [],
-                                imgs: [],
-                                others: [],
-                            };
+                            if(thisGroup_members.includes(user_sending_id)){
+                                let groupChat_collectionName = `group - ${user_toSend_id}`;
+                                new Promise((resolve, reject) => {
+                                    let chatHistory = mongoRequest('chats', groupChat_collectionName, 'get', 'many', {});
+                                    resolve(chatHistory);
+                                })
+                                .then(chatHistory => {                    
+                                    let chatHistory_filled = [];
+                                    let filePromise = new Promise((resolve, reject) => {
+                                    for (let i = 0; i < chatHistory.length; i++) {
+                                        chatHistory_filled.push({
+                                            message_id: '',
+                                            sender_id: '',
+                                            sender_avatar: '',
+                                            sender_fullname: '',
+                                            time: '',
+                                            message: '',
+                                            files: {
+                                                audios: [],
+                                                videos: [],
+                                                imgs: [],
+                                                others: []
+                                            }
+                                        });
+                                        chatHistory_filled[i].message_id = chatHistory[i]._id;
+                                        chatHistory_filled[i].sender_id = chatHistory[i].sender_id;
+                                        chatHistory_filled[i].message = chatHistory[i].message;
+                                        chatHistory_filled[i].time = chatHistory[i].timestamp;
+                                        if (chatHistory[i].files != null) {
+                                            chatHistory_filled[i].files = {
+                                                audios: chatHistory[i].files.audios,
+                                                videos: chatHistory[i].files.videos,
+                                                imgs: chatHistory[i].files.imgs,
+                                                others: [],
+                                            };
+                                            let thisImages = chatHistory_filled[i].files.imgs;
+                                            calculateImages(thisImages)
+                                            .then((images) => {
+                                                chatHistory_filled[i].files.imgs = images;
+                                            })
+                                            let others_arr = [];
+                                            for (let j = 0; j < chatHistory[i].files.others.length; j++) {
+                                                let thisFile_name = chatHistory[i].files.others[j];
+                                                let thisFile_fullInfo = getFullFileInfo(thisFile_name, 'others')
+                                                others_arr.push(thisFile_fullInfo);
+                                            }
+                                            chatHistory_filled[i].files.others = others_arr;
+                                        }
+                                        else{
+                                            chatHistory_filled[i].files = {
+                                                audios: [],
+                                                videos: [],
+                                                imgs: [],
+                                                others: [],
+                                            };
+                                        }
+                                    }
+                                    resolve()
+                                    })
+                                    .then(() => {
+                                        let groupInfo = {
+                                            groupName: thisGroup_info.name,
+                                            avatar: thisGroup_info.avatar_path,
+                                            id: thisGroup_info.groupid,
+                                            members: thisGroup_info.members.length
+                                        }
+                                        let response = {
+                                            chatHistory: chatHistory_filled,
+                                            groupInfo: groupInfo
+                                        }
+                                        fillChatHistory_info(res, response);
+                                    })
+                                })
+                            }
+                            else{
+                                res.send('Something went wrong');
+                                notification_send(user_sending_token, 'error', 'Something went wrong', 'You are not the member of this group', 'auto');
+                            }
                         }
-                    }
-                    resolve()
                     })
-                    .then(() => {
-                        let user_toSend_info_response = results[1];
-                    let user_toSend_info = {
-                        fullname: user_toSend_info_response.fullname,
-                        avatar: user_toSend_info_response.avatar_path.slice(39),
-                        onlineStatus: calculateLastOnline(user_toSend_info_response.onlineStatus),
-                        id: user_toSend_id
-                    }
-                    let response = {
-                        chatHistory: chatHistory_filled,
-                        userInfo: user_toSend_info
-                    }
-                    fillChatHistory_info(res, response);
-                    db.listCollections({ name: thisChat_collectionName_reversed }).next(function (err, colinfo) {
-                        if (colinfo == null) {
-                            db.createCollection(thisChat_collectionName_reversed);
-                        }
-                    })
-                    })
-                })
+                } catch (error) {
+                    console.error('Connection to MongoDB Atlas failed!', error);
+                    //process.exit();
+                }
             }
-        })
-    } catch (error) {
-        console.error('Connection to MongoDB Atlas failed!', error);
-        //process.exit();
+            else{
+                res.send({status: false});
+                notification_send(user_sending_token, 'error', 'Something went wrong', 'You are not the member of this group', 'auto');
+            }
+            break;
+        }
     }
+    
 }
 
 function generateUniqueFileName(ext, type){
@@ -2456,102 +2624,182 @@ async function sortFiles(files){
     })
 }
 
-async function saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info){
+async function saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info, context){
     await mongoRequest('chats', thisChat_collectionName, 'put', 'one', thisMessage);
-    await mongoRequest('chats', thisChat_collectionName_reversed, 'put', 'one', thisMessage);
-
+    if(thisChat_collectionName_reversed !== null){
+        await mongoRequest('chats', thisChat_collectionName_reversed, 'put', 'one', thisMessage);
+    }
     thisMessage['avatar'] = user_sending_info.avatar_path.slice(39);
     thisMessage['fullname'] = user_sending_info.fullname;
-
     send_socket_chatMessage(user_sending_token, thisMessage);
-    console.log('Сообщение отправлено по websocket');
-    if(user_toSend_token != false){
-        send_socket_chatMessage(user_toSend_token, thisMessage);
-        notification_send(user_toSend_token, 'alert', `${user_sending_info.fullname}`, 'Sent you a private message', 'auto');
-    }
-    else{
-        writeOfflineNotification(user_toSend_info, null, 'alert', `${user_sending_info.fullname}`, 'Sent you a private message', 'auto');
+    for(let i = 0; i < user_toSend_token.length; i++){
+        console.log('Сообщение отправлено по websocket');
+        if(user_toSend_token[i] != false){
+            send_socket_chatMessage(user_toSend_token[i], thisMessage);
+            if(context !== null){
+                notification_send(user_toSend_token[i], 'alert', `${user_sending_info.fullname}`, `Sent a public message at ${context.name}`, 'auto');
+            }
+            else{
+                notification_send(user_toSend_token[i], 'alert', `${user_sending_info.fullname}`, 'Sent you a private message', 'auto');
+            }
+        }
+        else{
+            writeOfflineNotification(user_toSend_info, null, 'alert', `${user_sending_info.fullname}`, `Sent a public message at ${context.name}`, 'auto');
+        }
     }
 }
 
-async function writeMessage(res, thisMessage_obj, token){
+async function writeMessage(res, thisMessage_obj, token, context){
     let user_sending_token = token;
     let user_sending_id = await mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
     user_sending_id = user_sending_id.id;
-
-    let user_toSend_id = parseInt(thisMessage_obj.id);
-    let userSettings_collectionName = `user-${user_toSend_id}`;
-    let user_toSend_directMessage_settings = mongoRequest('user-settings', userSettings_collectionName, 'get', 'one', {name: 'showDirectMessagesNotifications'});
-    user_toSend_directMessage_settings = user_toSend_directMessage_settings.showDirectMessagesNotifications;
     let user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
-    if(user_sending_info.chats == undefined){
-        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: []}});
-        user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
-    }
-    let user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-    if(user_toSend_info.chats == undefined){
-        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: []}});
-        user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
-    }
-    let user_toSend_onlineStatus = user_toSend_info.onlineStatus;
-    let user_toSend_token;
 
-    if(user_sending_info.chats.indexOf(user_toSend_id) == -1){
-        let arr = user_sending_info.chats;
-        arr.push(user_toSend_id);
-        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: arr}});
-    }
-    if(user_toSend_info.chats.indexOf(user_sending_id) == -1){
-        let arr = user_toSend_info.chats;
-        arr.push(user_sending_id);
-        await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: arr}});
-    }
-
-    if(user_toSend_onlineStatus == 'online'){
-        let user_toSend_logged_info = await mongoRequest('logged', 'tokens', 'get', 'one', {id: user_toSend_id});
-        user_toSend_token = user_toSend_logged_info.token;
-    }
-    else{
-        user_toSend_token = false;
-    }
-    let message;
-    if(thisMessage_obj.message != undefined){
-        message = thisMessage_obj.message[0];
-    }
-    else{
-        message = '';
-    }
-    let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
-    let thisChat_collectionName_reversed = `${user_toSend_id} - ${user_sending_id}`;
-
-    let timestamp = Date.now();
-
-    let thisMessage = {
-        sender_id: user_sending_id,
-        message: message,
-        timestamp: timestamp
-    };
-    if(thisMessage_obj.files != false){
-        let promise = new Promise((resolve, reject) => {
-            sortFiles(thisMessage_obj.files.files)
-            .then((response) => {
-                resolve(response)
-            })
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-        promise.then((response) => {
-            console.log('отсортированные файлы: ', response);
-            thisMessage['files'] = response;
-            saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info)
-            res.sendStatus(200);
-        })
-    }
-    else{
-        thisMessage['files'] = null;
-        saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info)
-        res.sendStatus(200);
+    switch(context){
+        case 'user':{
+            let user_toSend_id = parseInt(thisMessage_obj.id);
+            if(user_sending_info.chats == undefined){
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: []}});
+                user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
+            }
+            let user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+            if(user_toSend_info.chats == undefined){
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: []}});
+                user_toSend_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_toSend_id});
+            }
+            let user_toSend_onlineStatus = user_toSend_info.onlineStatus;
+            let user_toSend_token;
+        
+            if(user_sending_info.chats.indexOf(user_toSend_id) == -1){
+                let arr = user_sending_info.chats;
+                arr.push(user_toSend_id);
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: arr}});
+            }
+            if(user_toSend_info.chats.indexOf(user_sending_id) == -1){
+                let arr = user_toSend_info.chats;
+                arr.push(user_sending_id);
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_toSend_id}, toUpdate:{chats: arr}});
+            }
+        
+            if(user_toSend_onlineStatus == 'online'){
+                let user_toSend_logged_info = await mongoRequest('logged', 'tokens', 'get', 'one', {id: user_toSend_id});
+                user_toSend_token = user_toSend_logged_info.token;
+            }
+            else{
+                user_toSend_token = false;
+            }
+            let message;
+            if(thisMessage_obj.message != undefined){
+                message = thisMessage_obj.message[0];
+            }
+            else{
+                message = '';
+            }
+            let thisChat_collectionName = `${user_sending_id} - ${user_toSend_id}`;
+            let thisChat_collectionName_reversed = `${user_toSend_id} - ${user_sending_id}`;
+        
+            let timestamp = Date.now();
+        
+            let thisMessage = {
+                sender_id: user_sending_id,
+                message: message,
+                timestamp: timestamp
+            };
+            if(thisMessage_obj.files != false){
+                let promise = new Promise((resolve, reject) => {
+                    sortFiles(thisMessage_obj.files.files)
+                    .then((response) => {
+                        resolve(response)
+                    })
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                promise.then((response) => {
+                    console.log('отсортированные файлы: ', response);
+                    thisMessage['files'] = response;
+                    saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info, null)
+                    res.sendStatus(200);
+                })
+            }
+            else{
+                thisMessage['files'] = null;
+                saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info, null)
+                res.sendStatus(200);
+            }
+            break;
+        }
+        case 'group':{
+            let thisGroup_id = parseInt(thisMessage_obj.id);
+            let thisGroup_info = await mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id});
+            let thisGroup_chatCollectionName = `group - ${thisGroup_id}`;
+            let timestamp = Date.now();
+            let message;
+            let thisGroup_chatName = `g${thisGroup_id}`;
+            if(!user_sending_info.chats.includes(thisGroup_chatName)){
+                let thisUser_chats = user_sending_info.chats;
+                thisUser_chats.push(thisGroup_chatName);
+                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: thisUser_chats}});
+            }
+            if(thisMessage_obj.message != undefined){
+                message = thisMessage_obj.message[0];
+            }
+            else{
+                message = '';
+            }
+            let thisMessage = {
+                sender_id: user_sending_id,
+                message: message,
+                timestamp: timestamp
+            };
+            let user_toSend_tokens = [];
+            let user_toSend_info = [];
+            for(let i = 0; i < thisGroup_info.members.length; i++){
+                let thisUser_id = thisGroup_info.members[i];
+                if(thisUser_id == user_sending_id){
+                    continue;
+                }
+                else{
+                    let thisUser_info = await mongoRequest('users', 'users', 'get', 'one', { id: thisUser_id });
+                    if (thisUser_info.onlineStatus == 'online') {
+                        let user_toSend_logged_info = await mongoRequest('logged', 'tokens', 'get', 'one', { id: thisUser_id });
+                        user_toSend_tokens.push(user_toSend_logged_info.token);
+                        user_toSend_info.push(undefined);
+                    }
+                    else {
+                        user_toSend_tokens.push(false);
+                        user_toSend_info.push(thisUser_info);
+                    }
+                }
+            }
+            if(thisMessage_obj.files != false){
+                let promise = new Promise((resolve, reject) => {
+                    sortFiles(thisMessage_obj.files.files)
+                    .then((response) => {
+                        resolve(response)
+                    })
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                promise.then((response) => {
+                    console.log('отсортированные файлы: ', response);
+                    thisMessage['files'] = response;
+                    saveMessage(thisGroup_chatCollectionName, null, thisMessage, user_sending_info, user_sending_token, user_toSend_tokens, user_toSend_info, thisGroup_info)
+                    res.sendStatus(200);
+                })
+            }
+            else{
+                thisMessage['files'] = null;
+                saveMessage(thisGroup_chatCollectionName, null, thisMessage, user_sending_info, user_sending_token, user_toSend_tokens, user_toSend_info, thisGroup_info)
+                res.sendStatus(200);
+            }
+            break;
+        }
+        default:{
+            res.sendStatus(500);
+            notification_send(user_sending_token, 'error', 'Message not sent', 'Something went wrong', 'auto');
+        }
     }
 }
 
@@ -2563,15 +2811,17 @@ async function sendFileToDownload(fileName, res){
     res.download(thisFile_path);
 }
 
-async function findTimeZoneOffset(timezone_offset){
-    
-}
-
 async function handleCodeInput(token, code, timezone_offset, res){
     let response = await findRegistrationCode(token);
-    if (response.response == undefined) {
-        res.send({ status: false })
+    console.log(response)
+    if(!response){
+        res.clearCookie('token');
+        let token = generate_token(32);
+        res.cookie('token', token, { secure: true, httpOnly: true, signed: true }).redirect(303, '/register');
     }
+    // if (response.response == undefined) {
+    //     res.send({ status: false })
+    // }
     else {
         let userinfo = response.userinfo;
         if(userinfo.timezone_offset == undefined){
@@ -2607,6 +2857,296 @@ async function handleCodeInput(token, code, timezone_offset, res){
             }
         }
     }
+}
+
+async function joinGroup(thisGroup_id, thisUser_token, res){
+    thisGroup_id = parseInt(thisGroup_id);
+    Promise.all([
+        new Promise((resolve, reject) => {
+            let thisGroup_info = mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id});
+            resolve(thisGroup_info);
+        }),
+        new Promise((resolve, reject) => {
+            let thisUser_logged = mongoRequest('logged', 'tokens', 'get', 'one', {token: thisUser_token});
+            resolve(thisUser_logged)
+        }),
+    ])
+    .then((data)=>{
+        let thisGroup_info = data[0];
+        let thisUser_logged = data[1];
+        let thisUser_id = thisUser_logged.id;
+        if(thisGroup_info.members.includes(thisUser_id)){
+            res.send({status: false});
+            notification_send(thisUser_token, 'error', 'Something went wrong', 'You are already a member of this group', 'auto')
+            return 0;
+        }
+        new Promise((resolve, reject) => {
+            let thisUser_info = mongoRequest('users', 'users', 'get', 'one', {id: thisUser_id});
+            resolve(thisUser_info)
+        })
+        .then((thisUser_info) => {
+            let thisGroup_members = thisGroup_info.members;
+            thisGroup_members.push(thisUser_id);
+            let join_promises = [];
+            join_promises.push(
+                new Promise((resolve, reject) => {
+                    mongoRequest('groups', 'list', 'update', 'one', {condition: {groupid: thisGroup_id}, toUpdate:{members: thisGroup_members}});
+                    resolve();
+                })
+            )
+            let thisUser_chats = thisUser_info.chats;
+            if(!thisUser_chats.includes(thisGroup_id)){
+                let thisGroup_chatName = `g${thisGroup_id}`;
+                thisUser_chats.push(thisGroup_chatName);
+                join_promises.push(
+                    new Promise((resolve, reject) => {
+                        mongoRequest('users', 'users', 'update', 'one', {condition: {id: thisUser_id}, toUpdate:{chats: thisUser_chats}});
+                        resolve();
+                    })
+                )
+            }
+            if(!thisUser_info.groups.includes(thisGroup_id)){
+                join_promises.push(new Promise((resolve, reject) => {
+                    let thisUser_groups = thisUser_info.groups;
+                    thisUser_groups.push(thisGroup_id);
+                    mongoRequest('users', 'users', 'update', 'one', {condition: {id: thisUser_id}, toUpdate:{groups: thisUser_groups}});
+                }))
+            }
+            Promise.all(join_promises)
+            .then(()=>{
+                res.send({status: true});
+            })
+        })
+    })
+}
+
+async function leaveGroup(thisGroup_id, thisUser_token, res){
+    thisGroup_id = parseInt(thisGroup_id);
+    let groupInfo_promise = new Promise((resolve, reject) => {
+        let thisGroup_info = mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id})
+        resolve(thisGroup_info);
+    })
+    let userLogged_promise = new Promise((resolve, reject) => {
+        let thisUser_logged = mongoRequest('logged', 'tokens', 'get', 'one', {token: thisUser_token});
+        resolve(thisUser_logged);
+    })
+    Promise.all([groupInfo_promise, userLogged_promise])
+    .then((data) => {
+        let thisGroup_info = data[0];
+        let thisUser_logged = data[1];
+        let thisUser_id = thisUser_logged.id;
+        let thisGroup_members = thisGroup_info.members;
+
+        if(!thisGroup_members.includes(thisUser_id)){
+            res.send({status: false});
+            console.log({
+                thisGroup_members: thisGroup_members,
+                thisUser_id: thisUser_id
+            })
+            return 0;
+        }
+
+        let userInfo_promise = new Promise((resolve, reject) => {
+            let thisUser_info = mongoRequest('users', 'users', 'get', 'one', {id: thisUser_id});
+            resolve(thisUser_info)
+        })
+        userInfo_promise.then((thisUser_info) => {
+            let thisGroup_chatName = `g${thisGroup_id}`;
+            let leaveGroup_promises = [];
+
+            if(thisUser_info.chats.includes(thisGroup_chatName)){
+                let thisUser_chats = thisUser_info.chats;
+                let thisGroup_chat_index = thisUser_chats.indexOf(thisGroup_chatName);
+                thisUser_chats.splice(thisGroup_chat_index, 1);
+                leaveGroup_promises.push(new Promise((resolve, reject) => {
+                    mongoRequest('users', 'users', 'update', 'one', {condition: {id: thisUser_id}, toUpdate:{chats: thisUser_chats}})
+                    resolve();
+                }))
+            }
+    
+            if(thisGroup_members.includes(thisUser_id)){
+                let thisUser_member_index = thisGroup_members.indexOf(thisUser_id);
+                thisGroup_members.splice(thisUser_member_index, 1);
+                leaveGroup_promises.push(new Promise((resolve, reject) => {
+                    mongoRequest('groups', 'list', 'update', 'one', {condition: {groupid: thisGroup_id}, toUpdate:{members: thisGroup_members}});
+                    resolve();
+                }))
+            }
+
+            if(thisUser_info.groups.includes(thisGroup_id)){
+                let thisUser_groups = thisUser_info.groups;
+                let thisGroup_userGroups_index = thisUser_groups.indexOf(thisGroup_id);
+                thisUser_groups.splice(thisGroup_userGroups_index, 1);
+                leaveGroup_promises.push(new Promise((resolve, reject) => {
+                    mongoRequest('users', 'users', 'update', 'one', {condition: {id: thisUser_id}, toUpdate:{groups: thisUser_groups}})
+                    resolve();
+                }))
+            }
+
+            Promise.all(leaveGroup_promises)
+            .then(()=>{
+                res.send({status: true});
+            })
+        })
+    })
+}
+
+async function getLastMessage(id, scope, token, res){
+    switch(scope){
+        case 'groups':{
+            let thisGroup_chatName = `group - ${id}`;
+
+            let userId_promise = new Promise((resolve, reject) => {
+                let user_logged = mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+                resolve(user_logged);
+            })
+            let lastMessage_promise = new Promise((resolve, reject) => {
+                //bookmark
+                let promise_mongoConnect = new Promise((resolve, reject) => {
+                    let mongoClient = new MongoClient('mongodb://localhost:27017');
+                    mongoClient.connect();
+                    const db = mongoClient.db('chats');
+                    const thisChat = db.collection(thisGroup_chatName);
+                    resolve(thisChat);
+                })
+                promise_mongoConnect.then((thisChat)=>{
+                    let lastMessage = thisChat.find().sort({$natural: -1}).limit(1).toArray();
+                    resolve(lastMessage);
+                })
+            })
+            Promise.all([userId_promise, lastMessage_promise])
+            .then((data) => {
+                let thisUser_id = data[0].id;
+                let lastMessage = data[1][0];
+                let lastMessage_toReturn;
+                if(lastMessage.message == ''){
+                    let attachments_length = 
+                        lastMessage.files.audios.length+
+                        lastMessage.files.videos.length+
+                        lastMessage.files.imgs.length+
+                        lastMessage.files.others.length;
+                    lastMessage_toReturn = `${attachments_length} attachments`;
+                }
+                else{
+                    if(lastMessage.message.length > 60){
+                        lastMessage_toReturn = lastMessage.message.slice(57) + '...'; 
+                    }
+                    else{
+                        lastMessage_toReturn = lastMessage.message; 
+                    }
+                }
+                if(lastMessage.sender_id == thisUser_id){
+                    lastMessage_toReturn = 'You: ' + lastMessage_toReturn;
+                }
+                new Promise((resolve, reject) => {
+                    let thisUser_info = mongoRequest('users', 'users', 'get', 'one', {id: thisUser_id});
+                    resolve(thisUser_info)
+                })
+                .then((thisUser_info) => {
+                    if(thisUser_info.timezone_offset != undefined){
+                        let timezone_offset_hours = thisUser_info.timezone_offset/60;
+                        let lastMessage_timestamp = lastMessage.timestamp;
+                        let lastMessage_date = new Date(lastMessage_timestamp);
+                        let lastMessage_date_toReturn;
+                        let today = new Date();
+                        if(today.getUTCDate() == lastMessage_date.getUTCDate()){
+                            let lastMessage_hours = lastMessage_date.getUTCHours - timezone_offset_hours;
+                            let lastMessage_minutes = lastMessage_date.getUTCMinutes();
+                            lastMessage_date_toReturn = `${lastMessage_hours}:${lastMessage_minutes}`;
+                        }
+                        else{
+                            let lastMessage_day = lastMessage_date.getUTCDate();
+                            if(lastMessage_day < 9){lastMessage_day = '0'+lastMessage_day}
+
+                            let lastMessage_month = lastMessage_date.getUTCMonth()+1;
+                            if(lastMessage_month < 10){lastMessage_month = '0'+lastMessage_month}
+                            
+                            let lastMessage_year = lastMessage_date.getUTCFullYear();
+                            lastMessage_date_toReturn = `${lastMessage_day}.${lastMessage_month}.${lastMessage_year}`;
+                        }
+                        res.send({lastMessage: lastMessage_toReturn, lastMessage_date: lastMessage_date_toReturn});
+                    }
+                    else{
+                        let lastMessage_date_toReturn;
+
+                        let lastMessage_timestamp = lastMessage.timestamp;
+                        let lastMessage_date = new Date(lastMessage_timestamp);
+
+                        let lastMessage_day = lastMessage_date.getUTCDates();
+                        if(lastMessage_day < 9){lastMessage_day = '0'+lastMessage_day}
+
+                        let lastMessage_month = lastMessage_date.getUTCMonth()+1;
+                        if(lastMessage_month < 10){lastMessage_month = '0'+lastMessage_month}
+
+                        let lastMessage_year = lastMessage_date.getUTCFullYear();
+
+                        lastMessage_date_toReturn = `${lastMessage_day}.${lastMessage_month}.${lastMessage_year}`;
+                        res.send({lastMessage: lastMessage_toReturn, lastMessage_date: lastMessage_date_toReturn});
+                    }
+                })
+            })
+            break;
+        }
+    }
+}
+
+async function createUserSettingsRecord(thisUser_id){
+    let thisUser_settings = {
+        id: thisUser_id,
+        phone_visibility: 0,
+        email_visibility: 0,
+        show_direct_notifications: true,
+        play_direct_sound: true,
+        show_group_notifications: true,
+        play_group_sound: true,
+        show_comment_notification: true,
+        play_comment_sound: true,
+        notification_preview: 0,
+        theme_main: '#FFF',
+        theme_accent: '#398FE5'
+    }
+    return new Promise((resolve, reject) => {
+            mongoRequest('users', 'settings', 'put', 'one', thisUser_settings);
+            resolve(thisUser_settings);
+        })   
+}
+
+async function getUserSettings(thisUser_id){
+    return new Promise((resolve, reject) => {
+        let thisUser_settings = mongoRequest('users', 'settings', 'get', 'one', {id: thisUser_id});
+        resolve(thisUser_settings);
+    })
+}
+
+async function handleSettingsRequest(token, res){
+    let logged_promise = new Promise((resolve, reject) => {
+        let thisUser_logged = mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+        resolve(thisUser_logged);
+    })
+    logged_promise.then((thisUser_logged) => {
+        let thisUser_id = thisUser_logged.id;
+        getUserSettings(thisUser_id)
+        .then((thisUser_settings_record) => {
+            new Promise((resolve, reject) => {
+                if(thisUser_settings_record == undefined){
+                    createUserSettingsRecord(thisUser_id)
+                    .then((thisUser_settings) => {
+                        resolve(thisUser_settings);
+                    })
+                }
+                else{
+                    resolve(thisUser_settings_record)
+                }
+            })
+            .then((thisUser_settings) => {
+                delete thisUser_settings._id;
+                delete thisUser_settings.id;
+                delete thisUser_settings.email_visibility;
+                delete thisUser_settings.phone_visibility;
+                res.send(thisUser_settings);
+            })
+        })
+    })
 }
 
 app.post('*', function (req, res) {
@@ -2688,7 +3228,8 @@ app.post('*', function (req, res) {
         }
         case 'settings':{
             let token = req.signedCookies.token;
-            changeSettings(res, token, req)
+            let setting = req.body;
+            changeSettings(token, setting, res);
             break;
         }
         case 'search':{
@@ -2719,6 +3260,7 @@ app.post('*', function (req, res) {
                 thisGroupData['avatar'] = avatar;
                 createCommunity_validate(res, thisGroupData, req.signedCookies.token);
             })
+            break;
         }
         case 'getGroupInfo':{
             let thisGroup_id = req.body.groupid;
@@ -2728,21 +3270,19 @@ app.post('*', function (req, res) {
         case 'deleteCommunity': {
             let token = req.signedCookies.token;
             let groupid = req.body.id;
-            deleteCommunity(res, token, groupid)
+            deleteCommunity(res, token, groupid);
+            break;
         }
         case 'editCommunity':{
             const form = new multiparty.Form();
             form.parse(req, function(err, fields, files){
                 editCommunity(res, files, fields, req.signedCookies.token)
             })
-        }
-        case 'getNotificationsSettings':{
-            getNotificationsSettings(res, req.signedCookies.token);
             break;
         }
         case 'addToFriends':{
             let userAdd_id = req.body.id;
-            addToFriends(userAdd_id, req.signedCookies.token, res)
+            addToFriends(userAdd_id, req.signedCookies.token, res);
             break;
         }
         case 'friendRequestResponse':{
@@ -2759,11 +3299,14 @@ app.post('*', function (req, res) {
         }
         case 'getChatHistory':{
             let user_sending_token = req.signedCookies.token;
-            let user_toSend_id = req.body.uid;
-            getChatHistory(user_sending_token, user_toSend_id, res)
+            let user_toSend_id = req.body.id;
+            let action_context = req.body.context;
+            getChatHistory(user_sending_token, user_toSend_id, action_context, res)
             break;
         }
         case 'writeMessage':{
+            let context = req.query.context;
+            console.log(context)
             const form = new multiparty.Form();
             form.parse(req, (err, fields, files) => {
                 let message = fields.message;
@@ -2796,11 +3339,36 @@ app.post('*', function (req, res) {
                             }
 
                             thisMessage_obj['id'] = id;
-                            writeMessage(res, thisMessage_obj, token);
+                            writeMessage(res, thisMessage_obj, token, context);
                         }
                     }
                 }   
             })
+            break;
+        }
+        case 'joinGroup':{
+            let thisGroup_id = req.body.groupid;
+            let thisUser_token = req.signedCookies.token;
+            joinGroup(thisGroup_id, thisUser_token, res);
+            break;
+        }
+        case 'leaveGroup':{
+            let thisGroup_id = req.body.groupid;
+            let thisUser_token = req.signedCookies.token;
+            leaveGroup(thisGroup_id, thisUser_token, res);
+            break;
+        }
+        case 'getLastMessage':{
+            let id = req.body.id;
+            let scope = req.body.scope;
+            let token = req.signedCookies.token;
+            getLastMessage(id, scope, token, res);
+            break;
+        }
+        case 'getUserSettings':{
+            let token = req.signedCookies.token;
+            handleSettingsRequest(token, res)
+            break;
         }
     }
 })

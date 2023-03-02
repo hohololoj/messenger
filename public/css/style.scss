@@ -81,11 +81,11 @@ a{
 .title{
     font-weight: 700;
     font-size: 24px;
-    color: #171A1F;
     font-style: normal;
     line-height: 32px;
     text-align: center;
     letter-spacing: 0.36px;
+    color: var(--color_main);
 }
 .description{
     font-weight: 400;
@@ -138,7 +138,7 @@ a{
             font-size: 15px;
             line-height: 24px;
             letter-spacing: -0.24px;
-            color: #171A1F;
+            color: var(--color_main);
         }
     }
     .select-head-search{
@@ -149,7 +149,7 @@ a{
     }
 }
 .select-click{
-    background: white;
+    background: var(--theme_bg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -166,7 +166,7 @@ a{
             font-size: 15px;
             line-height: 24px;
             letter-spacing: -0.24px;
-            color: #171A1F;
+            color: var(--color_main);
         }
     }
     .select-head-search{
@@ -198,7 +198,7 @@ a{
             font-size: 15px;
             line-height: 24px;
             letter-spacing: -0.24px;
-            color: #9D9FA3;
+            color: var(--color_main);
         }
     }
     .select-body{
@@ -230,9 +230,11 @@ a{
                     justify-content: space-between;
                     width: 100%;
                     padding: 8px;
+                    color: var(--color_main);
                     cursor: pointer;
                     &:hover{
                         background: #F2F3F5;
+                        color: black;
                     }
                     .name{
                         font-size: 15px;
@@ -283,7 +285,7 @@ a{
     .app-modal-window{
         width: 400px;
         height: auto;
-        background: white;
+        background: var(--theme_bg);
         border-radius: 12px;
         padding: 20px 24px;
         position: fixed;
@@ -299,7 +301,10 @@ a{
                 font-size: 24px;
                 font-weight: bold;
                 line-height: 32px;
-                color: #171A1F;
+                color: var(--color_main);
+            }
+            .modal-window-description{
+                color: var(--color_main);
             }
             .buttons-container{
                 width: 100%;

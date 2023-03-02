@@ -4,14 +4,14 @@
     height: 5px;
 }
 ::-webkit-scrollbar-thumb {
-    background: #398FE5;
+    background: var(--accent);
     border-radius: 9em;
 }
 body{
     img{
         -webkit-user-drag: none;
-
     }
+    background: var(--theme_bg);
 }
 button{
     border: none;
@@ -157,16 +157,15 @@ button{
             font-weight: 700;
             font-size: 20px;
             line-height: 32px;
-            color: #171A1F;
+            color: var(--color_main);
         }
         .notification-description{
             width: 100%;
-            color: #171A1F;
+            color: var(--color_main);
             font-size: 15px;
             font-weight: normal;
             height: auto;
             display: block;
-            word-break: break-all;
             text-align: center;
         }
         .description-error{
@@ -185,14 +184,14 @@ button{
             cursor: pointer;
         }
         .account-notification-link{
-            color: #248BF2;
+            color: var(--accent);
             cursor: pointer;
         }
         .button-ok{
-            background: #248BF2;
+            background: var(--accent);
         }
         .button-confirm{
-            background: #248BF2;
+            background: var(--accent);
         }
         .button-cancel{
             background: #F23051;    
@@ -486,7 +485,7 @@ button{
     .edit-community-container{
         width: 480px;
         height: auto;
-        background: white;
+        background: var(--theme_bg);
         border-radius: 12px;
         display: flex;
         flex-direction: column;
@@ -508,7 +507,7 @@ button{
             height: 72px;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
-            background: #F2F3F5;
+            background: var(--theme_sidebar);
             display: flex;
             align-items: center;
             justify-content: flex-end;
@@ -534,7 +533,7 @@ button{
                 }
             }
             .edit-community-button-done{
-                background: #248BF2;
+                background: var(--accent);
                 color: white;
                 font-weight: 900;
                 font-size: 15px;
@@ -554,7 +553,7 @@ button{
             font-weight: 700;
             font-size: 24px;
             line-height: 32px;
-            color: #171A1F;
+            color: var(--color_main);
             height: 72px;
             width: 100%;
             display: flex;
@@ -591,7 +590,7 @@ button{
             font-weight: 700;
             font-size: 17px;
             line-height: 24px;
-            color: #171A1F;
+            color: var(--color_main);
             width: 100%;
             height: 48px;
             display: flex;
@@ -628,7 +627,7 @@ button{
                 font-weight: 400;
                 font-size: 15px;
                 line-height: 24px;
-                color: #171A1F;
+                color: var(--color_main);
                 background: transparent;
                 border: none;
                 outline: none;
@@ -665,7 +664,7 @@ button{
                         font-weight: 400;
                         font-size: 15px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                 }
                 .settings-input{
@@ -706,7 +705,7 @@ button{
         border-radius: 8px;
         background: rgba($color: #C9CCD1, $alpha: 0.24);
         padding: 8px 16px;
-        color: #171A1F;
+        color: var(--color_main);
         font-size: 15px;
         line-height: 24px;
     }
@@ -721,7 +720,7 @@ button{
     left: 0px;
     top: 0px;
     z-index: 10;
-    background: white;
+    background: var(--theme_bg);
     .create-community-button-close{
         width: 24px;
         height: 24px;
@@ -805,7 +804,7 @@ button{
                     line-height: 24px;
                     font-size: 15px;
                     font-weight: normal;
-                    color: #171A1F;
+                    color: var(--color_main);
                     background: transparent;
                     position: absolute;
                     z-index: 1;
@@ -848,7 +847,7 @@ button{
                     flex-direction: column;
                     width: 100%;
                     height: 0;
-                    background: rgb(243, 243, 244);
+                    background: var(--theme_bg);
                     border-bottom-left-radius: 8px;
                     border-bottom-right-radius: 8px;
                     height: fit-content;
@@ -863,7 +862,7 @@ button{
                         font-weight: 400;
                         font-size: 15px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                 }
             }
@@ -890,7 +889,7 @@ button{
                     flex-direction: column;
                     width: 100%;
                     height: 0;
-                    background: rgb(243, 243, 244);
+                    background: var(--theme_bg);
                     border-bottom-left-radius: 8px;
                     border-bottom-right-radius: 8px;
                     height: fit-content;
@@ -905,7 +904,7 @@ button{
                         font-weight: 400;
                         font-size: 15px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                 }
             }
@@ -937,12 +936,13 @@ button{
                     flex-direction: column;
                     width: 100%;
                     height: 168px;
-                    background: rgb(243, 243, 244);
+                    background: var(--theme_bg);
                     border-bottom-left-radius: 8px;
                     border-bottom-right-radius: 8px;
                     z-index: 10;
                     overflow: scroll;
                     .select-options-container{
+                        background: var(--theme_bg);
                         display: none;
                         .select-option{
                             height: 24px;
@@ -958,7 +958,7 @@ button{
                         font-weight: 400;
                         font-size: 15px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                 }
             }
@@ -969,6 +969,7 @@ button{
                 border-bottom-right-radius: 0;
                 .select-options-container{
                     display: flex;
+                    background: var(--theme_bg);
                     .select-option{
                         height: 24px;
                     }
@@ -981,6 +982,7 @@ button{
                 border-bottom-right-radius: 0;
                 .select-options-container{
                     display: flex;
+                    background: var(--theme_bg);
                     .select-option{
                         height: 56px;
                     }
@@ -993,6 +995,7 @@ button{
                 border-bottom-right-radius: 0;
                 .select-options-container{
                     display: flex;
+                    background: var(--theme_bg);
                     .select-option{
                         height: 56px;
                     }
@@ -1019,7 +1022,7 @@ button{
                     font-weight: 400;
                     font-size: 15px;
                     line-height: 24px;
-                    color: #171A1F;
+                    color: var(--color_main);
                 }
             }
             .subscription-price-container-onetime{
@@ -1032,7 +1035,7 @@ button{
                 height: 56px;
             }
             .submit-community-creation-button-valid{
-                background: #248BF2;
+                background: var(--accent);
                 color: white;
             }
         }
@@ -1047,7 +1050,7 @@ button{
 .modal-user-info{
     width: calc(100vw - 360px - 64px);
     height: 100vh;
-    background: white;
+    background: var(--theme_bg);
     position: fixed;
     right: 0;
     top: 0;
@@ -1081,7 +1084,8 @@ button{
                 width: 96px;
                 height: 96px;
                 border-radius: 50%;
-                background: red;
+                object-fit: cover;
+                object-position: center;
             }
             .user-fullname-block{
                 display: flex;
@@ -1091,7 +1095,7 @@ button{
                     font-weight: 700;
                     font-size: 20px;
                     line-height: 28px;
-                    color: #171A1F;
+                    color: var(--color_main);
                 }
                 .online-status{
                     font-weight: 400;
@@ -1102,14 +1106,21 @@ button{
                     color: #71747A;
                 }
                 .online-status_online{
-                    color: #248BF2;
+                    color: var(--accent);
+                }
+                .group-info-memebers{
+                    font-weight: 400;
+                    font-size: 15px;
+                    line-height: 24px;
+                    letter-spacing: -0.24px;
+                    color: #71747A;
                 }
             }
             .send-message-button{
                 width: 240px;
                 height: 40px;
                 border-radius: 8px;
-                background: #248BF2;
+                background: var(--accent);
                 font-weight: 900;
                 font-size: 15px;
                 line-height: 24px;
@@ -1121,13 +1132,15 @@ button{
                 flex-direction: column;
                 width: fit-content;
                 height: auto;
+                overflow: hidden;
                 .user-actions-block-item{
                     padding: 12px 0;
                     display: flex;
                     gap: 16px;
                     align-items: center;
-                    border-right: 2px solid white;
+                    // border-right: 2px solid white;
                     cursor: pointer;
+                    color: var(--color_main);
                 }
             }
         }
@@ -1138,7 +1151,7 @@ button{
                 font-weight: 700;
                 font-size: 17px;
                 line-height: 24px;
-                color: #171A1F;
+                color: var(--color_main);
                 height: 48px;
                 display: flex;
                 align-items: center;
@@ -1151,7 +1164,7 @@ button{
                     font-weight: 400;
                     font-size: 15px;
                     line-height: 24px;
-                    color: #171A1F;
+                    color: var(--color_main);
                 }
                 .user-quick-info{
                     width: 520px;
@@ -1170,7 +1183,7 @@ button{
                         font-weight: 400;
                         font-size: 15px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                         img{
                             max-width: 21.5px;
                             max-height: 21.5px;
@@ -1178,6 +1191,113 @@ button{
                     }
                     .user-quick-info-item-noncu{
                         cursor: auto;
+                    }
+                }
+                .group-memebers-container{
+                    width: 100%;
+                    height: auto;
+                    display: flex;
+                    flex-direction: column;
+                    max-height: 488px;
+                    overflow-y: auto;
+                    gap: 4px;
+                    .group-memebers-title-container{
+                        width: 100%;
+                        height: 48px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        .group-memebers-title{
+                            width: 100%;
+                            height: 48px;
+                            font-weight: 700;
+                            font-size: 17px;
+                            line-height: 24px;
+                            letter-spacing: -0.41px;
+                            color: var(--color_main);
+                            height: 48px;
+                            display: flex;
+                            align-items: center;
+                            .group-members-title-quantity{
+                                color: #9D9FA3;
+                                margin-left: 8px;
+                            }
+                        }
+                        .members-search-input-container{
+                            width: auto;
+                            height: 48px;
+                            display: flex;
+                            align-items: center;
+                            background: rgba(201, 204, 209, 0.24);
+                            padding: 0 12px 0 12px;
+                            border-radius: 8px;
+                            gap: 0;
+                            cursor: pointer;
+                            img{
+                                width: 24px;
+                                height: 24px;
+                            }
+                            .member-search-input{
+                                width: 0;
+                                height: 32px;
+                                border: none;
+                                background: none;
+                                outline: none;
+                                transition: width 0.25s ease-in;
+                                color: var(--color_main);
+                            }
+                        }
+                        .members-search-input-container_opened{
+                            padding: 0 16px 0 12px;
+                            gap: 16px;
+                            .member-search-input{
+                                width: 240px;
+                                transition: width 0.25s ease-out;
+                                color: var(--color_main);
+                            }
+                        }
+                    }
+                    .group-members-item{
+                        width: 100%;
+                        height: 56px;
+                        display: flex;
+                        gap: 16px;
+                        align-items: center;
+                        cursor: pointer;
+                        border-bottom: 1px solid rgba(201, 204, 209, 0);
+                        &:hover{
+                            border-bottom: 1px solid rgba(201, 204, 209, 0.24);
+                            border-radius: 8px;
+                        }
+                        .member-title-text{
+                            font-weight: 900;
+                            font-size: 15px;
+                            line-height: 24px;
+                            letter-spacing: -0.24px;
+                            color: var(--color_main);
+                        }
+                        .member-subtitle-text{
+                            font-weight: 400;
+                            font-size: 14px;
+                            line-height: 20px;
+                            letter-spacing: -0.24px;
+                            color: #71747A;
+                        }
+                        .member-subtitle-text_online{
+                            color: var(--accent);
+                        }
+                        .member-img{
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            object-fit: cover;
+                            object-position: center;
+                        }
+                        .member-info-container{
+                            display: flex;
+                            flex-direction: column;
+                        }
+                        
                     }
                 }
             }
@@ -1250,7 +1370,7 @@ button{
         // align-items: center;
         // justify-content: flex-start;
         padding-top: 16px;
-        background: #F2F3F5;
+        background: var(--theme_sidebar);
         .logo{
             margin-bottom: 16px;
         }
@@ -1275,6 +1395,9 @@ button{
             }
             .icon-hover{
                 opacity: 0;
+                path{
+                    fill: var(--accent);
+                }
                 // display: none;
             }
             &:hover{
@@ -1293,7 +1416,7 @@ button{
             &::before{
                 width: 2px;
                 height: 48px;
-                background: #248BF2;
+                background: var(--accent);
                 content: '';
                 border-top-right-radius: 100px;
                 border-bottom-right-radius: 100px;
@@ -1306,7 +1429,7 @@ button{
                 display: block;
                 width: 2px;
                 height: 56px;
-                background: #248BF2;
+                background: var(--accent);
                 position: absolute;
                 left: 0;
                 border-top-right-radius: 100px;
@@ -1371,6 +1494,7 @@ button{
                 font-weight: 700;
                 line-height: 32px;
                 letter-spacing: 0.36px;
+                color: var(--color_main)
             }
             .notifications{
                 cursor: pointer;
@@ -1434,6 +1558,7 @@ button{
                     border: none;
                     outline: none;
                     background: none;
+                    color: var(--color_main);
                 }
             }
         }
@@ -1473,7 +1598,7 @@ button{
                         width: 6px;
                         height: 6px;
                         border-radius: 50%;
-                        background: #398FE5;
+                        background: var(--accent);
                         border: 1px solid white;
                         position: absolute;
                         left: 80%;
@@ -1499,13 +1624,13 @@ button{
                             font-weight: 900;
                             font-size: 15px;
                             letter-spacing: -0.24px;
-                            color: black;
+                            color: var(--color_main);
                         }
                         .message-time-sent{
                             font-weight: 400;
                             font-size: 13px;
                             letter-spacing: -0.08px;
-                            color: black;
+                            color: var(--color_main);
                         }
                     }
                     .chat-body{
@@ -1520,6 +1645,7 @@ button{
                             text-overflow: ellipsis;
                             flex-shrink: 1;
                             overflow: hidden;
+                            color: var(--color_main);
                         }
                         .chat-notes{
                             width: auto;
@@ -1535,7 +1661,7 @@ button{
                     }
                 }
                 &:hover{
-                    background: #398FE5;
+                    background: var(--accent);
                 .avatar{
                     .online-status{
                         background: white;
@@ -1559,7 +1685,7 @@ button{
                 }
             }
             // .chat-item-current{
-            //     background: #398FE5;
+            //     background: var(--accent);
             //     .avatar{
             //         .online-status{
             //             background: white;
@@ -1596,12 +1722,12 @@ button{
                     }
                 }
                 .description{
-                    color: #171A1F;
+                    color: var(--color_main);
                     font-size: 15px;
                     font-weight: normal;
                 }
                 &:hover{
-                    background: #398FE5;
+                    background: var(--accent);
                     .img-container{
                         path{
                             fill: white;
@@ -1613,7 +1739,7 @@ button{
                 }
             }
             .discover-item_active{
-                background: #398FE5;
+                background: var(--accent);
                     .img-container{
                         path{
                             fill: white;
@@ -1648,8 +1774,8 @@ button{
                         width: 6px;
                         height: 6px;
                         border-radius: 50%;
-                        background: #398FE5;
-                        border: 2px solid #398FE5;
+                        background: var(--accent);
+                        border: 2px solid var(--accent);
                         position: absolute;
                         top: 80%;
                         left: 80%;
@@ -1668,7 +1794,7 @@ button{
                             font-weight: 900;
                             font-size: 15px;
                             letter-spacing: -0.24px;
-                            color: black;
+                            color: var(--color_main);
                             line-height: 24px;
                         }
                         .online-status-text{
@@ -1676,12 +1802,12 @@ button{
                             font-size: 14px;
                         }
                         .online{
-                            color: #248BF2;
+                            color: var(--accent);
                         }
                     }
                 }
                 &:hover{
-                    background: #398FE5;
+                    background: var(--accent);
                     .contacts-title{
                         .user-name{
                             color: white;
@@ -1704,11 +1830,13 @@ button{
                 }
                 .last-online{
                     display: block;
+                    color: var(--color_main);
                 }
             }
             .contacts-item_online{
                 .last-online{
                     display: none;
+                    color: var(--color_main);
                 }
                 .online-status{
                     display: block;
@@ -1723,11 +1851,11 @@ button{
                 padding: 0 16px;
                 gap: 16px;
                 .description{
-                    color: #171A1F;
+                    color: var(--color_main);
                     font-size: 15px;
                 }
                 &:hover{
-                    background: #398FE5;
+                    background: var(--accent);
                     .img-container{
                         path{
                             fill: white;
@@ -1759,7 +1887,7 @@ button{
                 font-weight: 700;
                 font-size: 17px;
                 line-height: 24px;
-                color: #171A1F;
+                color: var(--color_main);
             }
             .search-result-item{
                 width: 100%;
@@ -1780,31 +1908,6 @@ button{
                     display: grid;
                     grid-template: 1fr / 1fr 32px;
                     gap: 16px;
-                    .right-part{
-                        width: 100%;
-                        height: 100%;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        .name{
-                            font-weight: 900;
-                            font-size: 15px;
-                            color: #171A1F;
-                            line-height: 24px;
-                        }
-                        .online-status-last-seen{
-                            font-weight: 400;
-                            font-size: 14px;
-                            line-height: 20px;
-                            color: #71747A;
-                        }
-                        .online-status-online{
-                            font-weight: 400;
-                            font-size: 14px;
-                            line-height: 20px;
-                            color: #248BF2;
-                        }
-                    }
                     .search-result-isFriend{
                         width: auto;
                         height: 100%;
@@ -1815,6 +1918,31 @@ button{
                             height: 60%;
                             justify-self: end;
                         }
+                    }
+                }
+                .right-part{
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    .name{
+                        font-weight: 900;
+                        font-size: 15px;
+                        color: var(--color_main);
+                        line-height: 24px;
+                    }
+                    .online-status-last-seen{
+                        font-weight: 400;
+                        font-size: 14px;
+                        line-height: 20px;
+                        color: #71747A;
+                    }
+                    .online-status-online{
+                        font-weight: 400;
+                        font-size: 14px;
+                        line-height: 20px;
+                        color: var(--accent);
                     }
                 }
             }
@@ -1835,7 +1963,7 @@ button{
                     height: 48px;
                     font-size: 17px;
                     font-weight: bold;
-                    color: #171A1F;
+                    color: var(--color_main);
                     padding-left: 16px;
                     display: flex;
                     align-items: center;
@@ -1864,7 +1992,7 @@ button{
                             font-size: 17px;
                             font-weight: bold;
                             line-height: 24px;
-                            color: #171A1F;
+                            color: var(--color_main);
                         }
                         .email{
                             font-size: 15px;
@@ -1887,13 +2015,13 @@ button{
                         }
                     }
                     .description{
-                        color: #171A1F;
+                        color: var(--color_main);
                         font-size: 15px;
                         line-height: 24px;
                         font-weight: normal;
                     }
                     &:hover{
-                        background: #398FE5;
+                        background: var(--accent);
                         .img-container{
                             path{
                                 fill: white;
@@ -1908,7 +2036,7 @@ button{
                     }
                 }
                 .settings-item_active{
-                    background: #398FE5;
+                    background: var(--accent);
                     .img-container{
                         path{
                             fill: white;
@@ -1957,6 +2085,8 @@ button{
                             width: 40px;
                             height: 40px;
                             border-radius: 50%;
+                            object-fit: cover;
+                            object-position: center;
                         }
                         .user-info-text{
                             display: flex;
@@ -1965,15 +2095,16 @@ button{
                                 font-weight: 900;
                                 font-size: 15px;
                                 line-height: 24px;
-                                color: #171A1F;
+                                color: var(--color_main);
                             }
                             .user-info-last-online{
                                 font-weight: 400;
                                 font-size: 14px;
                                 line-height: 20px;
+                                color: var(--color_main);
                             }
                             .onlineStatus_online{
-                                color: #398FE5;;
+                                color: var(--accent);;
                             }
                             .onlineStatus_offline{
                                 color: #71747A;
@@ -2030,7 +2161,7 @@ button{
                                     font-weight: 400;
                                     font-size: 15px;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                 }
                             }
                         }
@@ -2073,7 +2204,12 @@ button{
                         position: relative;
                         display: flex;
                         align-items: flex-end;
-                        background: #E3E4E5;
+                        background: var(--theme_bg);
+                        .message-input{
+                            border: 1px solid var(--color_main) !important;
+                            border-radius: 8px 0px 0px 8px;
+                            background: var(--theme_bg) !important;
+                        }
                         .stickers-container_top{
                             display: none;
                             width: fit-content;
@@ -2125,7 +2261,7 @@ button{
                                     font-weight: 900;
                                     font-size: 15px;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                     position: relative;
                                     .stickers-close-button{
                                         position: absolute;
@@ -2161,10 +2297,11 @@ button{
                             height: auto;
                             display: flex;
                             align-items: flex-end;
-                            background: #E3E4E5;
                             outline: none;
                             word-wrap: normal;
                             word-break: break-all;
+                            color: var(--color_main);
+                            
                         }
                         .attachments-inmessage-container{
                             width: 100%;
@@ -2216,7 +2353,7 @@ button{
                                             font-weight: 900;
                                             font-size: 15px;
                                             line-height: 24px;
-                                            color: #171A1F;
+                                            color: var(--color_main);
                                         }
                                         .file-size{
                                             font-weight: 400;
@@ -2276,7 +2413,7 @@ button{
                                 .audio-container{
                                     width: 100%;
                                     height: 40px;
-                                    background: #F2F3F5;
+                                    background: var(--theme_sidebar);
                                     border-radius: 8px;
                                     display: flex;
                                     align-items: center;
@@ -2492,7 +2629,7 @@ button{
                             font-weight: 400;
                             font-size: 15px;
                             line-height: 24px;
-                            color: #171A1F;
+                            color: var(--color_main);
                             max-width: 644px;
                             padding: 8px 16px;
                             gap: 8px;
@@ -2578,7 +2715,7 @@ button{
                                         .user-name{
                                             font-weight: 900;
                                             font-size: 15px;
-                                            color: #171A1F;
+                                            color: var(--color_main);
                                         }
                                         .sent-date{
                                             font-weight: 400;
@@ -2596,7 +2733,7 @@ button{
                                             font-weight: 400;
                                             font-size: 15px;
                                             line-height: 24px;
-                                            color: #171A1F;
+                                            color: var(--color_main);
                                             .message-element-img{
                                                 max-width: 680px;
                                                 max-height: 360px;
@@ -2757,7 +2894,7 @@ button{
                                                         font-weight: 900;
                                                         font-size: 15px;
                                                         line-height: 24px;
-                                                        color: #171A1F;
+                                                        color: var(--color_main);
                                                     }
                                                     .file-size{
                                                         font-weight: 400;
@@ -2769,7 +2906,7 @@ button{
                                             .audio-container{
                                                 width: 100%;
                                                 height: 40px;
-                                                background: #F2F3F5;
+                                                background: var(--theme_sidebar);
                                                 border-radius: 8px;
                                                 display: flex;
                                                 align-items: center;
@@ -2836,7 +2973,7 @@ button{
                         .empty-chat-title{
                             font-weight: 700;
                             font-size: 24px;
-                            color: #171A1F;
+                            color: var(--color_main);
                             margin-bottom: 8px;
                         }
                         .empty-chat-text{
@@ -2850,6 +2987,7 @@ button{
             }
             .button-title{
                 margin-top: 16px;
+                color: var(--color_main);
             }
             .description{
                 margin-top: 8px;
@@ -2869,7 +3007,7 @@ button{
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        background: #F2F3F5;
+                        background: var(--theme_sidebar);
                         border-radius: 50%;
                     }
                     .button-title{
@@ -2879,6 +3017,7 @@ button{
                         line-height: 24px;
                         letter-spacing: -0.24px;
                         text-align: center;
+                        color: var(--color_main)
                     }
                 }
             }
@@ -2912,13 +3051,13 @@ button{
                     align-items: center;
                     font-size: 24px;
                     font-weight: bold;
-                    color: #171A1F;
+                    color: var(--color_main);
                     text-align: left;
                 }
                 .discover-body-item-title-text{
                     font-size: 17px;
                     font-weight: bold;
-                    color: #171A1F;
+                    color: var(--color_main);
                 }
                 .discover-body-item{
                     display: none;
@@ -2956,7 +3095,7 @@ button{
                                     font-weight: 900;
                                     font-size: 15px;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                 }
                                 .discover-body-group-line-left-text-members{
                                     font-weight: 400;
@@ -2982,7 +3121,7 @@ button{
                             }
                         }
                         .button-subscribe-unsub{
-                            background: #248BF2;
+                            background: var(--accent);
                         }
                         .button-subscribe-sub{
                             background: rgba($color: #C9CCD1, $alpha: 0.24);
@@ -2990,7 +3129,7 @@ button{
                         .button-subscribe-unpayed{
                             padding: 6px 16px;
                             width: fit-content;
-                            background: #171A1F;
+                            background: var(--accent);
                             color: white;
                         }
                     }
@@ -3019,7 +3158,7 @@ button{
                                     justify-content: center;
                                     cursor: pointer;
                                     &:hover{
-                                        background: #398FE5;
+                                        background: var(--accent);
                                         path{
                                             fill: white;
                                         }
@@ -3073,7 +3212,7 @@ button{
                                                 font-size: 15px;
                                                 font-weight: bolder;
                                                 line-height: 24px;
-                                                color: #171A1F;
+                                                color: var(--color_main);
                                             }
                                             .group-description-text-members{
                                                 font-size: 14px;
@@ -3142,7 +3281,7 @@ button{
                                     font-size: 15px;
                                     font-weight: bolder;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                 }
                                 .discover-group-members{
                                     font-size: 14px;
@@ -3152,7 +3291,7 @@ button{
                                 }
                             }
                             &:hover{
-                                background: #398FE5;
+                                background: var(--accent);
                                 .discover-group-title{
                                     color: white;
                                 }
@@ -3205,7 +3344,7 @@ button{
                                     justify-content: center;
                                     cursor: pointer;
                                     &:hover{
-                                        background: #398FE5;
+                                        background: var(--accent);
                                         path{
                                             fill: white;
                                         }
@@ -3245,7 +3384,7 @@ button{
                                                 font-size: 15px;
                                                 font-weight: bolder;
                                                 line-height: 24px;
-                                                color: #171A1F;
+                                                color: var(--color_main);
                                             }
                                             .collections-groups{
                                                 font-size: 14px;
@@ -3288,7 +3427,7 @@ button{
                                     font-size: 15px;
                                     font-weight: bold;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                 }
                                 .discription-counter{
                                     font-size: 14px;
@@ -3298,7 +3437,7 @@ button{
                                 }
                             }
                             &:hover{
-                                background: #398FE5;
+                                background: var(--accent);
                                 border-radius: 16px;
                                 .discription-title{
                                     color: white;
@@ -3339,7 +3478,7 @@ button{
                 align-items: center;
                 padding-left: 16px;
                 margin-bottom: 16px;
-                color: #171A1F;
+                color: var(--color_main);
             }
             .items-group-content{
                 display: grid;
@@ -3376,7 +3515,7 @@ button{
                     line-height: 24px;
                     font-size: 15px;
                     font-weight: normal;
-                    color: #171A1F;
+                    color: var(--color_main);
                     background: transparent;
                     position: absolute;
                     z-index: 1;
@@ -3418,7 +3557,7 @@ button{
                         .submit-button{
                             padding: 0 24px;
                             height: 40px;
-                            background: #248BF2;
+                            background: var(--accent);
                             color: white;
                             border: none;
                             outline: none;
@@ -3434,6 +3573,7 @@ button{
                         font-size: 17px;
                         font-weight: bold;
                         line-height: 24px;
+                        color: var(--color_main);
                     }
                     .items-group-content{
                         width: 100%;
@@ -3507,7 +3647,7 @@ button{
                         font-weight: 700;
                         font-size: 17px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                     .invite-friends-link-container{
                         width: 100%;
@@ -3521,12 +3661,13 @@ button{
                             padding-left: 16px;
                             border-radius: 8px;
                             background: rgba($color: #C9CCD1, $alpha: 0.24);
+                            color: var(--color_main);
                         }
                         .invite-friends-copy-button{
                             padding: 0 24px;
                             height: 40px;
                             color: white;
-                            background: #248BF2;
+                            background: var(--accent);
                             display: flex;
                             align-items: center;
                             justify-content: center;
@@ -3561,7 +3702,7 @@ button{
                         display: flex;
                         font-size: 15px;
                         font-weight: bolder;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                 }
                 .community-group{
@@ -3574,7 +3715,7 @@ button{
                         align-items: center;
                         font-size: 17px;
                         font-weight: bold;
-                        color: #171A1F;
+                        color: var(--color_main);
                         line-height: 24px;
                     }
                     .community-group-item{
@@ -3601,7 +3742,7 @@ button{
                                 font-size: 15px;
                                 font-weight: bolder;
                                 line-height: 24px;
-                                color: #171A1F;
+                                color: var(--color_main);
                             }
                             .group-members{
                                 font-size: 14px;
@@ -3610,7 +3751,7 @@ button{
                             }
                         }
                         &:hover{
-                            background: #398FE5;
+                            background: var(--accent);
                             .group-name{
                                 color: white;
                             }
@@ -3643,7 +3784,7 @@ button{
                         font-weight: 700;
                         font-size: 17px;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                         height: 48px;
                         display: flex;
                         align-items: center;
@@ -3658,7 +3799,7 @@ button{
                             width: 100%;
                             height: 100%;
                             background: #000;
-                            background: linear-gradient(180deg, rgba(242, 243, 245, 0.56) 0%, #F2F3F5 100%);
+                            background: linear-gradient(180deg, rgba(242, 243, 245, 0.56) 0%, var(--theme_sidebar) 100%);
                             border-radius: 8px;
                             padding: 10px 16px;
                             display: flex;
@@ -3672,13 +3813,13 @@ button{
                                     font-weight: 400;
                                     font-size: 14px;
                                     line-height: 20px;
-                                    color: #71747A;
+                                    color: var(--color_main);
                                 }
                                 .method-output-text{
                                     font-weight: 900;
                                     font-size: 15px;
                                     line-height: 24px;
-                                    color: #171A1F;
+                                    color: var(--color_main);
                                 }
                             }
                             .edit-method-button{
@@ -3690,12 +3831,12 @@ button{
                                 cursor: pointer;
                             }
                             .edit-method-button_active{
-                                background: #248BF2;
+                                background: var(--accent);
                                 color: white;
                             }
                             .edit-method-button_inactive{
                                 background: rgba(201, 204, 209, 0.24);
-                                color: #71747A;;
+                                color: var(--color_main);
                             }
                         }
                     }
@@ -3709,7 +3850,7 @@ button{
                             font-weight: 400;
                             font-size: 15px;
                             line-height: 24px;
-                            color: #171A1F;
+                            color: var(--color_main);
                         }
                         .select{
                             position: relative;
@@ -3788,6 +3929,7 @@ button{
                             height: 48px;
                             display: flex;
                             align-items: center;
+                            color: var(--color_main);
                         }
                         .notification-settings-group-item{
                             width: 100%;
@@ -3798,6 +3940,7 @@ button{
                             .notification-settings-group-item-info{
                                 font-size: 15px;
                                 line-height: 24px;
+                                color: var(--color_main);
                             }
                             .notification-settings-group-item-input{
                                 width: 40px;
@@ -3816,7 +3959,7 @@ button{
                                 .notification-settings-group-item-input-bg{
                                     width: 100%;
                                     height: 100%;
-                                    background: #248BF2;
+                                    background: var(--accent);
                                     border-radius: 100px;
                                     position: absolute;
                                     left: 0;
@@ -3883,7 +4026,7 @@ button{
                                 }
                             }
                             .checkbox-on{
-                                background: #248BF2;
+                                background: var(--accent);
                                 .notification-settings-group-item-input-checkbox-inner-circle{
                                     width: 8px;
                                     height: 8px;
@@ -3894,7 +4037,111 @@ button{
                     }
                 }
             }
+            //bookmark
+            .settings-body-appearance{
+                flex-direction: column;
+                gap: 16px;
+                .appearance-title{
+                    font-weight: 700;
+                    font-size: 17px;
+                    line-height: 24px;
+                    letter-spacing: -0.41px;
+                    color: var(--color_main);
+                }
+                .settings-body-email-content{
+                    display: flex;
+                    flex-direction: column;
+                    padding: 0 16px;
+                    color: var(--color_main);
+                    .appearance-blocks-container{
+                        margin-top: 12px;
+                        display: flex;
+                        gap: 16px;
+                        .appearance-block{
+                            width: 192px;
+                            height: 156px;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 16px;
+                            cursor: pointer;
+                            .appearance-text-container{
+                                display: flex;
+                                gap: 8px;
+                                .appearance-theme-input{
+                                    width: 22px;
+                                    height: 22px;
+                                    border-radius: 50%;
+                                    cursor: pointer;
+                                    position: relative;
+                                    .notification-settings-group-item-input-checkbox-inner-circle{
+                                        border-radius: 50%;
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        transition: width 0.15s linear,
+                                                    height 0.15s linear;
+                                    }
+                                    input{
+                                        display: none;
+                                        height: 0;
+                                        width: 0;
+                                    }
+                                }
+                                .checkbox-off{
+                                    background: #C8C9CC;
+                                    .notification-settings-group-item-input-checkbox-inner-circle{
+                                        width: 20px;
+                                        height: 20px;
+                                        background: white;
+                                    }
+                                }
+                                .checkbox-on{
+                                    background: var(--accent);
+                                    .notification-settings-group-item-input-checkbox-inner-circle{
+                                        width: 8px;
+                                        height: 8px;
+                                        background: white;
+                                    }
+                                }
+                                .appearance-theme-text{
+                                    font-weight: 400;
+                                    font-size: 15px;
+                                    line-height: 24px;
+                                    letter-spacing: -0.24px;
+                                    color: var(--color_main);
+                                }
+                            }
+                        }
+                        .appearance-block_active{
 
+                        }
+                    }
+                    .accent-colors-container{
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-evenly;
+                        margin-top: 16px;
+                        .color-item{
+                            width: 56px;
+                            height: 56px;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            svg{
+                                display: none;
+                            }
+                        }
+                        .color-item_selected{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            svg{
+                                display: block;
+                            }
+                        }
+                    }
+                }
+            }
             //Кошелек
             .settings-body-wallet{
                 .settings-body-wallet-content{
@@ -3909,7 +4156,7 @@ button{
                         font-size: 17px;
                         font-weight: bold;
                         line-height: 24px;
-                        color: #171A1F;
+                        color: var(--color_main);
                     }
                     .balance-block{
                         font-size: 24px;
@@ -3934,7 +4181,7 @@ button{
                             display: flex;
                             font-size: 15px;
                             font-weight: bolder;
-                            color: #171A1F;
+                            color: var(--color_main);
                         }
                     }
                 }
@@ -3963,7 +4210,7 @@ button{
                             font-weight: 700;
                             font-size: 24px;
                             line-height: 32px;
-                            color: #171A1F;
+                            color: var(--color_main);
                         }
                         .subscriptioh1ns-empty-text-content{
                             text-align: center;
@@ -3979,7 +4226,7 @@ button{
                         line-height: 24px;
                         color: white;
                         padding: 8px 24px;
-                        background: #248BF2;
+                        background: var(--accent);
                         border-radius: 8px;
                         cursor: pointer;
                     }
@@ -4016,7 +4263,7 @@ button{
                 display: flex;
                 align-items: center;
                 padding-left: 16px;
-                color: #171A1F;
+                color: var(--color_main);
             }
             .notifications-actions-button{
                 width: 48px;
@@ -4037,7 +4284,7 @@ button{
                     font-weight: 700;
                     font-size: 17px;
                     line-height: 24px;
-                    color: #171A1F;
+                    color: var(--color_main);
                 }
                 .notifications-body-item-group-item{
                     display: flex;
@@ -4068,7 +4315,7 @@ button{
                             .notification-object{
                                 font-weight: 900;
                                 font-size: 15px;
-                                color: #171A1F;
+                                color: var(--color_main);
                                 letter-spacing: -0.24px;
                             }
                             .notification-date{
@@ -4092,4 +4339,15 @@ button{
 }
 .sendChatMessage_superSecretForm{
     display: none;
+}
+.settings-body-email-content{
+    color: var(--color_main)
+}
+.icon-plus{
+    circle{
+        fill: var(--accent)
+    }
+}
+.appearance-theme-input{
+
 }

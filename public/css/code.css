@@ -1,53 +1,34 @@
 .section-code {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-rows: 72px 1fr;
-  -ms-grid-columns: 1fr;
-      grid-template: 72px 1fr / 1fr;
+  grid-template: 72px 1fr/1fr;
 }
-
 .section-code .code-form {
   height: 100%;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: column;
+  justify-content: center;
 }
-
 .section-code .code-form .description:nth-child(1) {
   margin-top: 8px;
 }
-
 .section-code .code-form .resend {
   color: #248BF2;
   cursor: pointer;
 }
-
 .section-code .code-form .code-input-form {
   margin-top: 32px;
   width: 320px;
   margin-left: auto;
   margin-right: auto;
-  display: -ms-grid;
   display: grid;
-  -ms-grid-rows: 56px;
-  -ms-grid-columns: (1fr)[6];
-      grid-template: 56px/repeat(6, 1fr);
+  grid-template: 56px/repeat(6, 1fr);
   gap: 8px;
 }
-
 .section-code .code-form .code-input-form input {
   font-size: 24px;
   font-weight: 700;
   text-align: center;
 }
-
 .section-code .code-form .code-input-form .input-code {
   width: 100%;
   border-radius: 8px;
@@ -56,7 +37,6 @@
   background: rgba(201, 204, 209, 0.24);
   text-align: center;
 }
-
 .section-code .code-form .code-input-form .input-code-marked {
   width: 100%;
   border-radius: 8px;
@@ -64,36 +44,27 @@
   outline: none;
   background: rgba(148, 155, 168, 0.24);
 }
-
 .section-code .code-form .continue-button-container {
   margin-top: 40px;
   margin-left: auto;
   margin-right: auto;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   width: 320px;
   height: auto;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  justify-content: center;
 }
-
 .section-code .code-form .continue-button-container .continue-button {
   width: 86px;
   height: 40px;
   background: #248BF2;
   color: white;
 }
-
 .section-code .resend_active {
   color: #248BF2;
   cursor: pointer;
 }
-
 .section-code .resend_inactive {
   display: none;
   color: #248BF2;
   cursor: pointer;
-}
-/*# sourceMappingURL=code.css.map */
+}/*# sourceMappingURL=code.css.map */

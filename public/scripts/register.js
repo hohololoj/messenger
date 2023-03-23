@@ -62,10 +62,14 @@ window.addEventListener('load', function () {
         form.getElementsByClassName('name-input-form')[0].value = name;
         form.getElementsByClassName('surname-input-form')[0].value = surname;
         form.getElementsByClassName('nickname-input-form')[0].value = nickname;
+        let date = new Date();
+        let timezone_offset = date.getTimezoneOffset();
         if(file_input.files[0]){
             if(name_validate(name) && name != ''){
                 if(name_validate(surname) && surname != ''){
-                    const body = new FormData(form);
+                    let body = new FormData(form);
+                    body = Object.assign(body, {timezone_offset: timezone_offset});
+                    console.log(body)
                     let response = fetch('/register?action=register',{
                         method: 'POST',
                         body: body

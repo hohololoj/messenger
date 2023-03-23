@@ -23,6 +23,10 @@
   cursor: pointer;
   -webkit-animation-duration: 0.05s;
           animation-duration: 0.05s;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
 }
 .section-register .register-form .name-form {
   width: 320px;

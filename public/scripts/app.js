@@ -929,7 +929,6 @@ async function handleUserSettings(user_settings){
 }
 new Promise((resolve, reject) => {
     let user_settings_saved = checkUserSettings();
-    console.log(user_settings_saved);
     resolve(user_settings_saved);
 })
 .then((user_settings_saved) => {

@@ -1,7 +1,7 @@
 'use strict'
 import express, { json, response } from 'express';
 import path, { resolve } from 'path';
-import fs from 'fs';
+import fs, { read } from 'fs';
 import { route } from './router.js';
 import cookieParser from 'cookie-parser';
 import dns from 'dns';
@@ -12,6 +12,7 @@ import expressHandlebars from 'express-handlebars';
 import { error } from 'console';
 import expressWs from 'express-ws';
 import imageSize from 'image-size';
+import e from 'express';
 
 const __dirname = path.resolve();
 const ip = '127.0.0.1';
@@ -344,145 +345,216 @@ async function checkForLogged(token) {
 }
 
 async function getUserInfo(token) {
-    let mongoClient;
-    try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
-        await mongoClient.connect();
-        const db = mongoClient.db('logged');
-        const tokens = db.collection('tokens');
-        let response = await tokens.findOne({ token: token });
-        let user_id = response.id;
-        const usersdb = mongoClient.db('users');
-        const users = usersdb.collection('users');
-        let thisUser = await users.findOne({ id: user_id });
-        let thisUser_contacts = [];
-        for(let i = 0; i < thisUser.contacts.length; i++){
-            let currentUser_id = thisUser.contacts[i];
-            let currentUser_info = await users.findOne({ id: currentUser_id });
-            let onlineStatus_classPart;
-            let onlineStatus_text;
-            if (currentUser_info.onlineStatus == 'online') {
-                onlineStatus_classPart = 'online';
-                onlineStatus_text = 'online'
-            }
-            else {
-                onlineStatus_classPart = 'offline';
-                let lastSeen = Date.now() - currentUser_info.onlineStatus;
-                let hours = lastSeen / 1000 / 60 / 60;
-                if (hours < 24) {
-                    onlineStatus_text = 'today'
-                }
-                else {
-                    if (hours < 48) {
-                        onlineStatus_text = 'yesterday';
-                    }
-                    else {
-                        let date = new Date(currentUser_info.onlineStatus);
-                        console.log(date);
-                        let day = date.getUTCDate();
-                        if (day < 10) {
-                            day = '0' + day;
-                        }
-                        let month = date.getUTCMonth();
-                        month++;
-                        if (month < 10) {
-                            month = '0' + month;
-                        }
-                        let year = date.getUTCFullYear();
-                        onlineStatus_text = (day + ':' + month + ':' + year)
-                    }
-                }
-            }
-            if(onlineStatus_text != 'online'){
-                onlineStatus_text = `last seen ${onlineStatus_text}`;
-            }
-            thisUser_contacts.push({
-                uid: currentUser_id,
-                fullname: currentUser_info.fullname,
-                avatar_path: currentUser_info.avatar_path.slice(39),
-                onlineStatus_classPart: onlineStatus_classPart,
-                onlineStatus_text: onlineStatus_text
+    return new Promise((resolve, reject) => {
+        let token_promise = new Promise((resolve, reject) => {
+            let response = mongoRequest('logged', 'tokens', 'get', 'one', {token: token});
+            resolve(response);
+        })
+        token_promise.then((response) => {
+            let user_id = response.id;
+            let user_promise = new Promise((resolve, reject) => {
+                let thisUser = mongoRequest('users', 'users', 'get', 'one', {id: user_id});
+                resolve(thisUser);
             })
-        }
-        const invitationsdb = mongoClient.db('invitations');
-        const invitations = invitationsdb.collection('invitations');
-        let hasInvitationLink = await invitations.findOne({id: user_id});
-        if(hasInvitationLink != '' && hasInvitationLink != undefined){
-            thisUser.invitationLink = hasInvitationLink.link.toString();
-        }
-        else{
-            await invitations.insertOne({id: user_id, link: `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`});
-            thisUser.invitationLink = `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`;
-        }
-        // const settingsdb = mongoClient.db('user-settings');
-        // const thisUser_settings_collectionName = ('user-'+user_id);
-        // const thisUser_settings_collection = settingsdb.collection(thisUser_settings_collectionName);
-        // let thisUser_settings = await thisUser_settings_collection.find({}).toArray();
-        // let thisUser_settings_obj = {};
-        // for(let i = 0; i < thisUser_settings.length; i++){
-        //     thisUser_settings_obj[Object.entries(thisUser_settings[i])[2][0]] = Object.entries(thisUser_settings[i])[2][1]
-        // }
-        let thisUser_settings = await mongoRequest('users', 'settings', 'get', 'one', {id: user_id});
-        let thisUser_settings_obj = {
-            whoCanSeeMyPhone: null,
-            whoCanSeeMyEmail: null,
-            showDirectMessagesNotifications: thisUser_settings.show_direct_notifications,
-            playDirectMessagesSound: thisUser_settings.play_direct_sound,
-            ShowCommunityGroupNotifications: thisUser_settings.show_group_notifications,
-            PlayCommunityGroupSound: thisUser_settings.play_group_sound,
-            ShowCommentNotifications: thisUser_settings.show_comment_notification,
-            PlayCommentSound: thisUser_settings.play_comment_sound,
-            NotificationPreview: thisUser_settings.notification_preview
-        }
-        console.log({'изначальные настройки:': thisUser_settings.phone_visibility})
-        switch(thisUser_settings.phone_visibility){
-            case 0:{thisUser_settings_obj.whoCanSeeMyPhone = 'Everyone'; break;}
-            case 1:{thisUser_settings_obj.whoCanSeeMyPhone = 'Friends'; break;}
-            case 2:{thisUser_settings_obj.whoCanSeeMyPhone = 'Nobody'; break;}
-        }
-        switch(thisUser_settings.email_visibility){
-            case 0:{thisUser_settings_obj.whoCanSeeMyEmail = 'Everyone'; break;}
-            case 1:{thisUser_settings_obj.whoCanSeeMyEmail = 'Friends'; break;}
-            case 2:{thisUser_settings_obj.whoCanSeeMyEmail = 'Nobody'; break;}
-        }
-        console.log(thisUser_settings_obj)
-        const groupsdb = mongoClient.db('groups');
-        const list = groupsdb.collection('list');
-        let thisUser_groupsAdmin = await list.find({creator_id: user_id}).toArray();
-        thisUser_groupsAdmin = {thisUser_groupsAdmin: thisUser_groupsAdmin}
-        let thisUser_groups = thisUser.groups;
-        let thisUser_groups_toRender = [];
+            user_promise.then((thisUser) => {
+                let thisUser_contacts_promise = new Promise((resolve, reject) => {
+                    let thisUser_contacts_promises = [];
+                    for(let i = 0; i < thisUser.contacts.length; i++){
+                        thisUser_contacts_promises.push(new Promise((resolve, reject) => {
+                            let currentUser_id = thisUser.contacts[i];
+                            let currentUser_info_promise = new Promise((resolve, reject) => {
+                                let currentUser_info = mongoRequest('users', 'users', 'get', 'one', {id: currentUser_id});
+                                resolve(currentUser_info)
+                            })
+                            currentUser_info_promise.then((currentUser_info) => {
+                                let onlineStatus_classPart;
+                                let onlineStatus_text;
+                                if (currentUser_info.onlineStatus == 'online') {
+                                    onlineStatus_classPart = 'online';
+                                    onlineStatus_text = 'online'
+                                }
+                                else {
+                                    onlineStatus_classPart = 'offline';
+                                    let lastSeen = Date.now() - currentUser_info.onlineStatus;
+                                    let hours = lastSeen / 1000 / 60 / 60;
+                                    if (hours < 24) {
+                                        onlineStatus_text = 'today'
+                                    }
+                                    else {
+                                        if (hours < 48) {
+                                            onlineStatus_text = 'yesterday';
+                                        }
+                                        else {
+                                            let date = new Date(currentUser_info.onlineStatus);
+                                            let day = date.getUTCDate();
+                                            if (day < 10) {
+                                                day = '0' + day;
+                                            }
+                                            let month = date.getUTCMonth();
+                                            month++;
+                                            if (month < 10) {
+                                                month = '0' + month;
+                                            }
+                                            let year = date.getUTCFullYear();
+                                            onlineStatus_text = (day + ':' + month + ':' + year)
+                                        }
+                                    }
+                                }
+                                if(onlineStatus_text != 'online'){
+                                    onlineStatus_text = `last seen ${onlineStatus_text}`;
+                                }
+                                thisUser_contacts.push({
+                                    uid: currentUser_id,
+                                    fullname: currentUser_info.fullname,
+                                    avatar_path: currentUser_info.avatar_path.slice(39),
+                                    onlineStatus_classPart: onlineStatus_classPart,
+                                    onlineStatus_text: onlineStatus_text
+                                })
+                                resolve();
+                            })
+                        }))
+                    }
+                    Promise.all(thisUser_contacts_promises)
+                    .then((thisUser_contacts) => {
+                        resolve(thisUser_contacts);
+                    })
+                })
 
-        for(let i = 0; i < thisUser_groups.length; i++){
-            let thisGroup_id = thisUser_groups[i];
-            let thisGroup_info = await mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id});
-            thisUser_groups_toRender.push({
-                id: thisGroup_id,
-                avatar: thisGroup_info.avatar_path,
-                name: thisGroup_info.name,
-                members: thisGroup_info.members.length
+
+                let checkFor_invitationLink_promise = new Promise((resolve, reject) => {
+                    let getinvitationLink_promise = new Promise((resolve, reject) => {
+                        let hasInvitationLink = mongoRequest('invitations', 'invitations', 'get', 'one', {id: user_id});
+                        resolve(hasInvitationLink);
+                    })
+                    getinvitationLink_promise.then((hasInvitationLink) => {
+                        if(hasInvitationLink != '' && hasInvitationLink != undefined){
+                            thisUser.invitationLink = hasInvitationLink.link.toString();
+                            resolve();
+                        }
+                        else{
+                            let create_invitationLink_promise = new Promise((resolve, reject) => {
+                                mongoRequest('invitations', 'invitations', 'put', 'one', {id: user_id, link: `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`});
+                                resolve()
+                            })
+                            create_invitationLink_promise.then(()=>{
+                                thisUser.invitationLink = `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`;
+                                resolve()
+                            })
+                        }
+                    })
+                })
+
+                let thisUser_settings_promise = new Promise((resolve, reject) => {
+                    let get_thisUser_settings_promise = new Promise((resolve, reject) => {
+                        let thisUser_settings = mongoRequest('users', 'settings', 'get', 'one', {id: user_id});
+                        let createSettings_promise = new Promise((resolve, reject) => {
+                            if(thisUser_settings == null){
+                                createUserSettingsRecord(user_id)
+                                .then((thisUser_settings)=>{
+                                    resolve(thisUser_settings)
+                                })
+                            }
+                            else{
+                                resolve(thisUser_settings)
+                            }
+                        })
+                        createSettings_promise.then((thisUser_settings) => {
+                            resolve(thisUser_settings);
+                        })
+                    })
+                    get_thisUser_settings_promise.then((thisUser_settings) => {
+                        let thisUser_settings_obj = {
+                            whoCanSeeMyPhone: null,
+                            whoCanSeeMyEmail: null,
+                            showDirectMessagesNotifications: thisUser_settings.show_direct_notifications,
+                            playDirectMessagesSound: thisUser_settings.play_direct_sound,
+                            ShowCommunityGroupNotifications: thisUser_settings.show_group_notifications,
+                            PlayCommunityGroupSound: thisUser_settings.play_group_sound,
+                            ShowCommentNotifications: thisUser_settings.show_comment_notification,
+                            PlayCommentSound: thisUser_settings.play_comment_sound,
+                            NotificationPreview: thisUser_settings.notification_preview
+                        }
+                        switch(thisUser_settings.phone_visibility){
+                            case 0:{thisUser_settings_obj.whoCanSeeMyPhone = 'Everyone'; break;}
+                            case 1:{thisUser_settings_obj.whoCanSeeMyPhone = 'Friends'; break;}
+                            case 2:{thisUser_settings_obj.whoCanSeeMyPhone = 'Nobody'; break;}
+                        }
+                        switch(thisUser_settings.email_visibility){
+                            case 0:{thisUser_settings_obj.whoCanSeeMyEmail = 'Everyone'; break;}
+                            case 1:{thisUser_settings_obj.whoCanSeeMyEmail = 'Friends'; break;}
+                            case 2:{thisUser_settings_obj.whoCanSeeMyEmail = 'Nobody'; break;}
+                        }
+                        resolve(thisUser_settings_obj);
+                    })
+                })
+                let thisUser_groups_promise = new Promise((resolve, reject) => {
+                    let mongoClient_connect_promise = new Promise((resolve, reject) => {
+                        let mongoClient = new MongoClient('mongodb://localhost:27017');
+                        mongoClient.connect();
+                        resolve(mongoClient);
+                    })
+                    mongoClient_connect_promise.then((mongoClient) => {
+                        const groupsdb = mongoClient.db('groups');
+                        const list = groupsdb.collection('list');
+
+
+                        let thisUser_groupsAdmin_promise = new Promise((resolve, reject) => {
+                            let thisUser_groupsAdmin = list.find({creator_id: user_id}).toArray();
+                            thisUser_groupsAdmin = {thisUser_groupsAdmin: thisUser_groupsAdmin}
+                            resolve(thisUser_groupsAdmin);
+                        })
+
+                        let thisUser_groupsMember_promise = new Promise((resolve, reject) => {
+                            let getGroupInfo_promises = [];
+                            let thisUser_groups = (thisUser.groups == undefined)? [] : thisUser.groups;
+        
+                            for(let i = 0; i < thisUser_groups.length; i++){
+                                getGroupInfo_promises.push(new Promise((resolve, reject) => {
+                                    let thisGroup_id = thisUser_groups[i];
+                                    let thisGroup_info = mongoRequest('groups', 'list', 'get', 'one', {groupid: thisGroup_id});
+                                    let thisGroup = {
+                                        id: thisGroup_id,
+                                        avatar: thisGroup_info.avatar_path,
+                                        name: thisGroup_info.name,
+                                        members: thisGroup_info.members.length
+                                    }
+                                    resolve(thisGroup)
+                                }))
+                            }
+        
+                            Promise.all(getGroupInfo_promises)
+                            .then((thisUser_groups_toRender) => {
+                                thisUser_groups_toRender = {thisUser_groups_toRender: thisUser_groups_toRender}
+                                resolve(thisUser_groups_toRender)
+                            })
+                        })
+
+                        Promise.all([thisUser_groupsAdmin_promise, thisUser_groupsMember_promise])
+                        .then((thisUser_groups_array) => {
+                            console.log('thisUser_groups_promise resolved')
+                            resolve(thisUser_groups_array);
+                        })
+
+                    })
+                })
+                Promise.all([thisUser_settings_promise, thisUser_contacts_promise, thisUser_groups_promise, checkFor_invitationLink_promise])
+                .then((data) => {
+                    let thisUser_settings_obj = data[0];
+                    let thisUser_groupsAdmin = data[2][0];
+                    let thisUser_contacts = data[1];
+                    let thisUser_groups_toRender = data[2][1];
+                    let thisUser_toRender = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin, {thisUser_contacts: thisUser_contacts}, thisUser_groups_toRender)
+                    resolve(thisUser_toRender);
+                })
             })
-        }
-
-        thisUser_groups_toRender = {thisUser_groups_toRender: thisUser_groups_toRender}
-
-        thisUser = Object.assign({}, thisUser, thisUser_settings_obj, thisUser_groupsAdmin, {thisUser_contacts: thisUser_contacts}, thisUser_groups_toRender);
-        return thisUser;
-    }
-    catch (error) {
-        console.error('Connection to MongoDB Atlas failed!', error);
-        //process.exit();
-    }
-
+        })
+    })
 }
 
 async function writeApp(token, res) {
-    
-    let promise = new Promise((resolve, reject) => {
-        let thisUser = getUserInfo(token);
-        resolve(thisUser);
-    })
-    promise.then((thisUser) => {
+    getUserInfo(token)
+    .then((thisUser) => {
+        console.log(thisUser)
         let avatar_path = thisUser.avatar_path;
         thisUser.avatar_path = avatar_path.slice(48);
         let promises = [];
@@ -628,7 +700,6 @@ async function writeApp(token, res) {
         }
         Promise.all(promises)
         .then((chats) => {
-            console.log(chats)
             let chats_arr = [];
             for(let i = 0; i < chats.length; i++){
                 chats_arr.push(chats[i]);
@@ -641,7 +712,6 @@ async function writeApp(token, res) {
 
 async function register_route(token, res) {
     let isRegistered = await checkForRegistered(token, res);
-    console.log(`/register: isRegistered: ${isRegistered.isRegistered}`);
     if (!isRegistered.isRegistered) {
         res.sendFile(path.resolve('./public/register.html'));
     }
@@ -722,7 +792,6 @@ async function findOfflineNotifications(ws, token){
     }
     else{
         for(let i = 0; i < offlineNotifications.length; i++){
-            console.log(1);
             notification_send(token, offlineNotifications[i].type, offlineNotifications[i].title, offlineNotifications[i].message, offlineNotifications[i].hide)
         }
         mongoRequest('users', 'users', 'update', '', {condition: {id: id}, toUpdate: {offlineNotifications: ""}})
@@ -825,7 +894,6 @@ app.get('*', function (req, res) {
 })
 
 async function findRegistrationCode(token) {
-    console.log(token);
     let mongoClient;
     try {
         mongoClient = new MongoClient('mongodb://localhost:27017');
@@ -964,6 +1032,7 @@ async function write_user(token_val, res, fields, files) {
     thisUser_surname = thisUser_surname[0].toUpperCase() + thisUser_surname.slice(1);
     let thisUser_email = response.email;
     let thisUser_nickname = fields.nickname[0];
+    let timezone_offset = fields.timezone_offset;
     const thisUser = {
         id: id,
         avatar_path: thisUser_avatar_path,
@@ -982,7 +1051,8 @@ async function write_user(token_val, res, fields, files) {
         vk: '',
         fullname: `${thisUser_name} ${thisUser_surname}`,
         offlineNotifications: '',
-        contacts: ''
+        contacts: [],
+        timezone_offset: '',
     }
     try {
         mongoClient = new MongoClient('mongodb://localhost:27017');
@@ -992,13 +1062,35 @@ async function write_user(token_val, res, fields, files) {
         let status = await users.insertOne(thisUser);
         if (status) {
             await writeLogged({ token: token_val, id: thisUser.id });
-            res.send({ status: true })
         }
     }
     catch (error) {
         console.error('Connection to MongoDB Atlas failed!', error);
         //process.exit();
     }
+    new Promise((resolve, reject) => {
+        let thisUser_settings = {
+            id: id,
+            phone_visibility: 0,
+            email_visibility: 0,
+            show_direct_notifications: true,
+            play_direct_sound: true,
+            show_group_notifications: true,
+            play_group_sound: true,
+            show_comment_notification: true,
+            play_comment_sound: true,
+            notification_preview: 0,
+            theme_main: 'System',
+            theme_accent: '#398FE5'
+        }
+        let createRecord_promise = new Promise((resolve, reject) => {
+            mongoRequest('users', 'settings', 'put', 'one', thisUser_settings);
+            resolve()
+        })
+        createRecord_promise.then(()=>{
+            res.send({ status: true })
+        })  
+    })   
 }
 
 async function generate_user_id() {
@@ -1265,13 +1357,8 @@ async function changeEmailSendCode(res, email, token) {
 }
 
 async function changeSettings(token, setting, res) {
-
-    console.log('Принят запос на изменение настроек:', {
-        setting: setting
-    })
     let key = setting.name;
     let settings_list = Object.keys(settings);
-    console.log(settings[key])
     if((!settings_list.includes(key) || !settings[key].accepts.includes(setting.setting)) && settings[key].accepts != 'any'){
         res.send({});
         notification_send(token, 'error', 'Something went wrong', '', 'auto')
@@ -1287,7 +1374,6 @@ async function changeSettings(token, setting, res) {
             let updateSetting_promise = new Promise((resolve, reject) => {
                 let setting_toUpdate = {};
                 setting_toUpdate[key] = setting.setting;
-                console.log(setting_toUpdate);
                 mongoRequest('users', 'settings', 'update', '', { condition: { id: thisUser_id }, toUpdate: setting_toUpdate });
                 resolve()
             })
@@ -1317,7 +1403,6 @@ async function search(res, search_object, token){
                 const db = mongoClient.db('users');
                 const users = db.collection('users');
                 response = await users.find({ $or: [{nickname: {$regex: search_regexp, $options:"i"}}, {fullname: {$regex: search_regexp, $options:"i"}}] }).sort({date: '1'}).limit(10).toArray();
-                console.log('response: ', response);
                 let response_obj = {};
                 response_obj.people = [];
                 let requestingUser_frindsList = await mongoRequest('users', 'users', 'get', 'one', {id: requestingUser_id});
@@ -1398,6 +1483,7 @@ async function search(res, search_object, token){
                 response_obj.groups = [];
                 response_obj.people = [];
                 for (let i = 0; i < response.length; i++) {
+                    let thisUser_id = response[i].id;
                     let thisUser_onlineStatus;
                     if (response[i].onlineStatus != 'online') {
                         let lastSeen = Date.now() - response[i].onlineStatus;
@@ -1428,12 +1514,15 @@ async function search(res, search_object, token){
                     else {
                         thisUser_onlineStatus = 'online'
                     }
-                    response_obj.people.push({
-                        avatar: response[i].avatar_path.slice(39),
-                        fullname: response[i].fullname,
-                        online: thisUser_onlineStatus,
-                        id: response[i].id
-                    })
+                
+                    if(requestingUser_id != thisUser_id){
+                        response_obj.people.push({
+                            avatar: response[i].avatar_path.slice(39),
+                            fullname: response[i].fullname,
+                            online: thisUser_onlineStatus,
+                            id: response[i].id
+                        })   
+                    }
                 }
                 res.send(response_obj)
             }
@@ -1450,11 +1539,6 @@ async function search(res, search_object, token){
 }
 
 async function getFullInfo(type, id, res, token){ //Полная инфа о юзере
-    console.log('получен запрос на полное инфо: ', {
-        type: type,
-        id: id,
-        token: token
-    })
     switch(type){
         case 'user':{
             let mongoClient;
@@ -1498,7 +1582,6 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                     else{
                         thisUser_onlineStatus = 'online'
                     }
-                let thisUserSettings = await mongoRequest('users', 'settings', 'get', 'range', {id: id});
                 // let thisUserEmailSettings = findSettingProperty(thisUserSettings, 'whoCanSeeMyEmail');
                 let thisUserEmail;
                 thisUserEmail = response.email;
@@ -1535,7 +1618,6 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                     birthmonth = months[birthmonth];
                     let date = new Date(response.dateOfBirth_year, --response.dateOfBirth_month, response.dateOfBirth_day);
                     let time = Date.now() - date.getTime();
-                    console.log(time)
                     age = Math.floor(time/1000/60/60/24/365);
                     age += 'y.o.';
                 }
@@ -1614,7 +1696,6 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                 }
                 thisGroupMembers_responseArr.push(thisMemberInfo);
             }      
-            console.log(groupInfo.avatar_path); 
             let response_obj = {
                 gid: groupInfo.groupid,
                 name: groupInfo.name,
@@ -1860,7 +1941,6 @@ function send_socket_chatMessage(token, message){
                             width: dimensions.width
                         }
                     }
-                    console.log(`картинка получена: ${thisImage_path}\nШирина: ${dimensions.width}\nВысота: ${dimensions.height}`);
                     thisMessage_images[i] = thisImage;
                     resolve()
                 })
@@ -1929,9 +2009,6 @@ async function writeOfflineNotification(thisUser, token, type, title, message, h
             })
             mongoRequest('users', 'users', 'update', '', { condition: { id: thisUser.id }, toUpdate: { offlineNotifications: thisUser.offlineNotifications } });
         }
-        else{
-            console.log('Такое уведомление уже есть');
-        }
     }
 }
 
@@ -1950,6 +2027,10 @@ async function addToFriends(user_toAdd_id, token, res){
         const friends_requests = cachedb.collection('friends_requests');
         let response = await logged_tokens.findOne({token: token});
         let user_sending_id = response.id;
+        if(user_sending_id == user_toAdd_id){
+            res.send({});
+            return 0;
+        }
         let user_sending_fullinfo = await users.findOne({id: user_sending_id});
         let user_sending_fullname = user_sending_fullinfo.fullname;
         let user_toAdd = await users.findOne({id: user_toAdd_id});
@@ -1980,7 +2061,6 @@ async function addToFriends(user_toAdd_id, token, res){
 }
 
 function calculateLastOnline(lastOnline){
-    console.log(lastOnline);
     if(lastOnline == 'online'){
         return 'online';
     }
@@ -2028,8 +2108,6 @@ async function friendRequestResponse_handler(token, answer, from, res){
     switch(answer){
         case 'accept':{
             let thisRequest = await friends_requests.findOne({from: from, to: parseInt(reciever_id)});
-            console.log({from: parseInt(from), to: parseInt(reciever_id)});
-            console.log('request found: ', thisRequest);
             if(thisRequest != undefined){
                 //Запрос найден в бд кэш
                 let sender_info = await users.findOne({id: from});
@@ -2261,13 +2339,6 @@ async function calculateImages(images){
                             'height': dimensions.height
                         }
                     })
-                    console.log(`Картинка отправлена: `, {
-                        path: images[i],
-                        dimensions: {
-                            'width': dimensions.width,
-                            'height': dimensions.height
-                        }
-                    });
                     resolve()
                 })
             }))
@@ -2321,7 +2392,6 @@ async function getChatHistory(user_sending_token, user_toSend_id, action_context
                                 chatHistory: chatHistory,
                                 userInfo: user_toSend_info
                             }
-                            console.log('chat not found, response: ', response);
                             res.send(response);
                         })
                     }
@@ -2444,7 +2514,6 @@ async function getChatHistory(user_sending_token, user_toSend_id, action_context
                                     members: thisGroup_info.members.length
                                 }
                             }
-                            console.log('groupChatHistory response sent: ', response_obj)
                             res.send(response_obj);
                         }
                         else{
@@ -2563,7 +2632,6 @@ async function saveFile(extname, thisFilePath, thisFile_type) {
     return new Promise((resolve, reject) => {
         generateUniqueFileName(extname, 'imgs')
             .then((thisFile_newName) => {
-                console.log('результат генерации названия: ', thisFile_newName);
                 fs.rename(thisFilePath, (__dirname + (`/public/chat_files/${thisFile_type}/` + thisFile_newName)), function (err) { if (err) { console.log(err); } });
                 resolve(thisFile_newName);
             })
@@ -2599,7 +2667,6 @@ async function sortFiles(files){
             }
             saveFile(extname, thisFilePath, thisFile_type)
             .then((thisFile_newName) => {
-                console.log('thisFile_newName: ',thisFile_newName);
                 switch (thisFile_type){
                     case 'imgs':{
                         thisMesssage_files.imgs.push(thisFile_newName)
@@ -2633,7 +2700,6 @@ async function saveMessage(thisChat_collectionName, thisChat_collectionName_reve
     thisMessage['fullname'] = user_sending_info.fullname;
     send_socket_chatMessage(user_sending_token, thisMessage);
     for(let i = 0; i < user_toSend_token.length; i++){
-        console.log('Сообщение отправлено по websocket');
         if(user_toSend_token[i] != false){
             send_socket_chatMessage(user_toSend_token[i], thisMessage);
             if(context !== null){
@@ -2658,6 +2724,10 @@ async function writeMessage(res, thisMessage_obj, token, context){
     switch(context){
         case 'user':{
             let user_toSend_id = parseInt(thisMessage_obj.id);
+            if(user_toSend_id == user_sending_id){
+                res.send({});
+                return 0;
+            }
             if(user_sending_info.chats == undefined){
                 await mongoRequest('users', 'users', 'update', 'one', {condition: {id: user_sending_id}, toUpdate:{chats: []}});
                 user_sending_info = await mongoRequest('users', 'users', 'get', 'one', {id: user_sending_id});
@@ -2716,7 +2786,6 @@ async function writeMessage(res, thisMessage_obj, token, context){
                     console.log(err);
                 })
                 promise.then((response) => {
-                    console.log('отсортированные файлы: ', response);
                     thisMessage['files'] = response;
                     saveMessage(thisChat_collectionName, thisChat_collectionName_reversed, thisMessage, user_sending_info, user_sending_token, user_toSend_token, user_toSend_info, null)
                     res.sendStatus(200);
@@ -2783,7 +2852,6 @@ async function writeMessage(res, thisMessage_obj, token, context){
                     console.log(err);
                 })
                 promise.then((response) => {
-                    console.log('отсортированные файлы: ', response);
                     thisMessage['files'] = response;
                     saveMessage(thisGroup_chatCollectionName, null, thisMessage, user_sending_info, user_sending_token, user_toSend_tokens, user_toSend_info, thisGroup_info)
                     res.sendStatus(200);
@@ -2804,7 +2872,6 @@ async function writeMessage(res, thisMessage_obj, token, context){
 }
 
 async function sendFileToDownload(fileName, res){
-    console.log(fileName);
     fileName = fileName.replace(/..\//gi, '');
     fileName = './public/chat_files/others/' + fileName;
     let thisFile_path = path.resolve(fileName);
@@ -2813,48 +2880,27 @@ async function sendFileToDownload(fileName, res){
 
 async function handleCodeInput(token, code, timezone_offset, res){
     let response = await findRegistrationCode(token);
-    console.log(response)
-    if(!response){
-        res.clearCookie('token');
-        let token = generate_token(32);
-        res.cookie('token', token, { secure: true, httpOnly: true, signed: true }).redirect(303, '/register');
-    }
-    // if (response.response == undefined) {
-    //     res.send({ status: false })
-    // }
-    else {
-        let userinfo = response.userinfo;
-        if(userinfo.timezone_offset == undefined){
-            await mongoRequest('users', 'users', 'update', 'one', {condition: {id: userinfo.id}, toUpdate:{timezone_offset: timezone_offset}})
-            .then(() => {
-                if (code == response.response.code) {
-                    res.send({ status: true })
-                }
-                else {
-                    res.send({ status: false })
-                }
-            })
+    let userlogged = await mongoRequest('email_tokens', 'tokens', 'get', 'one', {token: token});
+    let email = userlogged.email;
+    let userinfo = await mongoRequest('users', 'users', 'get', 'one', {email: email});
+    if(userinfo == null){
+        if (code == response.response.code) {
+            console.log('code is correct')
+            res.send({status: true})
         }
-        else{
-            if(userinfo.timezone_offset == timezone_offset){
-                if (code == response.response.code) {
-                    res.send({ status: true })
-                }
-                else {
-                    res.send({ status: false })
-                }
-            }
-            else{
-                await mongoRequest('users', 'users', 'update', 'one', {condition: {id: userinfo.id}, toUpdate:{timezone_offset: timezone_offset}})
-                .then(() => {
-                    if (code == response.response.code) {
-                        res.send({ status: true })
-                    }
-                    else {
-                        res.send({ status: false })
-                    }
-                })
-            }
+        else {
+            console.log('code is incorrect')
+            res.send({ status: false})
+        }
+    }
+    else {
+        console.log('user is registered')
+        await mongoRequest('users', 'users', 'update', 'one', {condition: {email: email}, toUpdate:{timezone_offset: timezone_offset}});
+        if (code == response.response.code) {
+            res.send({ status: true })
+        }
+        else {
+            res.send({ status: false})
         }
     }
 }
@@ -2939,10 +2985,6 @@ async function leaveGroup(thisGroup_id, thisUser_token, res){
 
         if(!thisGroup_members.includes(thisUser_id)){
             res.send({status: false});
-            console.log({
-                thisGroup_members: thisGroup_members,
-                thisUser_id: thisUser_id
-            })
             return 0;
         }
 
@@ -3091,24 +3133,29 @@ async function getLastMessage(id, scope, token, res){
 }
 
 async function createUserSettingsRecord(thisUser_id){
-    let thisUser_settings = {
-        id: thisUser_id,
-        phone_visibility: 0,
-        email_visibility: 0,
-        show_direct_notifications: true,
-        play_direct_sound: true,
-        show_group_notifications: true,
-        play_group_sound: true,
-        show_comment_notification: true,
-        play_comment_sound: true,
-        notification_preview: 0,
-        theme_main: '#FFF',
-        theme_accent: '#398FE5'
-    }
     return new Promise((resolve, reject) => {
+        let thisUser_settings = {
+            id: thisUser_id,
+            phone_visibility: 0,
+            email_visibility: 0,
+            show_direct_notifications: true,
+            play_direct_sound: true,
+            show_group_notifications: true,
+            play_group_sound: true,
+            show_comment_notification: true,
+            play_comment_sound: true,
+            notification_preview: 0,
+            theme_main: 'System',
+            theme_accent: '#398FE5'
+        }
+        let createRecord_promise = new Promise((resolve, reject) => {
             mongoRequest('users', 'settings', 'put', 'one', thisUser_settings);
+            resolve()
+        })
+        createRecord_promise.then(()=>{
             resolve(thisUser_settings);
-        })   
+        })  
+    })   
 }
 
 async function getUserSettings(thisUser_id){
@@ -3127,24 +3174,42 @@ async function handleSettingsRequest(token, res){
         let thisUser_id = thisUser_logged.id;
         getUserSettings(thisUser_id)
         .then((thisUser_settings_record) => {
-            new Promise((resolve, reject) => {
-                if(thisUser_settings_record == undefined){
-                    createUserSettingsRecord(thisUser_id)
-                    .then((thisUser_settings) => {
-                        resolve(thisUser_settings);
-                    })
-                }
-                else{
-                    resolve(thisUser_settings_record)
-                }
-            })
-            .then((thisUser_settings) => {
-                delete thisUser_settings._id;
-                delete thisUser_settings.id;
-                delete thisUser_settings.email_visibility;
-                delete thisUser_settings.phone_visibility;
-                res.send(thisUser_settings);
-            })
+            if(thisUser_settings_record == undefined){
+                new Promise((resolve, reject) => {
+                    let thisUser_settings = {
+                        id: thisUser_id,
+                        phone_visibility: 0,
+                        email_visibility: 0,
+                        show_direct_notifications: true,
+                        play_direct_sound: true,
+                        show_group_notifications: true,
+                        play_group_sound: true,
+                        show_comment_notification: true,
+                        play_comment_sound: true,
+                        notification_preview: 0,
+                        theme_main: 'System',
+                        theme_accent: '#398FE5'
+                    }
+                    mongoRequest('users', 'settings', 'put', 'one', thisUser_settings);
+                    resolve(thisUser_settings);
+                })
+                .then((thisUser_settings)=>{
+                    let thisUser_settings_toSend = thisUser_settings;
+                    delete thisUser_settings_toSend._id;
+                    delete thisUser_settings_toSend.id;
+                    delete thisUser_settings_toSend.email_visibility;
+                    delete thisUser_settings_toSend.phone_visibility;
+                    res.send(thisUser_settings_toSend);
+                })
+            }
+            else{
+                let thisUser_settings_toSend = thisUser_settings_record;
+                delete thisUser_settings_toSend._id;
+                delete thisUser_settings_toSend.id;
+                delete thisUser_settings_toSend.email_visibility;
+                delete thisUser_settings_toSend.phone_visibility;
+                res.send(thisUser_settings_toSend);
+            }
         })
     })
 }
@@ -3306,7 +3371,6 @@ app.post('*', function (req, res) {
         }
         case 'writeMessage':{
             let context = req.query.context;
-            console.log(context)
             const form = new multiparty.Form();
             form.parse(req, (err, fields, files) => {
                 let message = fields.message;
@@ -3322,7 +3386,6 @@ app.post('*', function (req, res) {
                     else {
                         let thisMessage_obj = {}
                         if ((message == undefined || message == '') && files.files == undefined) {
-                            console.log('сообщение пустое');
                         }
                         else {
                             if (message == undefined || message == '') { message = false }
@@ -3330,12 +3393,9 @@ app.post('*', function (req, res) {
 
                             if (files.files == undefined) {
                                 thisMessage_obj['files'] = false;
-                                console.log('файлов нет');
                             }
                             else {
                                 thisMessage_obj['files'] = files;
-                                console.log('файлы есть');
-                                console.log(files);
                             }
 
                             thisMessage_obj['id'] = id;
@@ -3372,5 +3432,4 @@ app.post('*', function (req, res) {
         }
     }
 })
-
 app_start();

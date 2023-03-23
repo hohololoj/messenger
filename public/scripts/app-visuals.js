@@ -785,6 +785,7 @@ function slider_slideRight(thisSlider){
 for(let i = 0; i<menuItems.length; i++){
     menuItems[i].addEventListener('click', function(){
         makeActive(this);
+        console.log(this)
     })
 }
 

@@ -20,6 +20,8 @@
             border-radius: 50%;
             cursor: pointer;
             animation-duration: 0.05s;
+            object-fit: cover;
+            object-position: center;
         }
         .name-form{
             width: 320px;

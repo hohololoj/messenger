@@ -2086,6 +2086,10 @@ button {
   width: 56px;
   height: 56px;
   border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
 }
 .section-app .actions-block_active .settings-container .settings-group-item .account .account-content {
   width: 100%;

@@ -73,7 +73,7 @@ function getCode(){
     .then(
         function (response){
             response.json().then(function(data){
-                if(!data.status){
+                if(data.status == false){
                     window.location.reload();
                     alert('Wrong code');
                 }

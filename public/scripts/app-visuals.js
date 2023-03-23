@@ -251,7 +251,7 @@ function updateChatEvents(thisMessage_body){
     for(let i = 0; i < thisMessage_downloadableFiles.length; i++){
         thisMessage_downloadableFiles[i].addEventListener('click', function(){
             let fileName = this.getElementsByClassName('file-name')[0].innerText;
-            let url = `http://127.0.0.1:8000/app?action=download&fileName=${fileName}`
+            let url = `http://93.95.97.124:8000/app?action=download&fileName=${fileName}`
             window.open(url, '_blank');
         })
     }

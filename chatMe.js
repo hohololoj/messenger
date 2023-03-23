@@ -15,7 +15,7 @@ import imageSize from 'image-size';
 import e from 'express';
 
 const __dirname = path.resolve();
-const ip = '127.0.0.1';
+const ip = '93.95.97.124';
 const port = process.env.PORT || 8000;
 const app = express();
 expressWs(app);
@@ -433,11 +433,11 @@ async function getUserInfo(token) {
                         }
                         else{
                             let create_invitationLink_promise = new Promise((resolve, reject) => {
-                                mongoRequest('invitations', 'invitations', 'put', 'one', {id: user_id, link: `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`});
+                                mongoRequest('invitations', 'invitations', 'put', 'one', {id: user_id, link: `http://93.95.97.124:8000/invite?ref=${thisUser.nickname}`});
                                 resolve()
                             })
                             create_invitationLink_promise.then(()=>{
-                                thisUser.invitationLink = `http://127.0.0.1:8000/invite?ref=${thisUser.nickname}`;
+                                thisUser.invitationLink = `http://93.95.97.124:8000/invite?ref=${thisUser.nickname}`;
                                 resolve()
                             })
                         }

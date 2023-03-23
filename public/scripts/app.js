@@ -1,4 +1,4 @@
-const socket = new WebSocket('ws://127.0.0.1:8000/app')
+const socket = new WebSocket('ws://93.95.97.124:8000/app')
 const editProfile_button = document.getElementsByClassName('edit-profile-settings-button')[0];
 const editProfile_from = document.getElementsByClassName('form-settings-edit-profile')[0];
 const section_loading = document.getElementsByClassName('section-loading')[0];

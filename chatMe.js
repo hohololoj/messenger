@@ -104,7 +104,7 @@ async function writeToken(token, email) {
     let timestamp = Date.now();
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -124,7 +124,7 @@ async function writeToken(token, email) {
 async function mongoRequest(dbName, collectionName, requestType, range, request){
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db(dbName);
         let collection;
@@ -171,7 +171,7 @@ async function mongoRequest(dbName, collectionName, requestType, range, request)
 async function checkTokenForExistance(token, email) {
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -219,7 +219,7 @@ function generateCache_id() {
 async function writeCode(code, email) {
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const codes = db.collection('codes');
@@ -326,7 +326,7 @@ async function checkForLogged(token) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('logged');
         const tokens = db.collection('tokens');
@@ -489,7 +489,7 @@ async function getUserInfo(token) {
                 })
                 let thisUser_groups_promise = new Promise((resolve, reject) => {
                     let mongoClient_connect_promise = new Promise((resolve, reject) => {
-                        let mongoClient = new MongoClient('mongodb://localhost:27017');
+                        let mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                         mongoClient.connect();
                         resolve(mongoClient);
                     })
@@ -587,7 +587,7 @@ async function writeApp(token, res) {
                         if(!isGroup){
                             let chatName = `${thisUser.id} - ${thisFriend_id}`;
                             promise_mongoConnect = new Promise((resolve, reject) => {
-                            let mongoClient = new MongoClient('mongodb://localhost:27017');
+                            let mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                             mongoClient.connect();
                             const db = mongoClient.db('chats');
                             const thisChat = db.collection(chatName);
@@ -597,7 +597,7 @@ async function writeApp(token, res) {
                         else{
                             let chatName = `group - ${thisFriend_id}`;
                             promise_mongoConnect = new Promise((resolve, reject) => {
-                                let mongoClient = new MongoClient('mongodb://localhost:27017');
+                                let mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                                 mongoClient.connect();
                                 const db = mongoClient.db('chats');
                                 const thisChat = db.collection(chatName);
@@ -723,7 +723,7 @@ async function register_route(token, res) {
 async function buildIvitePage(res, nickname){
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('users');
         const users = db.collection('users');
@@ -742,7 +742,7 @@ async function handleNewWSClient(ws, req){
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('logged');
         const tokens = db.collection('tokens');
@@ -771,7 +771,7 @@ async function handleWSClientCloseConnection(req){
     let thisClient_token = req.signedCookies.token;
     let thisClient_id = WSclients[thisClient_token].id;
     let mongoClient;
-    mongoClient = new MongoClient('mongodb://localhost:27017');
+    mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
     await mongoClient.connect();
     const usersdb = mongoClient.db('users');
     const users = usersdb.collection('users');
@@ -896,7 +896,7 @@ app.get('*', function (req, res) {
 async function findRegistrationCode(token) {
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -955,7 +955,7 @@ async function register_validate(fields) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('users');
         const users = db.collection('users');
@@ -980,7 +980,7 @@ async function resend_code(token) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -1006,7 +1006,7 @@ async function write_user(token_val, res, fields, files) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -1055,7 +1055,7 @@ async function write_user(token_val, res, fields, files) {
         timezone_offset: '',
     }
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('users');
         const users = db.collection('users');
@@ -1097,7 +1097,7 @@ async function generate_user_id() {
     let id = Date.now() + Math.floor(Math.random() * 10);
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('users');
         const users = db.collection('users');
@@ -1118,7 +1118,7 @@ async function generate_group_id(){
     let id = Date.now() + Math.floor(Math.random() * 10);
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('groups');
         const groups_list = db.collection('list');
@@ -1144,7 +1144,7 @@ async function checkForRegistered(token, res) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('tokens');
@@ -1161,7 +1161,7 @@ async function checkForRegistered(token, res) {
     else {
         let email = response.email;
         try {
-            mongoClient = new MongoClient('mongodb://localhost:27017');
+            mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
             await mongoClient.connect();
             const db = mongoClient.db('users');
             const users = db.collection('users');
@@ -1193,7 +1193,7 @@ async function writeLogged(user) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('logged');
         const tokens = db.collection('tokens');
@@ -1237,7 +1237,7 @@ async function findChanges(res, token, thisUser, files) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('logged');
         const tokens = db.collection('tokens');
@@ -1286,7 +1286,7 @@ async function changeEmail_code(res, code, email, token){
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('email_tokens');
         const tokens = db.collection('codes');
@@ -1332,7 +1332,7 @@ async function changeEmailSendCode(res, email, token) {
     let mongoClient;
     let response;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('users');
         const users = db.collection('users');
@@ -1398,7 +1398,7 @@ async function search(res, search_object, token){
             let mongoClient;
             let response;
             try {
-                mongoClient = new MongoClient('mongodb://localhost:27017');
+                mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                 await mongoClient.connect();
                 const db = mongoClient.db('users');
                 const users = db.collection('users');
@@ -1474,7 +1474,7 @@ async function search(res, search_object, token){
             let mongoClient;
             let response;
             try {
-                mongoClient = new MongoClient('mongodb://localhost:27017');
+                mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                 await mongoClient.connect();
                 const db = mongoClient.db('users');
                 const users = db.collection('users');
@@ -1549,7 +1549,7 @@ async function getFullInfo(type, id, res, token){ //Полная инфа о ю�
                 let requestingUser_frindsList = await mongoRequest('users', 'users', 'get', 'one', {id: requestingUser_id});
                 requestingUser_frindsList = requestingUser_frindsList.contacts;
                 let isFriend = requestingUser_frindsList.includes(id);
-                mongoClient = new MongoClient('mongodb://localhost:27017');
+                mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                 await mongoClient.connect();
                 response = await mongoRequest('users', 'users', 'get', 'one', {id: id});
                 let thisUser_onlineStatus;
@@ -1756,7 +1756,7 @@ async function createCommunity_validate(res, thisGroup, token) {
     }
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const loggeddb = mongoClient.db('logged');
         const tokens = loggeddb.collection('tokens');
@@ -1795,7 +1795,7 @@ async function createCommunity_validate(res, thisGroup, token) {
 async function getGroupInfo(groupid, res){
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const groupsdb = mongoClient.db('groups');
         const list = groupsdb.collection('list');
@@ -1826,7 +1826,7 @@ async function getGroupInfo(groupid, res){
 async function deleteCommunity(res, token, groupid){
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         let loggeddb = mongoClient.db('logged');
         let tokens = loggeddb.collection('tokens');
@@ -1862,7 +1862,7 @@ async function deleteCommunity(res, token, groupid){
 async function editCommunity(res, files, fields, token){
     let mongoClient;
     try {
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const db = mongoClient.db('logged');
         const tokens = db.collection('tokens');
@@ -2017,7 +2017,7 @@ async function addToFriends(user_toAdd_id, token, res){
     try {
         user_toAdd_id = htmlspecialchars(user_toAdd_id);
         user_toAdd_id = parseInt(user_toAdd_id);
-        mongoClient = new MongoClient('mongodb://localhost:27017');
+        mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
         await mongoClient.connect();
         const usersdb = mongoClient.db('users');
         const loggeddb = mongoClient.db('logged');
@@ -2095,7 +2095,7 @@ function calculateLastOnline(lastOnline){
 async function friendRequestResponse_handler(token, answer, from, res){
     from = parseInt(from)
     let mongoClient;
-    mongoClient = new MongoClient('mongodb://localhost:27017');
+    mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
     await mongoClient.connect();
     const cachedb = mongoClient.db('localcache');
     const friends_requests = cachedb.collection('friends_requests');
@@ -2366,7 +2366,7 @@ async function getChatHistory(user_sending_token, user_toSend_id, action_context
         
             let mongoClient;
             try {
-                mongoClient = new MongoClient('mongodb://localhost:27017');
+                mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                 await mongoClient.connect();
                 const db = mongoClient.db('chats');
                 
@@ -2495,7 +2495,7 @@ async function getChatHistory(user_sending_token, user_toSend_id, action_context
                 let groupChat_collectionName = `group - ${user_toSend_id}`;
                 let mongoClient;
                 try {
-                    mongoClient = new MongoClient('mongodb://localhost:27017');
+                    mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                     await mongoClient.connect();
                     const db = mongoClient.db('chats');
                     
@@ -3045,7 +3045,7 @@ async function getLastMessage(id, scope, token, res){
             let lastMessage_promise = new Promise((resolve, reject) => {
                 //bookmark
                 let promise_mongoConnect = new Promise((resolve, reject) => {
-                    let mongoClient = new MongoClient('mongodb://localhost:27017');
+                    let mongoClient = new MongoClient('mongodb://admin:IWPJZXVn4h@hohololoj.site:27017/?authSource=admin');
                     mongoClient.connect();
                     const db = mongoClient.db('chats');
                     const thisChat = db.collection(thisGroup_chatName);

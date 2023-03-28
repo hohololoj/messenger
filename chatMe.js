@@ -15,8 +15,8 @@ import imageSize from 'image-size';
 import e from 'express';
 
 const __dirname = path.resolve();
-const ip = '93.95.97.124';
-const port = process.env.PORT || 8000;
+const ip = 'hohololoj.site';
+const port = process.env.PORT || 80;
 const app = express();
 expressWs(app);
 const emailForbiddenSymbols = ['!', '#', '$', '%', '^', '&', '*', '(', ')', '\\', '/', '}', '{', ':', ';', '?', '+'];
